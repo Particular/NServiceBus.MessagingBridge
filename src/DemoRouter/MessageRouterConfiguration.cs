@@ -13,41 +13,41 @@ public class MessageRouterConfiguration
     {
     }
 
-    public InterfaceConfiguration AddInterface(TransportDefinition transportDefinition)
+    public ChannelConfiguration AddChannel(TransportDefinition transportDefinition)
     {
-        var interfaceConfiguration = new InterfaceConfiguration(transportDefinition);
-        interfaces.Add(interfaceConfiguration);
+        var channelConfiguration = new ChannelConfiguration(transportDefinition);
+        channels.Add(channelConfiguration);
 
-        return interfaceConfiguration;
+        return channelConfiguration;
     }
 
     public async Task<RunningRouter> Start(MessageRouterConfiguration rc, CancellationToken cancellationToken = default)
     {
-        // Loop through all interfaces
-        foreach (var interfaceConfiguration in interfaces)
+        // Loop through all channels
+        foreach (var channelConfiguration in channels)
         {
             // Get all endpoint-names that I need to fake (host)
             // That is all endpoint-names that I don't have on this channel.
-            var endpoints = interfaces.Where(s => s != interfaceConfiguration).SelectMany(s => s.Endpoints);
+            var endpoints = channels.Where(s => s != channelConfiguration).SelectMany(s => s.Endpoints);
 
             // Go through all endpoints that we need to fake on our channel
             foreach (var endpointToSimulate in endpoints)
             {
-                var interfaceEndpointConfiguration = RawEndpointConfiguration.Create(
+                var channelEndpointConfiguration = RawEndpointConfiguration.Create(
                     endpointToSimulate,
-                    interfaceConfiguration.TransportDefinition,
+                    channelConfiguration.TransportDefinition,
                     (mt, _, ct) => MoveMessage(endpointToSimulate, mt, ct),
                     "error");
 
-                interfaceEndpointConfiguration.AutoCreateQueues();
-                interfaceEndpointConfiguration.LimitMessageProcessingConcurrencyTo(1);
+                channelEndpointConfiguration.AutoCreateQueues();
+                channelEndpointConfiguration.LimitMessageProcessingConcurrencyTo(1);
 
                 // Create the actual endpoint
-                var runningRawEndpoint = await RawEndpoint.Start(interfaceEndpointConfiguration, cancellationToken)
+                var runningRawEndpoint = await RawEndpoint.Start(channelEndpointConfiguration, cancellationToken)
                     .ConfigureAwait(false);
 
-                // Find the interface that has my TransportDefinition and attach it
-                interfaces.Single(s => s.TransportDefinition == interfaceConfiguration.TransportDefinition)
+                // Find the channel that has my TransportDefinition and attach it
+                channels.Single(s => s.TransportDefinition == channelConfiguration.TransportDefinition)
                     .RunningEndpoint = runningRawEndpoint;
 
                 runningEndpoints.Add(runningRawEndpoint);
@@ -61,7 +61,7 @@ public class MessageRouterConfiguration
     {
         Console.WriteLine("Moving the message over");
 
-        var rawEndpoint = interfaces.Single(s => s.Endpoints.Contains(endpointName)).RunningEndpoint;
+        var rawEndpoint = channels.Single(s => s.Endpoints.Contains(endpointName)).RunningEndpoint;
 
         var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers,
             messageContext.Body);
@@ -73,5 +73,5 @@ public class MessageRouterConfiguration
     }
 
     List<IReceivingRawEndpoint> runningEndpoints = new List<IReceivingRawEndpoint>();
-    List<InterfaceConfiguration> interfaces = new List<InterfaceConfiguration>();
+    List<ChannelConfiguration> channels = new List<ChannelConfiguration>();
 }

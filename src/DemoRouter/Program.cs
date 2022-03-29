@@ -8,14 +8,14 @@ class Program
     {
         var rc = new MessageRouterConfiguration();
 
-        rc.AddInterface(new MsmqTransport())
+        rc.AddChannel(new MsmqTransport())
             .HasEndpoint("Sales").AtMachine("ServerA")
             .HasEndpoint("Finance").AtMachine("ServerB");
 
         // Note to Kyle & Travis, the above code doesn't work yet. The `AtMachine` I just made up.
         // Would it be possible to only have AtMachine available when you're on MsqmTransport?
-        
-        rc.AddInterface(new LearningTransport())
+
+        rc.AddChannel(new LearningTransport())
             .HasEndpoint("Shipping")
             .HasEndpoint("Marketing");
 
