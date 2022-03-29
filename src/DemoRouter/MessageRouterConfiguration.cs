@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Routing;
 using NServiceBus.Transport;
@@ -78,6 +79,11 @@ public class MessageRouterConfiguration
             messageContext.Body);
 
         var address = rawEndpoint.ToTransportAddress(new QueueAddress(endpointName));
+        //if (!addressMap.ContainsKey(address))
+        //{
+        //    addressMap.Add(address, endpointName);
+        //}
+        messageToSend.Headers[Headers.ReplyToAddress] = messageToSend.Headers[Headers.OriginatingEndpoint];
         var tranportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
         await rawEndpoint.Dispatch(new TransportOperations(tranportOperation), new TransportTransaction(),
             cancellationToken).ConfigureAwait(false);
@@ -85,4 +91,5 @@ public class MessageRouterConfiguration
 
     List<IReceivingRawEndpoint> runningEndpoints = new List<IReceivingRawEndpoint>();
     List<InterfaceConfiguration> interfaces = new List<InterfaceConfiguration>();
+    //Dictionary<string, string> addressMap = new Dictionary<string, string>();
 }
