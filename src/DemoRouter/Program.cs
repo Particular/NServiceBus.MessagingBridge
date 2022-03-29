@@ -8,30 +8,20 @@ class Program
     {
         var rc = new MessageRouterConfiguration();
 
-        rc.AddInterface(new MsmqTransport())
-            .HasEndpoint("Sales")
-            .HasEndpoint("Finance");
+        rc.AddChannel(new MsmqTransport())
+            .HasEndpoint("Sales").AtMachine("ServerA")
+            .HasEndpoint("Finance").AtMachine("ServerB");
 
-        rc.AddInterface(new LearningTransport())
+        // Note to Kyle & Travis, the above code doesn't work yet. The `AtMachine` I just made up.
+        // Would it be possible to only have AtMachine available when you're on MsqmTransport?
+
+        rc.AddChannel(new LearningTransport())
             .HasEndpoint("Shipping")
             .HasEndpoint("Marketing");
 
         // rc.AddInterface(new SqlTransport())
         //     .HasEndpoint("OneMore")
         //     .HasEndpoint("OneMoreMore");
-
-        // Let's take "Sales"
-        // Endpoints need to be create for "Sales" on both LearningTransport and SqlTransport
-        // But when a message arrives for "Sales", I need to forward that to MsmqTransport, of which I have no knowledge.
-        //
-        // So I need an object that says
-        // RunningEndpoint=MSMQ
-        // EndpointsThatCanBeFindOnMySide = Sales, Finance
-        // And there are four freaking endpoints running on MSMQ, but I only need one of these:
-        // - Shipping
-        // - Marketing
-        // - OneMore
-        // - OneMoreMore
 
         var runningRouter = await rc.Start(rc).ConfigureAwait(false);
 

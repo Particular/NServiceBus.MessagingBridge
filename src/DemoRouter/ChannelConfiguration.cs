@@ -2,17 +2,17 @@
 using NServiceBus.Raw;
 using NServiceBus.Transport;
 
-public class InterfaceConfiguration
+public class ChannelConfiguration
 {
     public TransportDefinition TransportDefinition { get; private set; }
 
-    public InterfaceConfiguration(TransportDefinition transportDefinition)
+    public ChannelConfiguration(TransportDefinition transportDefinition)
     {
         Endpoints = new List<string>();
         TransportDefinition = transportDefinition;
     }
 
-    public InterfaceConfiguration HasEndpoint(string endpoint)
+    public ChannelConfiguration HasEndpoint(string endpoint)
     {
         Endpoints.Add(endpoint);
         return this;
