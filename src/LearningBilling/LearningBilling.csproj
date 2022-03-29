@@ -2,13 +2,18 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net4.8</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="NServiceBus" Version="8.0.0-beta.1" />
-    <PackageReference Include="NServiceBus.Transport.Msmq" Version="2.0.0-beta.1" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.Raw\NServiceBus.Raw.csproj" />
+    <ProjectReference Include="..\Contracts\Contracts.csproj" />
   </ItemGroup>
+
+
 </Project>
