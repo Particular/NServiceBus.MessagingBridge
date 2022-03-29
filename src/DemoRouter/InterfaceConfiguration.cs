@@ -8,7 +8,7 @@ public class InterfaceConfiguration
 
     public InterfaceConfiguration(TransportDefinition transportDefinition) => TransportDefinition = transportDefinition;
 
-    public void SimulateEndpoint(string endpoint)
+    public void HasEndpoint(string endpoint)
     {
         Endpoint = endpoint;
     }

@@ -9,9 +9,9 @@ class Program
         var rc = new RouterConfiguration();
 
         rc.AddInterface(new MsmqTransport())
-            .SimulateEndpoint("Billing");
+            .HasEndpoint("Sales");
         rc.AddInterface(new LearningTransport())
-            .SimulateEndpoint("Sales");
+            .HasEndpoint("Billing");
 
         var runningRouter = await rc.Start(rc).ConfigureAwait(false);
 
