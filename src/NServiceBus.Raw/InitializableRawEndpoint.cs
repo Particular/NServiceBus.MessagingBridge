@@ -1,8 +1,9 @@
 namespace NServiceBus.Raw
 {
+    using NServiceBus.Transport;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using NServiceBus.Transport;
 
     class InitializableRawEndpoint
     {
@@ -32,10 +33,18 @@ namespace NServiceBus.Raw
                     false,
                     rawEndpointConfiguration.PoisonMessageQueue)};
 
+            var sendingQueues = new List<string>(rawEndpointConfiguration.AdditionalQueues);
+
+            if (rawEndpointConfiguration.PoisonMessageQueue != null)
+            {
+                //NOTE: All transports except SQS will create the error queue automatically so this is only needed to make sure SQS works
+                sendingQueues.Add(rawEndpointConfiguration.PoisonMessageQueue);
+            }
+
             var transportInfrastructure = await rawEndpointConfiguration.TransportDefinition.Initialize(
                 hostSettings,
                 receivers,
-                rawEndpointConfiguration.AdditionalQueues,
+                sendingQueues.ToArray(),
                 cancellationToken).ConfigureAwait(false);
 
             var startableEndpoint = new StartableRawEndpoint(
