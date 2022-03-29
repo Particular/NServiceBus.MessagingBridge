@@ -1,15 +1,23 @@
-﻿using NServiceBus.Transport;
+﻿using System.Collections.Generic;
+using NServiceBus.Raw;
+using NServiceBus.Transport;
 
 public class InterfaceConfiguration
 {
-    public string Endpoint { get; private set; }
-
     public TransportDefinition TransportDefinition { get; private set; }
 
-    public InterfaceConfiguration(TransportDefinition transportDefinition) => TransportDefinition = transportDefinition;
-
-    public void HasEndpoint(string endpoint)
+    public InterfaceConfiguration(TransportDefinition transportDefinition)
     {
-        Endpoint = endpoint;
+        Endpoints = new List<string>();
+        TransportDefinition = transportDefinition;
     }
+
+    public InterfaceConfiguration HasEndpoint(string endpoint)
+    {
+        Endpoints.Add(endpoint);
+        return this;
+    }
+
+    internal List<string> Endpoints { get; private set; }
+    internal IReceivingRawEndpoint RunningEndpoint { get; set; }
 }

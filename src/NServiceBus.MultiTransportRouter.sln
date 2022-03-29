@@ -3,17 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.MultiTransportRouter", "NServiceBus.MultiTransportRouter\NServiceBus.MultiTransportRouter.csproj", "{433771BF-E8B2-48B8-8B1A-9995EB7330D2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Raw", "NServiceBus.Raw\NServiceBus.Raw.csproj", "{9874A999-E36A-4B2F-B321-95B48AAE06B3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoRouter", "DemoRouter\DemoRouter.csproj", "{2957AED2-F5DA-4611-964B-D90E2653ECF3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsmqSales", "MsmqSales\MsmqSales.csproj", "{340D8ABA-F9A0-4B32-A709-2407D201736C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LearningBilling", "LearningBilling\LearningBilling.csproj", "{81AB4D17-E4B3-45E4-A227-C53052D25950}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "Contracts\Contracts.csproj", "{7B79CDBE-481C-425A-9220-21308E810C71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LearningShipping", "LearningShipping\LearningShipping.csproj", "{E95CCE5F-2490-4878-A55F-339F2935E132}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +19,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{433771BF-E8B2-48B8-8B1A-9995EB7330D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{433771BF-E8B2-48B8-8B1A-9995EB7330D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{433771BF-E8B2-48B8-8B1A-9995EB7330D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{433771BF-E8B2-48B8-8B1A-9995EB7330D2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9874A999-E36A-4B2F-B321-95B48AAE06B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9874A999-E36A-4B2F-B321-95B48AAE06B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9874A999-E36A-4B2F-B321-95B48AAE06B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -37,14 +31,14 @@ Global
 		{340D8ABA-F9A0-4B32-A709-2407D201736C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{340D8ABA-F9A0-4B32-A709-2407D201736C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{340D8ABA-F9A0-4B32-A709-2407D201736C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{81AB4D17-E4B3-45E4-A227-C53052D25950}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{81AB4D17-E4B3-45E4-A227-C53052D25950}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{81AB4D17-E4B3-45E4-A227-C53052D25950}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{81AB4D17-E4B3-45E4-A227-C53052D25950}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7B79CDBE-481C-425A-9220-21308E810C71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7B79CDBE-481C-425A-9220-21308E810C71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B79CDBE-481C-425A-9220-21308E810C71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B79CDBE-481C-425A-9220-21308E810C71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E95CCE5F-2490-4878-A55F-339F2935E132}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E95CCE5F-2490-4878-A55F-339F2935E132}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E95CCE5F-2490-4878-A55F-339F2935E132}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E95CCE5F-2490-4878-A55F-339F2935E132}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

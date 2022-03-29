@@ -14,13 +14,12 @@ class Program
 
         var endpointInstance = await Endpoint.Start(endpointConfiguration).ConfigureAwait(false);
 
-        Console.WriteLine("Press a key to send");
-        Console.ReadKey();
+        while (true)
+        {
+            Console.WriteLine("Press key to send message to LearningTransport");
+            Console.ReadKey();
 
-        await endpointInstance.Send("Billing", new SomeCommand()).ConfigureAwait(false);
-
-
-        Console.ReadKey();
-
+            await endpointInstance.Send("Shipping", new SomeCommand()).ConfigureAwait(false);
+        }
     }
 }
