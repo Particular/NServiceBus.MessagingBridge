@@ -26,15 +26,11 @@ public class MessageRouterConfiguration
         // Loop through all interfaces
         foreach (var interfaceConfiguration in interfaces)
         {
-            // Get all endpoint-names that I need to host
-            // That is all endpoint-names that I don't have on this interface.
+            // Get all endpoint-names that I need to fake (host)
+            // That is all endpoint-names that I don't have on this channel.
             var endpoints = interfaces.Where(s => s != interfaceConfiguration).SelectMany(s => s.Endpoints);
 
-            // What we need is an object where all endpoints are in for a specific transport
-            // Use that endpoint to send a message. It really doesn't care which one of them.
-            // For MSMQ, we have 1 object with references to the two running endpoints we create.
-            // For LearningTransport, we also have 1 object with references to the two running endpoints.
-
+            // Go through all endpoints that we need to fake on our channel
             foreach (var endpointToSimulate in endpoints)
             {
                 var interfaceEndpointConfiguration = RawEndpointConfiguration.Create(
@@ -65,13 +61,6 @@ public class MessageRouterConfiguration
     {
         Console.WriteLine("Moving the message over");
 
-        // Find dispatchers that do NOT have this endpoint
-        // We have 4 in this demo
-        // MSMQ-Marketing
-        // MSMQ-Shipping
-        // Learning-Billing <-- We need this one, but this is running on MSMQ runningendpoint. We need the other one!
-        // Learning-Sales
-        // var rawEndpoint = runningEndpoints.Single(e => e.EndpointName == endpointName);
         var rawEndpoint = interfaces.Single(s => s.Endpoints.Contains(endpointName)).RunningEndpoint;
 
         var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers,

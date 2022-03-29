@@ -17,7 +17,7 @@ public class InterfaceConfiguration
         Endpoints.Add(endpoint);
         return this;
     }
-
+    
     internal List<string> Endpoints { get; private set; }
     internal IReceivingRawEndpoint RunningEndpoint { get; set; }
 }
