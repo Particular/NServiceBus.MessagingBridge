@@ -68,13 +68,9 @@ public class MessageRouterConfiguration
             messageContext.Body);
 
         var address = rawEndpoint.ToTransportAddress(new QueueAddress(endpointName));
-        //if (!addressMap.ContainsKey(address))
-        //{
-        //    addressMap.Add(address, endpointName);
-        //}
         messageToSend.Headers[Headers.ReplyToAddress] = messageToSend.Headers[Headers.OriginatingEndpoint];
-        var tranportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
-        await rawEndpoint.Dispatch(new TransportOperations(tranportOperation), new TransportTransaction(),
+        var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
+        await rawEndpoint.Dispatch(new TransportOperations(transportOperation), new TransportTransaction(),
             cancellationToken).ConfigureAwait(false);
     }
 

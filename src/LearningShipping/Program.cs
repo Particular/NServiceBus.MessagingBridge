@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using NServiceBus;
-
-class Program
+﻿class Program
 {
     static async Task Main()
     {

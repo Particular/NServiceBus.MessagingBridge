@@ -9,6 +9,5 @@ class SomeCommandHandler : IHandleMessages<SomeCommand>
         Console.WriteLine("Got the message");
         var replyMsg = new SomeCommand();
         await context.Reply(replyMsg).ConfigureAwait(false);
-        //return Task.CompletedTask;
     }
 }
