@@ -15,14 +15,13 @@ public class Request_reply_msmq
     {
         var routerConfiguration = new MessageRouterConfiguration();
 
-
         var addressOfSendingEndpoint = new QueueAddress(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)),
             properties: new Dictionary<string, string> { { "machine", RuntimeEnvironment.MachineName } });
 
-        routerConfiguration.AddChannel(new MsmqTransport())
+        routerConfiguration.AddTransport(new MsmqTransport())
           .HasEndpoint(addressOfSendingEndpoint);
 
-        routerConfiguration.AddChannel(new LearningTransport())
+        routerConfiguration.AddTransport(new LearningTransport())
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
 
         var ctx = await Scenario.Define<Context>()

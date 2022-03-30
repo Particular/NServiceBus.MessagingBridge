@@ -14,7 +14,7 @@ public class MessageRouterConfiguration
     {
     }
 
-    public ChannelConfiguration AddChannel(TransportDefinition transportDefinition)
+    public ChannelConfiguration AddTransport(TransportDefinition transportDefinition)
     {
         var channelConfiguration = new ChannelConfiguration(transportDefinition);
         channels.Add(channelConfiguration);
@@ -69,9 +69,10 @@ public class MessageRouterConfiguration
         var address = rawEndpoint.ToTransportAddress(queueAddress);
 
         var replyToAddress = messageToSend.Headers[Headers.ReplyToAddress];
-        var replyToAddressEndpoint = ParseEndpointAddress(replyToAddress);
-        var targetSpecificReplyToAddress = rawEndpoint.ToTransportAddress(new QueueAddress(replyToAddressEndpoint));
+        var replyToLogicalEndpointName = ParseEndpointAddress(replyToAddress);
+        var targetSpecificReplyToAddress = rawEndpoint.ToTransportAddress(new QueueAddress(replyToLogicalEndpointName));
         messageToSend.Headers[Headers.ReplyToAddress] = targetSpecificReplyToAddress;
+
         var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
         await rawEndpoint.Dispatch(new TransportOperations(transportOperation), messageContext.TransportTransaction, cancellationToken)
             .ConfigureAwait(false);
@@ -80,6 +81,9 @@ public class MessageRouterConfiguration
     string ParseEndpointAddress(string replyToAddress)
     {
         return replyToAddress.Split('@').First();
+        // TODO: Sql contains schema-name and possibly more
+        // TODO: Azure Service Bus can shorten the name
+        // ThisIsMyOfficalNameButItsWayTooLong -> ThisIsMyOff
     }
 
     List<IReceivingRawEndpoint> runningEndpoints = new List<IReceivingRawEndpoint>();

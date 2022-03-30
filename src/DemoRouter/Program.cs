@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using NServiceBus;
+using NServiceBus.Transport;
 
 class Program
 {
@@ -8,16 +9,21 @@ class Program
     {
         var rc = new MessageRouterConfiguration();
 
-        //TODO: Discuss if rc.AddTransport() would be better and align with https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageRouter.html
+        // TODO: Discuss if rc.AddTransport() would be better and align with https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageRouter.html
         // .AddMessagingSystem() would also work and align with https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageChannel.html
-        rc.AddChannel(new MsmqTransport())
+
+        // SQL -> SQL
+        // ASB.Namespace -> ASB.Namespace
+        // ASB.Topics -> ASB.Topics 
+
+        rc.AddTransport(new MsmqTransport())
             .HasEndpoint("Sales")//.AtMachine("ServerA")
             .HasEndpoint("Finance");//.AtMachine("ServerB");
 
         // Note to Kyle & Travis, the above code doesn't work yet. The `AtMachine` I just made up.
         // Would it be possible to only have AtMachine available when you're on MsqmTransport?
 
-        rc.AddChannel(new LearningTransport())
+        rc.AddTransport(new LearningTransport())
             .HasEndpoint("Shipping")
             .HasEndpoint("Marketing");
 

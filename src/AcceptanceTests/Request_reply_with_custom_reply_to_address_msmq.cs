@@ -12,11 +12,11 @@ public class Request_reply_with_custom_reply_to_address_msmq
     {
         var routerConfiguration = new MessageRouterConfiguration();
 
-        routerConfiguration.AddChannel(new MsmqTransport())
+        routerConfiguration.AddTransport(new MsmqTransport())
           .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)))
           .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint)));
 
-        routerConfiguration.AddChannel(new LearningTransport())
+        routerConfiguration.AddTransport(new LearningTransport())
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
 
         var ctx = await Scenario.Define<Context>()
