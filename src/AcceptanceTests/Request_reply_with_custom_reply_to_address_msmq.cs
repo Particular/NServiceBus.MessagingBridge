@@ -1,34 +1,36 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
-using NServiceBus.Support;
-using NServiceBus.Transport;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-public class Request_reply_msmq
+public class Request_reply_with_custom_reply_to_address_msmq
 {
     [Test]
     public async Task Should_get_the_reply()
     {
         var routerConfiguration = new MessageRouterConfiguration();
 
-
-        var addressOfSendingEndpoint = new QueueAddress(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)),
-            properties: new Dictionary<string, string> { { "machine", RuntimeEnvironment.MachineName } });
-
         routerConfiguration.AddChannel(new MsmqTransport())
-          .HasEndpoint(addressOfSendingEndpoint);
+          .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)))
+          .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint)));
 
         routerConfiguration.AddChannel(new LearningTransport())
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
 
         var ctx = await Scenario.Define<Context>()
                     .WithEndpoint<SendingEndpoint>(c => c
-                        .When(b => b.Send(new MyMessage())))
+                        .When(b =>
+                        {
+                            var sendOptions = new SendOptions();
+
+                            sendOptions.RouteReplyTo(Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint)));
+
+                            return b.Send(new MyMessage(), sendOptions);
+                        }))
                     .WithEndpoint<ReplyingEndpoint>()
+                    .WithEndpoint<ReplyReceivingEndpoint>()
                     .WithRouter(routerConfiguration)
                     .Done(c => c.SendingEndpointGotResponse)
                     .Run().ConfigureAwait(false);
@@ -44,6 +46,19 @@ public class Request_reply_msmq
     public class SendingEndpoint : EndpointConfigurationBuilder
     {
         public SendingEndpoint()
+        {
+            EndpointSetup<DefaultServer>(c =>
+            {
+                c.UseTransport(new MsmqTransport());
+                c.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
+                c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReplyingEndpoint));
+            });
+        }
+    }
+
+    public class ReplyReceivingEndpoint : EndpointConfigurationBuilder
+    {
+        public ReplyReceivingEndpoint()
         {
             EndpointSetup<DefaultServer>(c =>
             {

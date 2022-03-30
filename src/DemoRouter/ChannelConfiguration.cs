@@ -8,16 +8,21 @@ public class ChannelConfiguration
 
     public ChannelConfiguration(TransportDefinition transportDefinition)
     {
-        Endpoints = new List<string>();
+        Endpoints = new List<QueueAddress>();
         TransportDefinition = transportDefinition;
     }
 
     public ChannelConfiguration HasEndpoint(string endpoint)
     {
-        Endpoints.Add(endpoint);
+        return HasEndpoint(new QueueAddress(endpoint));
+    }
+
+    public ChannelConfiguration HasEndpoint(QueueAddress queueAddress)
+    {
+        Endpoints.Add(queueAddress);
         return this;
     }
 
-    internal List<string> Endpoints { get; private set; }
+    internal List<QueueAddress> Endpoints { get; private set; }
     internal IReceivingRawEndpoint RunningEndpoint { get; set; }
 }

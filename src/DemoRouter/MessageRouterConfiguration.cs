@@ -35,7 +35,7 @@ public class MessageRouterConfiguration
             foreach (var endpointToSimulate in endpoints)
             {
                 var channelEndpointConfiguration = RawEndpointConfiguration.Create(
-                    endpointToSimulate,
+                    endpointToSimulate.BaseAddress,
                     channelConfiguration.TransportDefinition,
                     (mt, _, ct) => MoveMessage(endpointToSimulate, mt, ct),
                     "error");
@@ -58,20 +58,28 @@ public class MessageRouterConfiguration
         return new RunningRouter(runningEndpoints);
     }
 
-    async Task MoveMessage(string endpointName, MessageContext messageContext, CancellationToken cancellationToken)
+    async Task MoveMessage(QueueAddress queueAddress, MessageContext messageContext, CancellationToken cancellationToken)
     {
         Console.WriteLine("Moving the message over");
 
-        var rawEndpoint = channels.Single(s => s.Endpoints.Contains(endpointName)).RunningEndpoint;
+        var rawEndpoint = channels.Single(s => s.Endpoints.Any(q => q == queueAddress)).RunningEndpoint;
 
-        var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers,
-            messageContext.Body);
+        var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
 
-        var address = rawEndpoint.ToTransportAddress(new QueueAddress(endpointName));
-        messageToSend.Headers[Headers.ReplyToAddress] = messageToSend.Headers[Headers.OriginatingEndpoint];
+        var address = rawEndpoint.ToTransportAddress(queueAddress);
+
+        var replyToAddress = messageToSend.Headers[Headers.ReplyToAddress];
+        var replyToAddressEndpoint = ParseEndpointAddress(replyToAddress);
+        var targetSpecificReplyToAddress = rawEndpoint.ToTransportAddress(new QueueAddress(replyToAddressEndpoint));
+        messageToSend.Headers[Headers.ReplyToAddress] = targetSpecificReplyToAddress;
         var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
-        await rawEndpoint.Dispatch(new TransportOperations(transportOperation), new TransportTransaction(),
-            cancellationToken).ConfigureAwait(false);
+        await rawEndpoint.Dispatch(new TransportOperations(transportOperation), new TransportTransaction(), cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    string ParseEndpointAddress(string replyToAddress)
+    {
+        return replyToAddress.Split('@').First();
     }
 
     List<IReceivingRawEndpoint> runningEndpoints = new List<IReceivingRawEndpoint>();
