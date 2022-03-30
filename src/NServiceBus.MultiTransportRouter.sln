@@ -5,13 +5,15 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Raw", "NServiceBus.Raw\NServiceBus.Raw.csproj", "{9874A999-E36A-4B2F-B321-95B48AAE06B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoRouter", "DemoRouter\DemoRouter.csproj", "{2957AED2-F5DA-4611-964B-D90E2653ECF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoRouter", "DemoRouter\DemoRouter.csproj", "{2957AED2-F5DA-4611-964B-D90E2653ECF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsmqSales", "MsmqSales\MsmqSales.csproj", "{340D8ABA-F9A0-4B32-A709-2407D201736C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsmqSales", "MsmqSales\MsmqSales.csproj", "{340D8ABA-F9A0-4B32-A709-2407D201736C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "Contracts\Contracts.csproj", "{7B79CDBE-481C-425A-9220-21308E810C71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "Contracts\Contracts.csproj", "{7B79CDBE-481C-425A-9220-21308E810C71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LearningShipping", "LearningShipping\LearningShipping.csproj", "{E95CCE5F-2490-4878-A55F-339F2935E132}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LearningShipping", "LearningShipping\LearningShipping.csproj", "{E95CCE5F-2490-4878-A55F-339F2935E132}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcceptanceTests", "AcceptanceTests\AcceptanceTests.csproj", "{C27BC21F-5283-483C-BE77-E86543B26E9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{E95CCE5F-2490-4878-A55F-339F2935E132}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E95CCE5F-2490-4878-A55F-339F2935E132}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E95CCE5F-2490-4878-A55F-339F2935E132}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C27BC21F-5283-483C-BE77-E86543B26E9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C27BC21F-5283-483C-BE77-E86543B26E9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C27BC21F-5283-483C-BE77-E86543B26E9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C27BC21F-5283-483C-BE77-E86543B26E9E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

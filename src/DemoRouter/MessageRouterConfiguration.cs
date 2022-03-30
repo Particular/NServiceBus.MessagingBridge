@@ -22,7 +22,7 @@ public class MessageRouterConfiguration
         return channelConfiguration;
     }
 
-    public async Task<RunningRouter> Start(MessageRouterConfiguration rc, CancellationToken cancellationToken = default)
+    public async Task<RunningRouter> Start(CancellationToken cancellationToken = default)
     {
         // Loop through all channels
         foreach (var channelConfiguration in channels)

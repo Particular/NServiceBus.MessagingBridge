@@ -8,6 +8,8 @@ class Program
     {
         var rc = new MessageRouterConfiguration();
 
+        //TODO: Discuss if rc.AddTransport() would be better and align with https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageRouter.html
+        // .AddMessagingSystem() would also work and align with https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageChannel.html
         rc.AddChannel(new MsmqTransport())
             .HasEndpoint("Sales")//.AtMachine("ServerA")
             .HasEndpoint("Finance");//.AtMachine("ServerB");
@@ -23,7 +25,7 @@ class Program
         //     .HasEndpoint("OneMore")
         //     .HasEndpoint("OneMoreMore");
 
-        var runningRouter = await rc.Start(rc).ConfigureAwait(false);
+        var runningRouter = await rc.Start().ConfigureAwait(false);
 
         Console.ReadKey();
 
