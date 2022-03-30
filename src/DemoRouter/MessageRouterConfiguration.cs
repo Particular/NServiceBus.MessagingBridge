@@ -60,8 +60,6 @@ public class MessageRouterConfiguration
 
     async Task MoveMessage(QueueAddress queueAddress, MessageContext messageContext, CancellationToken cancellationToken)
     {
-        Console.WriteLine("Moving the message over");
-
         var rawEndpoint = channels.Single(s => s.Endpoints.Any(q => q == queueAddress)).RunningEndpoint;
 
         var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
@@ -73,6 +71,7 @@ public class MessageRouterConfiguration
         var targetSpecificReplyToAddress = rawEndpoint.ToTransportAddress(new QueueAddress(replyToLogicalEndpointName));
         messageToSend.Headers[Headers.ReplyToAddress] = targetSpecificReplyToAddress;
 
+        Console.WriteLine("Moving the message over to: [{0}] with a reply to [{1}]", address, messageToSend.Headers[Headers.ReplyToAddress]);
         var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
         await rawEndpoint.Dispatch(new TransportOperations(transportOperation), messageContext.TransportTransaction, cancellationToken)
             .ConfigureAwait(false);

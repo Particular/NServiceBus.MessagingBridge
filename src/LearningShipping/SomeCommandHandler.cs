@@ -1,8 +1,10 @@
 ﻿class SomeCommandHandler : IHandleMessages<SomeCommand>
 {
-    public Task Handle(SomeCommand message, IMessageHandlerContext context)
+    public async Task Handle(SomeCommand message, IMessageHandlerContext context)
     {
         Console.WriteLine("Got the message");
-        return Task.CompletedTask;
+        var replyMsg = new SomeCommand();
+        Console.WriteLine("Sending reply message");
+        await context.Reply(replyMsg).ConfigureAwait(false);
     }
 }
