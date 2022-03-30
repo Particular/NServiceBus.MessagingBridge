@@ -73,7 +73,7 @@ public class MessageRouterConfiguration
         var targetSpecificReplyToAddress = rawEndpoint.ToTransportAddress(new QueueAddress(replyToAddressEndpoint));
         messageToSend.Headers[Headers.ReplyToAddress] = targetSpecificReplyToAddress;
         var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
-        await rawEndpoint.Dispatch(new TransportOperations(transportOperation), new TransportTransaction(), cancellationToken)
+        await rawEndpoint.Dispatch(new TransportOperations(transportOperation), messageContext.TransportTransaction, cancellationToken)
             .ConfigureAwait(false);
     }
 
