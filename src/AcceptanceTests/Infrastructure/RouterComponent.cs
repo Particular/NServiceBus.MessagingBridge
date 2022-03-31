@@ -30,7 +30,7 @@ class RouterComponent<TContext> : IComponentBehavior
 
         public override Task Stop()
         {
-            return router.Stop();
+            return router?.Stop();
         }
 
         MessageRouterConfiguration routerConfiguration;

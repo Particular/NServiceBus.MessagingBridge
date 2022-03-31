@@ -7,6 +7,7 @@ using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Routing;
 using NServiceBus.Transport;
+using NServiceBus.Unicast.Messages;
 
 public class MessageRouterConfiguration
 {
@@ -14,42 +15,63 @@ public class MessageRouterConfiguration
     {
     }
 
-    public ChannelConfiguration AddTransport(TransportDefinition transportDefinition)
+    public TransportConfiguration AddTransport(TransportDefinition transportDefinition)
     {
-        var channelConfiguration = new ChannelConfiguration(transportDefinition);
-        channels.Add(channelConfiguration);
+        var transportConfiguration = new TransportConfiguration(transportDefinition);
+        transports.Add(transportConfiguration);
 
-        return channelConfiguration;
+        return transportConfiguration;
     }
 
     public async Task<RunningRouter> Start(CancellationToken cancellationToken = default)
     {
-        // Loop through all channels
-        foreach (var channelConfiguration in channels)
+        var typeGenerator = new RuntimeTypeGenerator();
+
+        // Loop through all configured transports
+        foreach (var transportConfiguration in transports)
         {
             // Get all endpoint-names that I need to fake (host)
-            // That is all endpoint-names that I don't have on this channel.
-            var endpoints = channels.Where(s => s != channelConfiguration).SelectMany(s => s.Endpoints);
+            // That is all endpoint-names that I don't have on this transport.
+            var endpoints = transports.Where(s => s != transportConfiguration).SelectMany(s => s.Endpoints);
 
-            // Go through all endpoints that we need to fake on our channel
+            // Go through all endpoints that we need to fake on our transport
             foreach (var endpointToSimulate in endpoints)
             {
-                var channelEndpointConfiguration = RawEndpointConfiguration.Create(
-                    endpointToSimulate.BaseAddress,
-                    channelConfiguration.TransportDefinition,
-                    (mt, _, ct) => MoveMessage(endpointToSimulate, mt, ct),
+                var transportEndpointConfiguration = RawEndpointConfiguration.Create(
+                    endpointToSimulate.QueueAddress.BaseAddress,
+                    transportConfiguration.TransportDefinition,
+                    (mt, _, ct) => MoveMessage(endpointToSimulate.QueueAddress, mt, ct),
                     "error");
 
-                channelEndpointConfiguration.AutoCreateQueues();
-                channelEndpointConfiguration.LimitMessageProcessingConcurrencyTo(1);
+                transportEndpointConfiguration.AutoCreateQueues();
+                transportEndpointConfiguration.LimitMessageProcessingConcurrencyTo(1);
 
                 // Create the actual endpoint
-                var runningRawEndpoint = await RawEndpoint.Start(channelEndpointConfiguration, cancellationToken)
+                var runningRawEndpoint = await RawEndpoint.Start(transportEndpointConfiguration, cancellationToken)
                     .ConfigureAwait(false);
 
-                // Find the channel that has my TransportDefinition and attach it
-                channels.Single(s => s.TransportDefinition == channelConfiguration.TransportDefinition)
+                // Find the transport that has my TransportDefinition and attach it
+                transports.Single(s => s.TransportDefinition == transportConfiguration.TransportDefinition)
                     .RunningEndpoint = runningRawEndpoint;
+
+                // Generate fake types
+                var eventTypes = new MessageMetadata[endpointToSimulate.Subsriptions.Count];
+                var i = 0;
+                foreach (Subscription subscription in endpointToSimulate.Subsriptions)
+                {
+                    if (subscription.EventType != null)
+                    {
+                        eventTypes[i++] = new MessageMetadata(subscription.EventType);
+                    }
+                    else
+                    {
+                        var eventType = typeGenerator.GetType(subscription.EventTypeFullName);
+                        eventTypes[i++] = new MessageMetadata(eventType);
+                    }
+                }
+
+                await runningRawEndpoint.SubscriptionManager.SubscribeAll(eventTypes, null, cancellationToken)
+                    .ConfigureAwait(false);
 
                 runningEndpoints.Add(runningRawEndpoint);
             }
@@ -58,11 +80,13 @@ public class MessageRouterConfiguration
         return new RunningRouter(runningEndpoints);
     }
 
-    async Task MoveMessage(QueueAddress queueAddress, MessageContext messageContext, CancellationToken cancellationToken)
+    async Task MoveMessage(QueueAddress queueAddress, MessageContext messageContext,
+        CancellationToken cancellationToken)
     {
-        var rawEndpoint = channels.Single(s => s.Endpoints.Any(q => q == queueAddress)).RunningEndpoint;
+        var rawEndpoint = transports.Single(s => s.Endpoints.Any(q => q.QueueAddress == queueAddress)).RunningEndpoint;
 
-        var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
+        var messageToSend =
+            new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
 
         var address = rawEndpoint.ToTransportAddress(queueAddress);
 
@@ -71,9 +95,11 @@ public class MessageRouterConfiguration
         var targetSpecificReplyToAddress = rawEndpoint.ToTransportAddress(new QueueAddress(replyToLogicalEndpointName));
         messageToSend.Headers[Headers.ReplyToAddress] = targetSpecificReplyToAddress;
 
-        Console.WriteLine("Moving the message over to: {0} with a reply to {1}", address, messageToSend.Headers[Headers.ReplyToAddress]);
+        Console.WriteLine("Moving the message over to: {0} with a reply to {1}", address,
+            messageToSend.Headers[Headers.ReplyToAddress]);
         var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
-        await rawEndpoint.Dispatch(new TransportOperations(transportOperation), messageContext.TransportTransaction, cancellationToken)
+        await rawEndpoint.Dispatch(new TransportOperations(transportOperation), messageContext.TransportTransaction,
+                cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -87,5 +113,5 @@ public class MessageRouterConfiguration
     }
 
     List<IReceivingRawEndpoint> runningEndpoints = new List<IReceivingRawEndpoint>();
-    List<ChannelConfiguration> channels = new List<ChannelConfiguration>();
+    List<TransportConfiguration> transports = new List<TransportConfiguration>();
 }

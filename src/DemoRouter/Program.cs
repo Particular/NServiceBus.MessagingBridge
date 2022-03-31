@@ -16,8 +16,9 @@ class Program
         // ASB.Topics -> ASB.Topics 
 
         rc.AddTransport(new MsmqTransport())
-            .HasEndpoint("Sales")//.AtMachine("ServerA")
-            .HasEndpoint("Finance");//.AtMachine("ServerB");
+            .HasEndpoint("Sales") //.AtMachine("ServerA")
+            .HasEndpoint("Finance") //.AtMachine("ServerB");
+            .RegisterPublisher("MyNamespace.MyEvent", "Shipping");
 
         // Note to Kyle & Travis, the above code doesn't work yet. The `AtMachine` I just made up.
         // Would it be possible to only have AtMachine available when you're on MsqmTransport?
@@ -35,7 +36,5 @@ class Program
         Console.ReadKey();
 
         await runningRouter.Stop().ConfigureAwait(false);
-
-
     }
 }

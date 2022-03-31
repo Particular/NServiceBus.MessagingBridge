@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTests.EndpointTemplates;
@@ -8,15 +9,23 @@ using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
 class When_subscribing_to_event_msmq
 {
+    static LearningTransport publisherTransport;
+
     [Test]
     public async Task Should_get_the_event()
     {
         var routerConfiguration = new MessageRouterConfiguration();
 
-        routerConfiguration.AddTransport(new MsmqTransport())
-            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
-
         routerConfiguration.AddTransport(new LearningTransport())
+            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))
+            // .RegisterPublisher(typeof(MyEvent), Conventions.EndpointNamingConvention(typeof(Publisher)));
+            .RegisterPublisher(typeof(MyEvent).FullName, Conventions.EndpointNamingConvention(typeof(Publisher)));
+
+        var testRunId = TestContext.CurrentContext.Test.ID;
+        var storageDir = Path.Combine(Path.GetTempPath(), "publisher", testRunId);
+        publisherTransport = new LearningTransport() { StorageDirectory = storageDir };
+
+        routerConfiguration.AddTransport(publisherTransport)
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Publisher)));
 
         var context = await Scenario.Define<Context>()
@@ -61,8 +70,9 @@ class When_subscribing_to_event_msmq
         {
             EndpointSetup<DefaultPublisher>(c =>
             {
-                c.UseTransport(new LearningTransport());
+                c.UseTransport(publisherTransport);
                 //c.ConfigureRouting().RouteToEndpoint(typeof(MyEvent), typeof(Subscriber));
+                // c.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
                 c.OnEndpointSubscribed<Context>((s, context) =>
                 {
                     var subscriber = Conventions.EndpointNamingConvention(typeof(Subscriber));
@@ -83,9 +93,9 @@ class When_subscribing_to_event_msmq
         {
             EndpointSetup<DefaultServer>(c =>
             {
-                c.DisableFeature<AutoSubscribe>();
-                c.UseTransport(new MsmqTransport());
-                c.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
+                // c.DisableFeature<AutoSubscribe>();
+                c.UseTransport(new LearningTransport());
+                // c.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
             }, p => p.RegisterPublisherFor<MyEvent>(typeof(Publisher)));
         }
 
@@ -107,4 +117,3 @@ class When_subscribing_to_event_msmq
     {
     }
 }
-
