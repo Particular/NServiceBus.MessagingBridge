@@ -71,7 +71,7 @@ public class MessageRouterConfiguration
         var targetSpecificReplyToAddress = rawEndpoint.ToTransportAddress(new QueueAddress(replyToLogicalEndpointName));
         messageToSend.Headers[Headers.ReplyToAddress] = targetSpecificReplyToAddress;
 
-        Console.WriteLine("Moving the message over to: [{0}] with a reply to [{1}]", address, messageToSend.Headers[Headers.ReplyToAddress]);
+        Console.WriteLine("Moving the message over to: {0} with a reply to {1}", address, messageToSend.Headers[Headers.ReplyToAddress]);
         var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
         await rawEndpoint.Dispatch(new TransportOperations(transportOperation), messageContext.TransportTransaction, cancellationToken)
             .ConfigureAwait(false);
@@ -81,6 +81,7 @@ public class MessageRouterConfiguration
     {
         return replyToAddress.Split('@').First();
         // TODO: Sql contains schema-name and possibly more
+        // Sql format is like - Billing@[dbo]@[databaseName]
         // TODO: Azure Service Bus can shorten the name
         // ThisIsMyOfficalNameButItsWayTooLong -> ThisIsMyOff
     }

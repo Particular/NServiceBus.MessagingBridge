@@ -2,14 +2,20 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net48</TargetFrameworks>
+    <TargetFramework>net48</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="NServiceBus" Version="8.0.0-beta.1" />
-    <PackageReference Include="NServiceBus.Transport.Msmq" Version="2.0.0-beta.1" />
     <PackageReference Include="NServiceBus.Transport.SqlServer" Version="7.0.0-beta.1" />
+    <PackageReference Include="NServiceBus.Persistence.NonDurable" Version="1.0.0-beta.1" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.Raw\NServiceBus.Raw.csproj" />
+    <ProjectReference Include="..\Contracts\Contracts.csproj" />
   </ItemGroup>
+
 </Project>

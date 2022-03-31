@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using NServiceBus;
-using NServiceBus.Transport;
 
 class Program
 {
@@ -27,9 +26,9 @@ class Program
             .HasEndpoint("Shipping")
             .HasEndpoint("Marketing");
 
-        // rc.AddInterface(new SqlTransport())
-        //     .HasEndpoint("OneMore")
-        //     .HasEndpoint("OneMoreMore");
+        rc.AddTransport(new SqlServerTransport("Data Source=;Initial Catalog=;Integrated Security=True"))
+            .HasEndpoint("Billing")
+            .HasEndpoint("Support");
 
         var runningRouter = await rc.Start().ConfigureAwait(false);
 
