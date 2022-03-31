@@ -7,7 +7,7 @@ using NServiceBus.Features;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-class When_subscribing_to_event_msmq
+class When_subscribing_to_event_learningtransport
 {
     static LearningTransport publisherTransport;
 
@@ -18,8 +18,8 @@ class When_subscribing_to_event_msmq
 
         routerConfiguration.AddTransport(new LearningTransport())
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))
-            // .RegisterPublisher(typeof(MyEvent), Conventions.EndpointNamingConvention(typeof(Publisher)));
-            .RegisterPublisher(typeof(MyEvent).FullName, Conventions.EndpointNamingConvention(typeof(Publisher)));
+            .RegisterPublisher(typeof(MyEvent), Conventions.EndpointNamingConvention(typeof(Publisher)));
+        //.RegisterPublisher(typeof(MyEvent).FullName, Conventions.EndpointNamingConvention(typeof(Publisher)));
 
         var testRunId = TestContext.CurrentContext.Test.ID;
         var storageDir = Path.Combine(Path.GetTempPath(), "publisher", testRunId);
