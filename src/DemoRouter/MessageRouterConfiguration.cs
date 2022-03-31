@@ -25,8 +25,6 @@ public class MessageRouterConfiguration
 
     public async Task<RunningRouter> Start(CancellationToken cancellationToken = default)
     {
-        var typeGenerator = new RuntimeTypeGenerator();
-
         // Loop through all configured transports
         foreach (var transportConfiguration in transports)
         {
@@ -54,23 +52,7 @@ public class MessageRouterConfiguration
                 transports.Single(s => s.TransportDefinition == transportConfiguration.TransportDefinition)
                     .RunningEndpoint = runningRawEndpoint;
 
-                // Generate fake types
-                var eventTypes = new MessageMetadata[endpointToSimulate.Subsriptions.Count];
-                var i = 0;
-                foreach (Subscription subscription in endpointToSimulate.Subsriptions)
-                {
-                    if (subscription.EventType != null)
-                    {
-                        eventTypes[i++] = new MessageMetadata(subscription.EventType);
-                    }
-                    else
-                    {
-                        var eventType = typeGenerator.GetType(subscription.EventTypeFullName);
-                        eventTypes[i++] = new MessageMetadata(eventType);
-                    }
-                }
-
-                await runningRawEndpoint.SubscriptionManager.SubscribeAll(eventTypes, null, cancellationToken)
+                await SubscribeToEvents(endpointToSimulate, runningRawEndpoint, cancellationToken)
                     .ConfigureAwait(false);
 
                 runningEndpoints.Add(runningRawEndpoint);
@@ -78,6 +60,28 @@ public class MessageRouterConfiguration
         }
 
         return new RunningRouter(runningEndpoints);
+    }
+
+    async Task SubscribeToEvents(Endpoint endpointToSimulate, IReceivingRawEndpoint runningRawEndpoint,
+        CancellationToken cancellationToken)
+    {
+        var eventTypes = new MessageMetadata[endpointToSimulate.Subsriptions.Count];
+        var i = 0;
+        foreach (Subscription subscription in endpointToSimulate.Subsriptions)
+        {
+            if (subscription.EventType != null)
+            {
+                eventTypes[i++] = new MessageMetadata(subscription.EventType);
+            }
+            else
+            {
+                var eventType = typeGenerator.GetType(subscription.EventTypeFullName);
+                eventTypes[i++] = new MessageMetadata(eventType);
+            }
+        }
+
+        await runningRawEndpoint.SubscriptionManager.SubscribeAll(eventTypes, null, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     async Task MoveMessage(QueueAddress queueAddress, MessageContext messageContext,
@@ -112,6 +116,7 @@ public class MessageRouterConfiguration
         // ThisIsMyOfficalNameButItsWayTooLong -> ThisIsMyOff
     }
 
+    static RuntimeTypeGenerator typeGenerator = new RuntimeTypeGenerator();
     List<IReceivingRawEndpoint> runningEndpoints = new List<IReceivingRawEndpoint>();
     List<TransportConfiguration> transports = new List<TransportConfiguration>();
 }
