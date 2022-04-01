@@ -16,6 +16,11 @@ class ConfigureAcceptanceTestingTransportTestExecution : IConfigureTransportTest
         return new AcceptanceTestingTransport { StorageLocation = storageDir };
     }
 
+    public void ApplyCustomEndpointConfiguration(EndpointConfiguration endpointConfiguration)
+    {
+        //no-op
+    }
+
     public Task Cleanup(CancellationToken cancellationToken = default)
     {
         Directory.Delete(storageDir, true);

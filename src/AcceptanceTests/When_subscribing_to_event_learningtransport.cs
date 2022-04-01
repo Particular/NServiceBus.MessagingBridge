@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
-using NServiceBus.AcceptanceTests.EndpointTemplates;
 using NServiceBus.Features;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;

@@ -7,8 +7,12 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
 {
     public TransportDefinition GetTransportDefinition()
     {
-        //TODO: need to add a way to configure persistence
         return new MsmqTransport();
+    }
+
+    public void ApplyCustomEndpointConfiguration(EndpointConfiguration endpointConfiguration)
+    {
+        endpointConfiguration.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
     }
 
     public Task Cleanup(CancellationToken cancellationToken = default)

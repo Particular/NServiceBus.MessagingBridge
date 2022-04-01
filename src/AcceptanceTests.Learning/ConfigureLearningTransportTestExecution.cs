@@ -15,6 +15,10 @@ class ConfigureLearningTransportTestExecution : IConfigureTransportTestExecution
 
         return new LearningTransport { StorageDirectory = storageDir };
     }
+    public void ApplyCustomEndpointConfiguration(EndpointConfiguration endpointConfiguration)
+    {
+        //no-op
+    }
 
     public Task Cleanup(CancellationToken cancellationToken = default)
     {
