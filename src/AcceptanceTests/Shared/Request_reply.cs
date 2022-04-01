@@ -8,7 +8,7 @@ using NServiceBus.Transport;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-public class Request_reply_msmq
+public class Request_reply
 {
     [Test]
     public async Task Should_get_the_reply()
