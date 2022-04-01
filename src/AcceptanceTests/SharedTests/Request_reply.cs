@@ -1,27 +1,21 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
-using NServiceBus.Support;
-using NServiceBus.Transport;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-public class Request_reply
+public class Request_reply : RouterAcceptanceTest
 {
     [Test]
     public async Task Should_get_the_reply()
     {
         var routerConfiguration = new MessageRouterConfiguration();
 
-        var addressOfSendingEndpoint = new QueueAddress(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)),
-            properties: new Dictionary<string, string> { { "machine", RuntimeEnvironment.MachineName } });
+        routerConfiguration.AddTransport(TransportBeingTested)
+          .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)));
 
-        routerConfiguration.AddTransport(new MsmqTransport())
-          .HasEndpoint(addressOfSendingEndpoint);
-
-        routerConfiguration.AddTransport(new LearningTransport())
+        routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
 
         var ctx = await Scenario.Define<Context>()
@@ -46,11 +40,10 @@ public class Request_reply
         {
             EndpointSetup<DefaultServer>(c =>
             {
-                c.UseTransport(new MsmqTransport());
-                c.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
                 c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReplyingEndpoint));
             });
         }
+
 
         public class ResponseHandler : IHandleMessages<MyReply>
         {
@@ -73,10 +66,7 @@ public class Request_reply
     {
         public ReplyingEndpoint()
         {
-            EndpointSetup<DefaultServer>(c =>
-            {
-                c.UseTransport(new LearningTransport());
-            });
+            EndpointSetup<DefaultTestServer>();
         }
 
         public class MessageHandler : IHandleMessages<MyMessage>
