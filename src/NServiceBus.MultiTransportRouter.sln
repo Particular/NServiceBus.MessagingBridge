@@ -17,11 +17,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests", "Acceptan
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBilling", "SqlBilling\SqlBilling.csproj", "{4048BBB7-ABE6-4004-AFE2-548F1434F997}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ManualTests", "ManualTests", "{15620AAE-73A9-489D-99A5-895DB0E5A1BF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{15620AAE-73A9-489D-99A5-895DB0E5A1BF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.MultiTransportRouter", "NServiceBus.MultiTransportRouter\NServiceBus.MultiTransportRouter.csproj", "{64580C11-646C-414C-B86E-456E6ABFC31E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcceptanceTesting", "AcceptanceTesting\AcceptanceTesting.csproj", "{005F90DA-F476-4A08-BA67-D0464FD872B1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BD366FEE-B2FC-4827-8D73-BCD5943AD659}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
