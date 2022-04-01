@@ -21,11 +21,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{15620AAE-7
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.MultiTransportRouter", "NServiceBus.MultiTransportRouter\NServiceBus.MultiTransportRouter.csproj", "{64580C11-646C-414C-B86E-456E6ABFC31E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcceptanceTesting", "AcceptanceTesting\AcceptanceTesting.csproj", "{005F90DA-F476-4A08-BA67-D0464FD872B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTesting", "AcceptanceTesting\AcceptanceTesting.csproj", "{005F90DA-F476-4A08-BA67-D0464FD872B1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BD366FEE-B2FC-4827-8D73-BCD5943AD659}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.Msmq", "AcceptanceTests.Msmq\AcceptanceTests.Msmq.csproj", "{995068A9-F998-4315-8FCB-76875C512BF3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.Learning", "AcceptanceTests.Learning\AcceptanceTests.Learning.csproj", "{F7C30E15-51FD-4265-840A-BEE8167B58F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,6 +75,10 @@ Global
 		{995068A9-F998-4315-8FCB-76875C512BF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{995068A9-F998-4315-8FCB-76875C512BF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{995068A9-F998-4315-8FCB-76875C512BF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -85,6 +91,7 @@ Global
 		{C27BC21F-5283-483C-BE77-E86543B26E9E} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 		{4048BBB7-ABE6-4004-AFE2-548F1434F997} = {15620AAE-73A9-489D-99A5-895DB0E5A1BF}
 		{995068A9-F998-4315-8FCB-76875C512BF3} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
+		{F7C30E15-51FD-4265-840A-BEE8167B58F7} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1B296A99-AC69-4840-BC9B-502101AE9B76}
