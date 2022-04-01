@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
+using NServiceBus.Extensibility;
 using NServiceBus.Raw;
 using NServiceBus.Routing;
 using NServiceBus.Transport;
@@ -11,10 +12,6 @@ using NServiceBus.Unicast.Messages;
 
 public class MessageRouterConfiguration
 {
-    public MessageRouterConfiguration()
-    {
-    }
-
     public TransportConfiguration AddTransport(TransportDefinition transportDefinition)
     {
         var transportConfiguration = new TransportConfiguration(transportDefinition);
@@ -52,7 +49,7 @@ public class MessageRouterConfiguration
                 transports.Single(s => s.TransportDefinition == transportConfiguration.TransportDefinition)
                     .RunningEndpoint = runningRawEndpoint;
 
-                await SubscribeToEvents(endpointToSimulate, runningRawEndpoint, cancellationToken)
+                await SubscribeToEvents(runningRawEndpoint, endpointToSimulate.Subscriptions, cancellationToken)
                     .ConfigureAwait(false);
 
                 runningEndpoints.Add(runningRawEndpoint);
@@ -62,25 +59,25 @@ public class MessageRouterConfiguration
         return new RunningRouter(runningEndpoints);
     }
 
-    async Task SubscribeToEvents(Endpoint endpointToSimulate, IReceivingRawEndpoint runningRawEndpoint,
+    async Task SubscribeToEvents(
+        IReceivingRawEndpoint runningRawEndpoint,
+        IList<Subscription> subscriptions,
         CancellationToken cancellationToken)
     {
-        var eventTypes = new MessageMetadata[endpointToSimulate.Subsriptions.Count];
-        var i = 0;
-        foreach (Subscription subscription in endpointToSimulate.Subsriptions)
+        if (!subscriptions.Any())
         {
-            if (subscription.EventType != null)
-            {
-                eventTypes[i++] = new MessageMetadata(subscription.EventType);
-            }
-            else
-            {
-                var eventType = typeGenerator.GetType(subscription.EventTypeFullName);
-                eventTypes[i++] = new MessageMetadata(eventType);
-            }
+            return;
         }
 
-        await runningRawEndpoint.SubscriptionManager.SubscribeAll(eventTypes, null, cancellationToken)
+        var eventTypes = new List<MessageMetadata>();
+        foreach (var subscription in subscriptions)
+        {
+            var eventType = typeGenerator.GetType(subscription.EventTypeFullName);
+
+            eventTypes.Add(new MessageMetadata(eventType));
+        }
+
+        await runningRawEndpoint.SubscriptionManager.SubscribeAll(eventTypes.ToArray(), new ContextBag(), cancellationToken)
             .ConfigureAwait(false);
     }
 

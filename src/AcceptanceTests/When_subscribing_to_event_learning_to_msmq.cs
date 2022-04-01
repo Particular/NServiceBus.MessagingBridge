@@ -23,7 +23,7 @@ class When_subscribing_to_event_learning_to_msmq
         var publisherEndpoint = Conventions.EndpointNamingConvention(typeof(Publisher));
         routerConfiguration.AddTransport(subscriberTransport)
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))
-            .RegisterPublisher(typeof(MyEvent), Conventions.EndpointNamingConvention(typeof(Publisher)));
+            .RegisterPublisher(typeof(MyEvent).FullName, Conventions.EndpointNamingConvention(typeof(Publisher)));
 
         var context = await Scenario.Define<Context>()
             .WithEndpoint<Publisher>(b => b
