@@ -29,7 +29,10 @@ public class DefaultTestServer : IEndpointSetupTemplate
 
         runDescriptor.OnTestCompleted(_ =>
         {
-            Directory.Delete(transportDefinition.StorageLocation, true);
+            if (Directory.Exists(transportDefinition.StorageLocation))
+            {
+                Directory.Delete(transportDefinition.StorageLocation, true);
+            }
 
             return Task.CompletedTask;
         });

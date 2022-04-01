@@ -15,6 +15,7 @@ class ConfigureLearningTransportTestExecution : IConfigureTransportTestExecution
 
         return new LearningTransport { StorageDirectory = storageDir };
     }
+
     public void ApplyCustomEndpointConfiguration(EndpointConfiguration endpointConfiguration)
     {
         //no-op
@@ -22,7 +23,11 @@ class ConfigureLearningTransportTestExecution : IConfigureTransportTestExecution
 
     public Task Cleanup(CancellationToken cancellationToken = default)
     {
-        Directory.Delete(storageDir, true);
+        if (Directory.Exists(storageDir))
+        {
+            Directory.Delete(storageDir, true);
+        }
+
         return Task.CompletedTask;
     }
 

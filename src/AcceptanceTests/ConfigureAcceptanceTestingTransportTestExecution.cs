@@ -23,7 +23,11 @@ class ConfigureAcceptanceTestingTransportTestExecution : IConfigureTransportTest
 
     public Task Cleanup(CancellationToken cancellationToken = default)
     {
-        Directory.Delete(storageDir, true);
+        if (Directory.Exists(storageDir))
+        {
+            Directory.Delete(storageDir, true);
+        }
+
         return Task.CompletedTask;
     }
 

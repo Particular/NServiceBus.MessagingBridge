@@ -28,6 +28,8 @@ public class DefaultServer : IEndpointSetupTemplate
 
         configuration.UseTransport(transportDefinition);
 
+        transportConfig.ApplyCustomEndpointConfiguration(configuration);
+
         runDescriptor.OnTestCompleted(_ => transportConfig.Cleanup());
 
         configurationBuilderCustomization(configuration);
