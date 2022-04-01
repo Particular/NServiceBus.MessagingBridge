@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DemoRouter\DemoRouter.csproj" />
+    <ProjectReference Include="..\NServiceBus.MultiTransportRouter\NServiceBus.MultiTransportRouter.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,4 +4,8 @@
     <TargetFrameworks>net6.0;net48</TargetFrameworks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NServiceBus.Raw\NServiceBus.Raw.csproj" />
+  </ItemGroup>
+
 </Project>
