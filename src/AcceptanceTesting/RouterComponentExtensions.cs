@@ -1,7 +1,7 @@
 ﻿using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Support;
 
-static class RouterComponentExtensions
+public static class RouterComponentExtensions
 {
     public static IScenarioWithEndpointBehavior<TContext> WithRouter<TContext>(this IScenarioWithEndpointBehavior<TContext> scenario,
         MessageRouterConfiguration routerConfiguration)
