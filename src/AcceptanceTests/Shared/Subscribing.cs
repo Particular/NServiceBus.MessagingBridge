@@ -20,13 +20,6 @@ class Subscribing : RouterAcceptanceTest
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Publisher)));
 
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<Publisher>(b => b
-                .When(c => c.SubscriberSubscribed, (session, c) =>
-                {
-                    var options = new PublishOptions();
-
-                    return session.Publish(new MyEvent(), options);
-                }))
             .WithEndpoint<Subscriber>(b => b.When(async (session, ctx) =>
             {
                 await session.Subscribe<MyEvent>().ConfigureAwait(false);
@@ -34,6 +27,13 @@ class Subscribing : RouterAcceptanceTest
                 // The test transport have native pubsub so we can set the flag here
                 ctx.SubscriberSubscribed = true;
             }))
+            .WithEndpoint<Publisher>(b => b
+                .When(c => c.SubscriberSubscribed, (session, c) =>
+                {
+                    var options = new PublishOptions();
+
+                    return session.Publish(new MyEvent(), options);
+                }))
             .WithRouter(routerConfiguration)
             .Done(c => c.SubscriberGotEvent)
             .Run().ConfigureAwait(false);
