@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Customization;
 using NServiceBus.AcceptanceTesting.Support;
-using NServiceBus.Transport;
 using NUnit.Framework;
 
 public class DefaultTestServer : IEndpointSetupTemplate
@@ -44,7 +43,7 @@ public class DefaultTestServer : IEndpointSetupTemplate
     {
         var testRunId = TestContext.CurrentContext.Test.ID;
         //make sure to run in a non-default directory to not clash with learning transport and other acceptance tests
-        var storageDir = Path.Combine(Path.GetTempPath(), "right", testRunId);
+        var storageDir = Path.Combine(Path.GetTempPath(), testRunId, "right");
 
         return new AcceptanceTestingTransport { StorageLocation = storageDir };
     }
