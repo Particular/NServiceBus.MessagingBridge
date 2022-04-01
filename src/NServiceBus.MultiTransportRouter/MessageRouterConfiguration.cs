@@ -85,7 +85,7 @@ public class MessageRouterConfiguration
         else
         {
             //TODO: Send a subscription message
-            //runningRawEndpoint.Dispatch();
+            //runningRawEndpoint.Dispatch(); https://github.com/SzymonPobiega/NServiceBus.Router/blob/master/src/NServiceBus.Router/MessageDrivenPubSub.cs
         }
     }
 
