@@ -13,8 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../AcceptanceTests/SharedTests/**/*.cs" />
-    <Compile Include="../AcceptanceTests/Support/**/*.cs" />
+    <Compile Include="../AcceptanceTests/Shared/**/*.cs" />
   </ItemGroup>
   
   <ItemGroup>
