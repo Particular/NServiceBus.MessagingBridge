@@ -5,18 +5,18 @@ using NServiceBus.AcceptanceTesting.Customization;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-public class Request_reply_with_custom_reply_to_address_msmq
+public class Request_reply_custom_address : RouterAcceptanceTest
 {
     [Test]
     public async Task Should_get_the_reply()
     {
         var routerConfiguration = new MessageRouterConfiguration();
 
-        routerConfiguration.AddTransport(new MsmqTransport())
+        routerConfiguration.AddTransport(TransportBeingTested)
           .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)))
           .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint)));
 
-        routerConfiguration.AddTransport(new LearningTransport())
+        routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
 
         var ctx = await Scenario.Define<Context>()
@@ -49,8 +49,6 @@ public class Request_reply_with_custom_reply_to_address_msmq
         {
             EndpointSetup<DefaultServer>(c =>
             {
-                c.UseTransport(new MsmqTransport());
-                c.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
                 c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReplyingEndpoint));
             });
         }
@@ -60,12 +58,7 @@ public class Request_reply_with_custom_reply_to_address_msmq
     {
         public ReplyReceivingEndpoint()
         {
-            EndpointSetup<DefaultServer>(c =>
-            {
-                c.UseTransport(new MsmqTransport());
-                c.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
-                c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReplyingEndpoint));
-            });
+            EndpointSetup<DefaultServer>();
         }
 
         public class ResponseHandler : IHandleMessages<MyReply>
@@ -89,10 +82,7 @@ public class Request_reply_with_custom_reply_to_address_msmq
     {
         public ReplyingEndpoint()
         {
-            EndpointSetup<DefaultServer>(c =>
-            {
-                c.UseTransport(new LearningTransport());
-            });
+            EndpointSetup<DefaultTestServer>();
         }
 
         public class MessageHandler : IHandleMessages<MyMessage>
