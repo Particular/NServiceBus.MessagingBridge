@@ -77,8 +77,16 @@ public class MessageRouterConfiguration
             eventTypes.Add(new MessageMetadata(eventType));
         }
 
-        await runningRawEndpoint.SubscriptionManager.SubscribeAll(eventTypes.ToArray(), new ContextBag(), cancellationToken)
-            .ConfigureAwait(false);
+        if (runningRawEndpoint.SubscriptionManager != null)
+        {
+            await runningRawEndpoint.SubscriptionManager.SubscribeAll(eventTypes.ToArray(), new ContextBag(), cancellationToken)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            //TODO: Send a subscription message
+            //runningRawEndpoint.Dispatch();
+        }
     }
 
     async Task MoveMessage(QueueAddress queueAddress, MessageContext messageContext,
