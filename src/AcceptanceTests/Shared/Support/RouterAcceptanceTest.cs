@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NServiceBus.AcceptanceTesting.Customization;
 using NServiceBus.Transport;
 using NUnit.Framework;
@@ -25,11 +26,17 @@ public class RouterAcceptanceTest
         };
 
         var transportConfig = TestSuiteConfiguration.Current.CreateTransportConfiguration();
-
-        TransportBeingTested = transportConfig.GetTransportDefinition();
+        routerTransportDefinition = transportConfig.GetRouterTransport();
     }
 
+    [TearDown]
+    public Task TearDown()
+    {
+        return routerTransportDefinition.Cleanup(CancellationToken.None);
+    }
 
-    protected TransportDefinition TransportBeingTested;
+    protected TransportDefinition TransportBeingTested => routerTransportDefinition.TransportDefinition;
     protected TransportDefinition TestTransport;
+
+    RouterTransportDefinition routerTransportDefinition;
 }

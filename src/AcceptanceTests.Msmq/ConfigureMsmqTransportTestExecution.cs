@@ -5,23 +5,38 @@ using System.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
-using NServiceBus.Transport;
+using NServiceBus.AcceptanceTesting.Support;
 
 class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
 {
-    public TransportDefinition GetTransportDefinition()
+    public RouterTransportDefinition GetRouterTransport()
     {
-        transportDefinition = new TestableMsmqTransport();
+        var transportDefinition = new TestableMsmqTransport();
 
-        return transportDefinition;
+        return new RouterTransportDefinition
+        {
+            TransportDefinition = transportDefinition,
+            Cleanup = (ct) => Cleanup(transportDefinition, ct)
+        };
     }
-
-    public void ApplyCustomEndpointConfiguration(EndpointConfiguration endpointConfiguration)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
+        var transportDefinition = new TestableMsmqTransport();
+        var routingConfig = endpointConfiguration.UseTransport(transportDefinition);
         endpointConfiguration.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
+
+        foreach (var publisher in publisherMetadata.Publishers)
+        {
+            foreach (var eventType in publisher.Events)
+            {
+                routingConfig.RegisterPublisher(eventType, publisher.PublisherName);
+            }
+        }
+
+        return (ct) => Cleanup(transportDefinition, ct);
     }
 
-    public Task Cleanup(CancellationToken cancellationToken = default)
+    static Task Cleanup(TestableMsmqTransport msmqTransport, CancellationToken cancellationToken)
     {
         var allQueues = MessageQueue.GetPrivateQueuesByMachine("localhost");
         var queuesToBeDeleted = new List<string>();
@@ -30,7 +45,7 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
         {
             using (messageQueue)
             {
-                if (transportDefinition.ReceiveQueues.Any(ra =>
+                if (msmqTransport.ReceiveQueues.Any(ra =>
                 {
                     var indexOfAt = ra.IndexOf("@", StringComparison.Ordinal);
                     if (indexOfAt >= 0)
@@ -62,6 +77,4 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
 
         return Task.CompletedTask;
     }
-
-    TestableMsmqTransport transportDefinition;
 }

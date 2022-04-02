@@ -1,28 +1,34 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
-using NServiceBus.Transport;
+using NServiceBus.AcceptanceTesting.Support;
 using NUnit.Framework;
 
 class ConfigureAcceptanceTestingTransportTestExecution : IConfigureTransportTestExecution
 {
-    public TransportDefinition GetTransportDefinition()
+    public RouterTransportDefinition GetRouterTransport()
     {
-        var testRunId = TestContext.CurrentContext.Test.ID;
-        //make sure to run in a non-default directory to not clash with learning transport and other acceptance tests
-        storageDir = Path.Combine(Path.GetTempPath(), testRunId, "left");
-
-        return new AcceptanceTestingTransport { StorageLocation = storageDir };
+        return new RouterTransportDefinition
+        {
+            TransportDefinition = new AcceptanceTestingTransport { StorageLocation = GetStorageDir() },
+            Cleanup = (ct) => Cleanup(ct)
+        };
     }
 
-    public void ApplyCustomEndpointConfiguration(EndpointConfiguration endpointConfiguration)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
-        //no-op
+        var transportDefinition = new AcceptanceTestingTransport { StorageLocation = GetStorageDir() };
+        endpointConfiguration.UseTransport(transportDefinition);
+
+        return Cleanup;
     }
 
-    public Task Cleanup(CancellationToken cancellationToken = default)
+    Task Cleanup(CancellationToken cancellationToken)
     {
+        var storageDir = GetStorageDir();
+
         if (Directory.Exists(storageDir))
         {
             Directory.Delete(storageDir, true);
@@ -31,5 +37,10 @@ class ConfigureAcceptanceTestingTransportTestExecution : IConfigureTransportTest
         return Task.CompletedTask;
     }
 
-    string storageDir;
+    string GetStorageDir()
+    {
+        var testRunId = TestContext.CurrentContext.Test.ID;
+        //make sure to run in a non-default directory to not clash with learning transport and other acceptance tests
+        return Path.Combine(Path.GetTempPath(), testRunId, "left");
+    }
 }
