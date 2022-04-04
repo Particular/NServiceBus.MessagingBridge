@@ -23,9 +23,9 @@ public class MessageRouterConfiguration
     }
 
     public async Task<RunningRouter> Start(
-        ILoggerFactory loggerFactory = null,
-        IConfiguration configuration = null,
-        CancellationToken cancellationToken = default)
+         ILoggerFactory loggerFactory = null,
+         IConfiguration configuration = null,
+         CancellationToken cancellationToken = default)
     {
         if (configuration != null)
         {
@@ -78,8 +78,7 @@ public class MessageRouterConfiguration
     void ApplyConfiguration(IConfiguration configuration)
     {
         var settings = configuration.GetRequiredSection("Router").Get<RouterSettings>();
-        Console.WriteLine(settings.Msmq);
-        Console.WriteLine(settings.Learning);
+        Console.WriteLine(settings.Transports.Count);
     }
 
     async Task SubscribeToEvents(
@@ -147,10 +146,4 @@ public class MessageRouterConfiguration
     static RuntimeTypeGenerator typeGenerator = new RuntimeTypeGenerator();
     List<IReceivingRawEndpoint> runningEndpoints = new List<IReceivingRawEndpoint>();
     List<TransportConfiguration> transports = new List<TransportConfiguration>();
-
-    public class RouterSettings
-    {
-        public string Msmq { get; set; }
-        public string Learning { get; set; }
-    }
 }

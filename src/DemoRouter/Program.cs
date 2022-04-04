@@ -7,17 +7,6 @@ class Program
 {
     static async Task Main()
     {
-        var rc = new MessageRouterConfiguration();
-
-        rc.AddTransport(new MsmqTransport())
-            .HasEndpoint("Sales") //.AtMachine("ServerA")
-            .HasEndpoint("Finance") //.AtMachine("ServerB");
-            .RegisterPublisher("MyNamespace.MyEvent", "Shipping");
-
-        rc.AddTransport(new LearningTransport())
-            .HasEndpoint("Shipping")
-            .HasEndpoint("Marketing");
-
         await Host.CreateDefaultBuilder()
              .ConfigureLogging(logging =>
              {
@@ -25,7 +14,21 @@ class Program
                  logging.AddConsole();
                  logging.AddEventLog();
              })
-            .UseRouter(_ => rc)
+            .UseRouter(_ =>
+            {
+                var rc = new MessageRouterConfiguration();
+
+                rc.AddTransport(new MsmqTransport())
+                    .HasEndpoint("Sales") //.AtMachine("ServerA")
+                    .HasEndpoint("Finance") //.AtMachine("ServerB");
+                    .RegisterPublisher("MyNamespace.MyEvent", "Shipping");
+
+                rc.AddTransport(new LearningTransport())
+                    .HasEndpoint("Shipping")
+                    .HasEndpoint("Marketing");
+
+                return rc;
+            })
             .Build()
             .RunAsync().ConfigureAwait(false);
     }
