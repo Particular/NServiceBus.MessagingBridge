@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
-using NServiceBus.Features;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
@@ -24,9 +23,7 @@ class Publishing : RouterAcceptanceTest
             .WithEndpoint<Publisher>(b => b
                 .When(c => c.HasNativePubSubSupport || c.SubscriberSubscribed, (session, c) =>
                 {
-                    var options = new PublishOptions();
-
-                    return session.Publish(new MyEvent(), options);
+                    return session.Publish(new MyEvent());
                 }))
             .WithEndpoint<Subscriber>()
             .WithRouter(routerConfiguration)
@@ -46,7 +43,7 @@ class Publishing : RouterAcceptanceTest
     {
         public Publisher()
         {
-            EndpointSetup<DefaultTestPublisher>(c =>
+            EndpointSetup<DefaultPublisher>(c =>
             {
                 c.OnEndpointSubscribed<Context>((_, ctx) =>
                 {
@@ -60,10 +57,7 @@ class Publishing : RouterAcceptanceTest
     {
         public Subscriber()
         {
-            EndpointSetup<DefaultServer>(c =>
-            {
-                c.DisableFeature<AutoSubscribe>();
-            }, p => p.RegisterPublisherFor<MyEvent>(typeof(Publisher)));
+            EndpointSetup<DefaultTestServer>(publisherMetadata: p => p.RegisterPublisherFor<MyEvent>(typeof(Publisher)));
         }
 
         public class MessageHandler : IHandleMessages<MyEvent>
