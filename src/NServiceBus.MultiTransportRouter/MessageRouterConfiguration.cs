@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Extensibility;
@@ -21,8 +22,16 @@ public class MessageRouterConfiguration
         return transportConfiguration;
     }
 
-    public async Task<RunningRouter> Start(ILoggerFactory loggerFactory, CancellationToken cancellationToken = default)
+    public async Task<RunningRouter> Start(
+        ILoggerFactory loggerFactory = null,
+        IConfiguration configuration = null,
+        CancellationToken cancellationToken = default)
     {
+        if (configuration != null)
+        {
+            ApplyConfiguration(configuration);
+        }
+
         // Loop through all configured transports
         foreach (var transportConfiguration in transports)
         {
@@ -56,11 +65,21 @@ public class MessageRouterConfiguration
                 runningEndpoints.Add(runningRawEndpoint);
             }
         }
-        var logger = loggerFactory.CreateLogger<RunningRouter>();
+
+        var lf = loggerFactory ?? new Microsoft.Extensions.Logging.LoggerFactory();
+
+        var logger = lf.CreateLogger<RunningRouter>();
 
         logger.LogInformation("Router started");
 
         return new RunningRouter(runningEndpoints);
+    }
+
+    void ApplyConfiguration(IConfiguration configuration)
+    {
+        var settings = configuration.GetRequiredSection("Router").Get<RouterSettings>();
+        Console.WriteLine(settings.Msmq);
+        Console.WriteLine(settings.Learning);
     }
 
     async Task SubscribeToEvents(
@@ -128,4 +147,10 @@ public class MessageRouterConfiguration
     static RuntimeTypeGenerator typeGenerator = new RuntimeTypeGenerator();
     List<IReceivingRawEndpoint> runningEndpoints = new List<IReceivingRawEndpoint>();
     List<TransportConfiguration> transports = new List<TransportConfiguration>();
+
+    public class RouterSettings
+    {
+        public string Msmq { get; set; }
+        public string Learning { get; set; }
+    }
 }

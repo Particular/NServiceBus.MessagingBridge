@@ -30,7 +30,7 @@ partial class RouterComponent<TContext> : IComponentBehavior
 
         public override async Task ComponentsStarted(CancellationToken cancellationToken = default)
         {
-            router = await routerConfiguration.Start(loggerFactory, cancellationToken).ConfigureAwait(false);
+            router = await routerConfiguration.Start(loggerFactory, null, cancellationToken).ConfigureAwait(false);
         }
 
         public override Task Stop()

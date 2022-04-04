@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus
 {
     using System;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using NServiceBus.Logging;
@@ -24,6 +25,7 @@
                 var routerConfiguration = routerConfigurationBuilder(ctx);
                 serviceCollection.AddSingleton<IHostedService>(serviceProvider => new RouterHostedService(
                     routerConfiguration,
+                    serviceProvider.GetRequiredService<IConfiguration>(),
                     serviceProvider.GetRequiredService<ILoggerFactory>(),
                     deferredLoggerFactory));
             });
