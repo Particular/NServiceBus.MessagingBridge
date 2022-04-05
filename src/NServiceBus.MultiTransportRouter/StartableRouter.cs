@@ -27,6 +27,7 @@ public class StartableRouter
         foreach (var transportConfiguration in transports)
         {
             logger.LogInformation("Starting proxies for transport {name}", transportConfiguration.Name);
+
             // Get all endpoint-names that I need to fake (host)
             // That is all endpoint-names that I don't have on this transport.
             var endpoints = transports.Where(s => s != transportConfiguration).SelectMany(s => s.Endpoints);
@@ -35,7 +36,6 @@ public class StartableRouter
             foreach (var endpointToSimulate in endpoints)
             {
                 var endpointProxy = serviceProvider.GetRequiredService<EndpointProxy>();
-
 
                 await endpointProxy.Start(endpointToSimulate, transportConfiguration, cancellationToken)
                     .ConfigureAwait(false);
