@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using NServiceBus.Transport;
 
 public class RouterConfiguration
@@ -12,25 +9,17 @@ public class RouterConfiguration
     {
         var transportConfiguration = new TransportConfiguration(transportDefinition);
         transports.Add(transportConfiguration);
-
         return transportConfiguration;
     }
 
-    public Task<RunningRouter> Start(
-         ILoggerFactory loggerFactory = null,
-         IConfiguration configuration = null,
-         CancellationToken cancellationToken = default)
+    public FinalizedRouterConfiguration Finalize(IConfiguration configuration)
     {
-        var lf = loggerFactory ?? new Microsoft.Extensions.Logging.LoggerFactory();
-
         if (configuration != null)
         {
             ApplyConfiguration(configuration);
         }
 
-        var startableRouter = new StartableRouter(transports);
-
-        return startableRouter.Start(lf, cancellationToken);
+        return new FinalizedRouterConfiguration(transports);
     }
 
     void ApplyConfiguration(IConfiguration configuration)
@@ -39,5 +28,5 @@ public class RouterConfiguration
         Console.WriteLine(settings.Transports.Count);
     }
 
-    List<TransportConfiguration> transports = new List<TransportConfiguration>();
+    readonly List<TransportConfiguration> transports = new List<TransportConfiguration>();
 }

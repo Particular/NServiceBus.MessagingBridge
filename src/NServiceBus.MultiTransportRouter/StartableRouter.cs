@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,10 +12,15 @@ using NServiceBus.Unicast.Messages;
 
 public class StartableRouter
 {
-    public StartableRouter(List<TransportConfiguration> transports) => this.transports = transports;
-
-    public async Task<RunningRouter> Start(ILoggerFactory loggerFactory, CancellationToken cancellationToken = default)
+    public StartableRouter(FinalizedRouterConfiguration configuration, ILogger<StartableRouter> logger)
     {
+        this.configuration = configuration;
+        this.logger = logger;
+    }
+
+    public async Task<RunningRouter> Start(CancellationToken cancellationToken = default)
+    {
+        var transports = configuration.Transports;
         var runningEndpoints = new List<IReceivingRawEndpoint>();
 
         // Loop through all configured transports
@@ -89,10 +93,11 @@ public class StartableRouter
     async Task MoveMessage(QueueAddress queueAddress, MessageContext messageContext,
         CancellationToken cancellationToken)
     {
+        var transports = configuration.Transports;
+
         var rawEndpoint = transports.Single(s => s.Endpoints.Any(q => q.QueueAddress == queueAddress)).RunningEndpoint;
 
-        var messageToSend =
-            new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
+        var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
 
         var address = rawEndpoint.ToTransportAddress(queueAddress);
 
@@ -101,12 +106,12 @@ public class StartableRouter
         var targetSpecificReplyToAddress = rawEndpoint.ToTransportAddress(new QueueAddress(replyToLogicalEndpointName));
         messageToSend.Headers[Headers.ReplyToAddress] = targetSpecificReplyToAddress;
 
-        Console.WriteLine("Moving the message over to: {0} with a reply to {1}", address,
-            messageToSend.Headers[Headers.ReplyToAddress]);
         var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
         await rawEndpoint.Dispatch(new TransportOperations(transportOperation), messageContext.TransportTransaction,
                 cancellationToken)
             .ConfigureAwait(false);
+
+        logger.LogInformation("Moving the message over to: {0} with a reply to {1}", address, targetSpecificReplyToAddress);
     }
 
     string ParseEndpointAddress(string replyToAddress)
@@ -120,5 +125,6 @@ public class StartableRouter
 
     static RuntimeTypeGenerator typeGenerator = new RuntimeTypeGenerator();
 
-    readonly List<TransportConfiguration> transports;
+    readonly FinalizedRouterConfiguration configuration;
+    readonly ILogger<StartableRouter> logger;
 }

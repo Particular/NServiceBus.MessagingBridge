@@ -5,7 +5,6 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using NServiceBus.Logging;
-    using ILoggerFactory = Microsoft.Extensions.Logging.ILoggerFactory;
 
     /// <summary>
     /// Extension methods to configure TODO for the .NET Core generic host.
@@ -15,19 +14,24 @@
         /// <summary>
         /// Configures the host to start the TODO
         /// </summary>
-        public static IHostBuilder UseRouter(this IHostBuilder hostBuilder, Func<HostBuilderContext, RouterConfiguration> routerConfigurationBuilder)
+        public static IHostBuilder UseRouter(this IHostBuilder hostBuilder, Action<RouterConfiguration> routerConfigurationAction)
         {
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);
 
-            hostBuilder.ConfigureServices((ctx, serviceCollection) =>
+            hostBuilder.ConfigureServices((_, serviceCollection) =>
             {
-                var routerConfiguration = routerConfigurationBuilder(ctx);
-                serviceCollection.AddSingleton<IHostedService>(serviceProvider => new RouterHostedService(
-                    routerConfiguration,
-                    serviceProvider.GetRequiredService<IConfiguration>(),
-                    serviceProvider.GetRequiredService<ILoggerFactory>(),
-                    deferredLoggerFactory));
+                var routerConfiguration = new RouterConfiguration();
+
+                routerConfigurationAction(routerConfiguration);
+
+                serviceCollection.AddSingleton(sp =>
+                {
+                    return routerConfiguration.Finalize(sp.GetRequiredService<IConfiguration>());
+                });
+                serviceCollection.AddSingleton(deferredLoggerFactory);
+                serviceCollection.AddSingleton<IHostedService, RouterHostedService>();
+                serviceCollection.AddSingleton<StartableRouter>();
             });
 
             return hostBuilder;

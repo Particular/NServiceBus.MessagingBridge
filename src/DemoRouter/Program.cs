@@ -14,10 +14,8 @@ class Program
                  logging.AddConsole();
                  logging.AddEventLog();
              })
-            .UseRouter(_ =>
+            .UseRouter(rc =>
             {
-                var rc = new RouterConfiguration();
-
                 rc.AddTransport(new MsmqTransport())
                     .HasEndpoint("Sales") //.AtMachine("ServerA")
                     .HasEndpoint("Finance") //.AtMachine("ServerB");
@@ -26,8 +24,6 @@ class Program
                 rc.AddTransport(new LearningTransport())
                     .HasEndpoint("Shipping")
                     .HasEndpoint("Marketing");
-
-                return rc;
             })
             .Build()
             .RunAsync().ConfigureAwait(false);
