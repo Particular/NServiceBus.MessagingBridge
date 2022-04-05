@@ -32,6 +32,7 @@
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, RouterHostedService>();
                 serviceCollection.AddSingleton<StartableRouter>();
+                serviceCollection.AddTransient<EndpointProxy>();
             });
 
             return hostBuilder;

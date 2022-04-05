@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using NServiceBus.Raw;
 using NServiceBus.Transport;
 
 public class TransportConfiguration
@@ -10,6 +9,7 @@ public class TransportConfiguration
     {
         Endpoints = new List<Endpoint>();
         TransportDefinition = transportDefinition;
+        Name = transportDefinition.GetType().Name.ToLower().Replace("transport", "");
     }
 
     public TransportConfiguration HasEndpoint(string endpoint)
@@ -26,8 +26,9 @@ public class TransportConfiguration
         return this;
     }
 
+    public string Name { get; set; }
     internal List<Endpoint> Endpoints { get; private set; }
-    internal IReceivingRawEndpoint RunningEndpoint { get; set; }
+    internal EndpointProxy Proxy { get; set; }
     Endpoint ConfiguringEndpoint { get; set; }
 
     public TransportConfiguration RegisterPublisher(string eventTypeFullName, string publisher)
@@ -42,13 +43,13 @@ public class TransportConfiguration
     }
 }
 
-class Endpoint
+public class Endpoint
 {
     public QueueAddress QueueAddress { get; set; }
     public List<Subscription> Subscriptions { get; set; }
 }
 
-class Subscription
+public class Subscription
 {
     public string EventTypeFullName { get; set; }
     public string Publisher { get; set; }

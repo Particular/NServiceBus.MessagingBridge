@@ -10,19 +10,18 @@ public class Request_reply : RouterAcceptanceTest
     [Test]
     public async Task Should_get_the_reply()
     {
-        var routerConfiguration = new RouterConfiguration();
-
-        routerConfiguration.AddTransport(TransportBeingTested)
-          .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)));
-
-        routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
-            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
-
         var ctx = await Scenario.Define<Context>()
                     .WithEndpoint<SendingEndpoint>(c => c
                         .When(b => b.Send(new MyMessage())))
                     .WithEndpoint<ReplyingEndpoint>()
-                    .WithRouter(routerConfiguration)
+                    .WithRouter(routerConfiguration =>
+                    {
+                        routerConfiguration.AddTransport(TransportBeingTested)
+                            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)));
+
+                        routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
+                            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
+                    })
                     .Done(c => c.SendingEndpointGotResponse)
                     .Run().ConfigureAwait(false);
 

@@ -1,28 +1,32 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Support;
 
 partial class RouterComponent<TContext> : IComponentBehavior
     where TContext : ScenarioContext
 {
-    RouterConfiguration routerConfiguration;
-
-    public RouterComponent(RouterConfiguration routerConfiguration) => this.routerConfiguration = routerConfiguration;
+    public RouterComponent(Action<RouterConfiguration> routerConfigurationAction) => this.routerConfigurationAction = routerConfigurationAction;
 
 #pragma warning disable PS0018 // A task-returning method should have a CancellationToken parameter unless it has a parameter implementing ICancellableContext
     public Task<ComponentRunner> CreateRunner(RunDescriptor run)
 #pragma warning restore PS0018 // A task-returning method should have a CancellationToken parameter unless it has a parameter implementing ICancellableContext
     {
-        return Task.FromResult<ComponentRunner>(new Runner(routerConfiguration, new AccptanceTestLoggerFactory(run.ScenarioContext)));
+        return Task.FromResult<ComponentRunner>(new Runner(routerConfigurationAction, new AccptanceTestLoggerFactory(run.ScenarioContext)));
     }
+
+    readonly Action<RouterConfiguration> routerConfigurationAction;
 
     class Runner : ComponentRunner
     {
-        public Runner(RouterConfiguration routerConfiguration, ILoggerFactory loggerFactory)
+        public Runner(Action<RouterConfiguration> routerConfigurationAction, ILoggerFactory loggerFactory)
         {
-            this.routerConfiguration = routerConfiguration;
+            this.routerConfigurationAction = routerConfigurationAction;
             this.loggerFactory = loggerFactory;
         }
 
@@ -30,21 +34,28 @@ partial class RouterComponent<TContext> : IComponentBehavior
 
         public override async Task ComponentsStarted(CancellationToken cancellationToken = default)
         {
-            var finalizedRouterConfiguration = routerConfiguration.Finalize(null);
+            var hostBuilder = new HostBuilder();
 
-            var startableRouter = new StartableRouter(finalizedRouterConfiguration, loggerFactory.CreateLogger<StartableRouter>());
+            hostBuilder.UseRouter(routerConfigurationAction)
+                .ConfigureServices((_, serviceCollection) =>
+                {
+                    serviceCollection.AddSingleton(loggerFactory);
+                });
 
-            router = await startableRouter.Start(cancellationToken).ConfigureAwait(false);
+            host = await hostBuilder.StartAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public override Task Stop()
+        public override async Task Stop()
         {
-            return router?.Stop();
+            if (host != null)
+            {
+                await host.StopAsync().ConfigureAwait(false);
+            }
         }
 
-        RunningRouter router;
+        IHost host;
 
-        readonly RouterConfiguration routerConfiguration;
+        readonly Action<RouterConfiguration> routerConfigurationAction;
         readonly ILoggerFactory loggerFactory;
     }
 }

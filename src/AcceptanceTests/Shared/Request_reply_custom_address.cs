@@ -10,15 +10,6 @@ public class Request_reply_custom_address : RouterAcceptanceTest
     [Test]
     public async Task Should_get_the_reply()
     {
-        var routerConfiguration = new RouterConfiguration();
-
-        routerConfiguration.AddTransport(TransportBeingTested)
-          .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)))
-          .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint)));
-
-        routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
-            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
-
         var ctx = await Scenario.Define<Context>()
                     .WithEndpoint<SendingEndpoint>(c => c
                         .When(b =>
@@ -31,7 +22,15 @@ public class Request_reply_custom_address : RouterAcceptanceTest
                         }))
                     .WithEndpoint<ReplyingEndpoint>()
                     .WithEndpoint<ReplyReceivingEndpoint>()
-                    .WithRouter(routerConfiguration)
+                    .WithRouter(routerConfiguration =>
+                    {
+                        routerConfiguration.AddTransport(TransportBeingTested)
+                            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)))
+                            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint)));
+
+                        routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
+                            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
+                    })
                     .Done(c => c.SendingEndpointGotResponse)
                     .Run().ConfigureAwait(false);
 

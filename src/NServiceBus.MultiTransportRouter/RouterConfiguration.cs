@@ -24,7 +24,14 @@ public class RouterConfiguration
 
     void ApplyConfiguration(IConfiguration configuration)
     {
-        var settings = configuration.GetRequiredSection("Router").Get<RouterSettings>();
+        var settings = configuration.GetSection("Router").Get<RouterSettings>();
+
+        if (settings == null)
+        {
+            Console.WriteLine("No router settings found");
+            return;
+        }
+
         Console.WriteLine(settings.Transports.Count);
     }
 
