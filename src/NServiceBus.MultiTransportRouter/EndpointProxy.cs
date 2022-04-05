@@ -39,7 +39,6 @@ public class EndpointProxy
             .ConfigureAwait(false);
 
         await SubscribeToEvents(endpointToProxy.Subscriptions, cancellationToken).ConfigureAwait(false);
-
     }
 
     public Task Stop(CancellationToken cancellationToken = default)

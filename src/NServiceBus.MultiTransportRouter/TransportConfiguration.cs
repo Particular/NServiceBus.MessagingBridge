@@ -19,7 +19,11 @@ public class TransportConfiguration
 
     public TransportConfiguration HasEndpoint(QueueAddress queueAddress)
     {
-        ConfiguringEndpoint = new Endpoint { QueueAddress = queueAddress };
+        ConfiguringEndpoint = new Endpoint
+        {
+            Name = queueAddress.BaseAddress,
+            QueueAddress = queueAddress
+        };
         ConfiguringEndpoint.Subscriptions = new List<Subscription>();
 
         Endpoints.Add(ConfiguringEndpoint);
@@ -47,6 +51,7 @@ public class Endpoint
 {
     public QueueAddress QueueAddress { get; set; }
     public List<Subscription> Subscriptions { get; set; }
+    public string Name { get; set; }
 }
 
 public class Subscription
