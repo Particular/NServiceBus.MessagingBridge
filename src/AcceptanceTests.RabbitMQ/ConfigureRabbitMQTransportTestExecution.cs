@@ -1,18 +1,18 @@
 ﻿using System;
-using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
 using NServiceBus.Transport.RabbitMQ;
-using NUnit.Framework;
 
 class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
 {
+    readonly string connectionString = Environment.GetEnvironmentVariable("RabbitMQTransport_ConnectionString") ?? "host=localhost";
+    TestableRabbitMQTransport transport;
 
     public RouterTransportDefinition GetRouterTransport()
     {
-        var connectionString = Environment.GetEnvironmentVariable("RabbitMQTransport_ConnectionString") ?? "host=localhost";
         return new RouterTransportDefinition
         {
             TransportDefinition = new TestableRabbitMQTransport(
@@ -24,28 +24,46 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
 
     public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
-        var transportDefinition = new LearningTransport { StorageDirectory = GetStorageDir() };
-        endpointConfiguration.UseTransport(transportDefinition);
+        transport = new TestableRabbitMQTransport(
+            new ConventionalRoutingTopology(true),
+            connectionString);
+        endpointConfiguration.UseTransport(transport);
 
         return Cleanup;
     }
 
     Task Cleanup(CancellationToken cancellationToken)
     {
-        var storageDir = GetStorageDir();
-
-        if (Directory.Exists(storageDir))
-        {
-            Directory.Delete(storageDir, true);
-        }
+        PurgeQueues();
 
         return Task.CompletedTask;
     }
 
-    string GetStorageDir()
+    void PurgeQueues()
     {
-        var testRunId = TestContext.CurrentContext.Test.ID;
-        //make sure to run in a non-default directory to not clash with learning transport and other acceptance tests
-        return Path.Combine(Path.GetTempPath(), testRunId, "learning");
+        if (transport == null)
+        {
+            return;
+        }
+
+        var queues = transport.QueuesToCleanup.Distinct().ToArray();
+
+        using (var connection = ConnectionHelper.ConnectionFactory.CreateConnection("Test Queue Purger"))
+        using (var channel = connection.CreateModel())
+        {
+            foreach (var queue in queues)
+            {
+                try
+                {
+                    channel.QueuePurge(queue);
+                    channel.QueueDelete(queue, false, false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Unable to clear queue {0}: {1}", queue, ex);
+                }
+            }
+        }
     }
+
 }
