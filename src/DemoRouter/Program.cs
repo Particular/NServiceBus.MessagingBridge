@@ -1,40 +1,35 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NServiceBus;
 
 class Program
 {
     static async Task Main()
     {
-        var rc = new MessageRouterConfiguration();
+        await Host.CreateDefaultBuilder()
+             .ConfigureLogging(logging =>
+             {
+                 logging.ClearProviders();
+                 logging.AddConsole();
+                 logging.AddEventLog();
+             })
+            .UseRouter(_ =>
+            {
+                var rc = new MessageRouterConfiguration();
 
-        // TODO: Discuss if rc.AddTransport() would be better and align with https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageRouter.html
-        // .AddMessagingSystem() would also work and align with https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageChannel.html
+                rc.AddTransport(new MsmqTransport())
+                    .HasEndpoint("Sales") //.AtMachine("ServerA")
+                    .HasEndpoint("Finance") //.AtMachine("ServerB");
+                    .RegisterPublisher("MyNamespace.MyEvent", "Shipping");
 
-        // SQL -> SQL
-        // ASB.Namespace -> ASB.Namespace
-        // ASB.Topics -> ASB.Topics 
+                rc.AddTransport(new LearningTransport())
+                    .HasEndpoint("Shipping")
+                    .HasEndpoint("Marketing");
 
-        rc.AddTransport(new MsmqTransport())
-            .HasEndpoint("Sales") //.AtMachine("ServerA")
-            .HasEndpoint("Finance") //.AtMachine("ServerB");
-            .RegisterPublisher("MyNamespace.MyEvent", "Shipping");
-
-        // Note to Kyle & Travis, the above code doesn't work yet. The `AtMachine` I just made up.
-        // Would it be possible to only have AtMachine available when you're on MsqmTransport?
-
-        rc.AddTransport(new LearningTransport())
-            .HasEndpoint("Shipping")
-            .HasEndpoint("Marketing");
-
-        rc.AddTransport(new SqlServerTransport("Data Source=;Initial Catalog=;Integrated Security=True"))
-            .HasEndpoint("Billing")
-            .HasEndpoint("Support");
-
-        var runningRouter = await rc.Start().ConfigureAwait(false);
-
-        Console.ReadKey();
-
-        await runningRouter.Stop().ConfigureAwait(false);
+                return rc;
+            })
+            .Build()
+            .RunAsync().ConfigureAwait(false);
     }
 }

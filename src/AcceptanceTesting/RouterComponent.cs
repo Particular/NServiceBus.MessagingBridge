@@ -1,9 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Support;
 
-class RouterComponent<TContext> : IComponentBehavior
+partial class RouterComponent<TContext> : IComponentBehavior
     where TContext : ScenarioContext
 {
     MessageRouterConfiguration routerConfiguration;
@@ -14,18 +15,22 @@ class RouterComponent<TContext> : IComponentBehavior
     public Task<ComponentRunner> CreateRunner(RunDescriptor run)
 #pragma warning restore PS0018 // A task-returning method should have a CancellationToken parameter unless it has a parameter implementing ICancellableContext
     {
-        return Task.FromResult<ComponentRunner>(new Runner(routerConfiguration));
+        return Task.FromResult<ComponentRunner>(new Runner(routerConfiguration, new AccptanceTestLoggerFactory(run.ScenarioContext)));
     }
 
     class Runner : ComponentRunner
     {
-        public Runner(MessageRouterConfiguration routerConfiguration) => this.routerConfiguration = routerConfiguration;
+        public Runner(MessageRouterConfiguration routerConfiguration, ILoggerFactory loggerFactory)
+        {
+            this.routerConfiguration = routerConfiguration;
+            this.loggerFactory = loggerFactory;
+        }
 
         public override string Name => "Router";
 
         public override async Task ComponentsStarted(CancellationToken cancellationToken = default)
         {
-            router = await routerConfiguration.Start(cancellationToken).ConfigureAwait(false);
+            router = await routerConfiguration.Start(loggerFactory, null, cancellationToken).ConfigureAwait(false);
         }
 
         public override Task Stop()
@@ -33,7 +38,9 @@ class RouterComponent<TContext> : IComponentBehavior
             return router?.Stop();
         }
 
-        MessageRouterConfiguration routerConfiguration;
         RunningRouter router;
+
+        readonly MessageRouterConfiguration routerConfiguration;
+        readonly ILoggerFactory loggerFactory;
     }
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Extensibility;
 using NServiceBus.Raw;
@@ -20,8 +22,16 @@ public class MessageRouterConfiguration
         return transportConfiguration;
     }
 
-    public async Task<RunningRouter> Start(CancellationToken cancellationToken = default)
+    public async Task<RunningRouter> Start(
+         ILoggerFactory loggerFactory = null,
+         IConfiguration configuration = null,
+         CancellationToken cancellationToken = default)
     {
+        if (configuration != null)
+        {
+            ApplyConfiguration(configuration);
+        }
+
         // Loop through all configured transports
         foreach (var transportConfiguration in transports)
         {
@@ -56,7 +66,19 @@ public class MessageRouterConfiguration
             }
         }
 
+        var lf = loggerFactory ?? new Microsoft.Extensions.Logging.LoggerFactory();
+
+        var logger = lf.CreateLogger<RunningRouter>();
+
+        logger.LogInformation("Router started");
+
         return new RunningRouter(runningEndpoints);
+    }
+
+    void ApplyConfiguration(IConfiguration configuration)
+    {
+        var settings = configuration.GetRequiredSection("Router").Get<RouterSettings>();
+        Console.WriteLine(settings.Transports.Count);
     }
 
     async Task SubscribeToEvents(
