@@ -1,3 +1,6 @@
+﻿using System;
+using System.Collections.Generic;
+using NServiceBus.Raw;
 ﻿using System.Collections.Generic;
 using NServiceBus.Transport;
 
@@ -35,6 +38,20 @@ public class TransportConfiguration
     internal EndpointProxy Proxy { get; set; }
     Endpoint ConfiguringEndpoint { get; set; }
 
+    /// <summary>
+    /// Register a publisher to forward its events to this transport  
+    /// </summary>
+    /// <param name="eventType">Type of event</param>
+    /// <param name="publisher">Logical name of the publisher on another transport</param>
+    /// <returns></returns>
+    public TransportConfiguration RegisterPublisher(Type eventType, string publisher) => RegisterPublisher(eventType.FullName, publisher);
+
+    /// <summary>
+    /// Register a publisher to forward its events to this transport  
+    /// </summary>
+    /// <param name="eventTypeFullName">Fully qualified name of the event</param>
+    /// <param name="publisher">Logical name of the publisher on another transport</param>
+    /// <returns></returns>
     public TransportConfiguration RegisterPublisher(string eventTypeFullName, string publisher)
     {
         ConfiguringEndpoint.Subscriptions.Add(new Subscription
