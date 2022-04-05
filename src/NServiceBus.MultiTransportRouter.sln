@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.Msmq", "Acc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.Learning", "AcceptanceTests.Learning\AcceptanceTests.Learning.csproj", "{F7C30E15-51FD-4265-840A-BEE8167B58F7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.SqlServer", "AcceptanceTests.SqlServer\AcceptanceTests.SqlServer.csproj", "{89B29A1A-D92E-4099-97D3-48CCA08D0025}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89B29A1A-D92E-4099-97D3-48CCA08D0025}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89B29A1A-D92E-4099-97D3-48CCA08D0025}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89B29A1A-D92E-4099-97D3-48CCA08D0025}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89B29A1A-D92E-4099-97D3-48CCA08D0025}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +98,7 @@ Global
 		{4048BBB7-ABE6-4004-AFE2-548F1434F997} = {15620AAE-73A9-489D-99A5-895DB0E5A1BF}
 		{995068A9-F998-4315-8FCB-76875C512BF3} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 		{F7C30E15-51FD-4265-840A-BEE8167B58F7} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
+		{89B29A1A-D92E-4099-97D3-48CCA08D0025} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1B296A99-AC69-4840-BC9B-502101AE9B76}

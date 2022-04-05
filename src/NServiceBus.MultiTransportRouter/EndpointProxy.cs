@@ -72,21 +72,24 @@ public class EndpointProxy
         }
         else
         {
-            var localAddress = runningRawEndpoint.TransportAddress;
-            var subscriptionMessage = ControlMessageFactory.Create(MessageIntent.Subscribe);
-            subscriptionMessage.Headers[Headers.SubscriptionMessageType] = subscriptions.First().EventTypeFullName + ",Version=1.0.0";
-            subscriptionMessage.Headers[Headers.ReplyToAddress] = localAddress;
-            if (localAddress != null)
+            foreach (var subscription in subscriptions)
             {
-                subscriptionMessage.Headers[Headers.SubscriberTransportAddress] = localAddress;
-            }
-            subscriptionMessage.Headers[Headers.SubscriberEndpoint] = runningRawEndpoint.EndpointName;
-            subscriptionMessage.Headers[Headers.TimeSent] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
-            subscriptionMessage.Headers[Headers.NServiceBusVersion] = "7.0.0";
+                var localAddress = runningRawEndpoint.TransportAddress;
+                var subscriptionMessage = ControlMessageFactory.Create(MessageIntent.Subscribe);
+                subscriptionMessage.Headers[Headers.SubscriptionMessageType] = subscription.EventTypeFullName + ",Version=1.0.0";
+                subscriptionMessage.Headers[Headers.ReplyToAddress] = localAddress;
+                if (localAddress != null)
+                {
+                    subscriptionMessage.Headers[Headers.SubscriberTransportAddress] = localAddress;
+                }
+                subscriptionMessage.Headers[Headers.SubscriberEndpoint] = runningRawEndpoint.EndpointName;
+                subscriptionMessage.Headers[Headers.TimeSent] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
+                subscriptionMessage.Headers[Headers.NServiceBusVersion] = "7.0.0";
 
-            var transportOperation = new TransportOperation(subscriptionMessage, new UnicastAddressTag(subscriptions.First().Publisher));
-            var transportOperations = new TransportOperations(transportOperation);
-            await runningRawEndpoint.Dispatch(transportOperations, new TransportTransaction(), cancellationToken).ConfigureAwait(false);
+                var transportOperation = new TransportOperation(subscriptionMessage, new UnicastAddressTag(subscription.Publisher));
+                var transportOperations = new TransportOperations(transportOperation);
+                await runningRawEndpoint.Dispatch(transportOperations, new TransportTransaction(), cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
