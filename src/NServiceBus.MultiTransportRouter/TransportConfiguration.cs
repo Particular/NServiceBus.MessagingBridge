@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NServiceBus.Raw;
-﻿using System.Collections.Generic;
 using NServiceBus.Transport;
 
 public class TransportConfiguration

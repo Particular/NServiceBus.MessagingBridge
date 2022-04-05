@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using NServiceBus.Raw;
 using NServiceBus.Routing;
 using NServiceBus.Transport;
 using NServiceBus.Unicast.Messages;
+using NServiceBus.Unicast.Transport;
 
 public class EndpointProxy
 {
@@ -70,8 +72,21 @@ public class EndpointProxy
         }
         else
         {
-            //TODO: Send a subscription message
-            //runningRawEndpoint.Dispatch(); https://github.com/SzymonPobiega/NServiceBus.Router/blob/master/src/NServiceBus.Router/MessageDrivenPubSub.cs
+            var localAddress = runningRawEndpoint.TransportAddress;
+            var subscriptionMessage = ControlMessageFactory.Create(MessageIntent.Subscribe);
+            subscriptionMessage.Headers[Headers.SubscriptionMessageType] = subscriptions.First().EventTypeFullName + ",Version=1.0.0";
+            subscriptionMessage.Headers[Headers.ReplyToAddress] = localAddress;
+            if (localAddress != null)
+            {
+                subscriptionMessage.Headers[Headers.SubscriberTransportAddress] = localAddress;
+            }
+            subscriptionMessage.Headers[Headers.SubscriberEndpoint] = runningRawEndpoint.EndpointName;
+            subscriptionMessage.Headers[Headers.TimeSent] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
+            subscriptionMessage.Headers[Headers.NServiceBusVersion] = "7.0.0";
+
+            var transportOperation = new TransportOperation(subscriptionMessage, new UnicastAddressTag(subscriptions.First().Publisher));
+            var transportOperations = new TransportOperations(transportOperation);
+            await runningRawEndpoint.Dispatch(transportOperations, new TransportTransaction(), cancellationToken).ConfigureAwait(false);
         }
     }
 

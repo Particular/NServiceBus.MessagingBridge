@@ -5,20 +5,11 @@ using NServiceBus.Features;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-class Subscribing : RouterAcceptanceTest
+class Subscribing_using_type : RouterAcceptanceTest
 {
     [Test]
     public async Task Should_get_the_event()
     {
-        var routerConfiguration = new RouterConfiguration();
-
-        routerConfiguration.AddTransport(TransportBeingTested)
-            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))
-            .RegisterPublisher(typeof(MyEvent), Conventions.EndpointNamingConvention(typeof(Publisher)));
-
-        routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
-            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Publisher)));
-
         var context = await Scenario.Define<Context>()
             .WithEndpoint<Subscriber>(b => b.When(async (session, ctx) =>
             {
@@ -34,7 +25,16 @@ class Subscribing : RouterAcceptanceTest
 
                     return session.Publish(new MyEvent(), options);
                 }))
-            .WithRouter(routerConfiguration)
+            .WithRouter(routerConfiguration =>
+            {
+                routerConfiguration.AddTransport(TransportBeingTested)
+                    .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))
+                    .RegisterPublisher(typeof(MyEvent), Conventions.EndpointNamingConvention(typeof(Publisher)));
+
+                routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
+                    .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Publisher)));
+
+            })
             .Done(c => c.SubscriberGotEvent)
             .Run().ConfigureAwait(false);
 

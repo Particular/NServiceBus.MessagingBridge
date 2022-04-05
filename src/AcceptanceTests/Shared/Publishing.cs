@@ -10,12 +10,6 @@ class Publishing : RouterAcceptanceTest
     public async Task Subscriber_should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<Publisher>(b => b
-                .When(c => c.HasNativePubSubSupport || c.SubscriberSubscribed, (session, c) =>
-                {
-                    return session.Publish(new MyEvent());
-                }))
-            .WithEndpoint<Subscriber>()
             .WithRouter(routerConfiguration =>
             {
                 routerConfiguration.AddTransport(TransportBeingTested)
@@ -25,6 +19,12 @@ class Publishing : RouterAcceptanceTest
                     .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))
                      .RegisterPublisher(typeof(MyEvent).FullName, Conventions.EndpointNamingConvention(typeof(Publisher)));
             })
+            .WithEndpoint<Publisher>(b => b
+                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, c) =>
+                {
+                    return session.Publish(new MyEvent());
+                }))
+            .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEvent)
             .Run().ConfigureAwait(false);
 
