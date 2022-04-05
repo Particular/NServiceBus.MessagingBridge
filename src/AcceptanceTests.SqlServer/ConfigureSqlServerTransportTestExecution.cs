@@ -1,47 +1,67 @@
 ﻿using System;
-using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
+//using Microsoft.Data.SqlClient;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
-using NUnit.Framework;
 
 class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecution
 {
+    readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString") ?? @"Data Source=.\SQLEXPRESS;Initial Catalog=nservicebus;Integrated Security=True";
     public RouterTransportDefinition GetRouterTransport()
     {
-        var connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString") ?? @"Data Source=.\SQLEXPRESS;Initial Catalog=nservicebus;Integrated Security=True";
+        var transportDefinition = new TestableSqlServerTransport(connectionString);
         return new RouterTransportDefinition
         {
-            TransportDefinition = new SqlServerTransport(connectionString),
-            Cleanup = (ct) => Cleanup(ct)
+            TransportDefinition = transportDefinition,
+            Cleanup = (ct) => Cleanup(transportDefinition, ct)
         };
     }
 
     public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
-        var transportDefinition = new LearningTransport { StorageDirectory = GetStorageDir() };
+        var transportDefinition = new TestableSqlServerTransport(connectionString);
         endpointConfiguration.UseTransport(transportDefinition);
 
-        return Cleanup;
+        return ct => Cleanup(transportDefinition, ct);
     }
 
-    Task Cleanup(CancellationToken cancellationToken)
+    Task Cleanup(TestableSqlServerTransport transport, CancellationToken cancellationToken)
     {
-        var storageDir = GetStorageDir();
-
-        if (Directory.Exists(storageDir))
+        Func<SqlConnection> factory = () =>
         {
-            Directory.Delete(storageDir, true);
+            if (transport.ConnectionString != null)
+            {
+                var connection = new SqlConnection(transport.ConnectionString);
+                connection.Open();
+                return connection;
+            }
+
+            return transport.ConnectionFactory(CancellationToken.None).Result;
+        };
+
+        var commandTextBuilder = new StringBuilder();
+
+        foreach (var queue in transport.QueuesToCleanup)
+        {
+            commandTextBuilder.AppendLine($"IF OBJECT_ID('{queue}', 'U') IS NOT NULL DROP TABLE {queue}");
+        }
+        var commandText = commandTextBuilder.ToString();
+        Console.WriteLine(commandText);
+        if (!string.IsNullOrEmpty(commandText))
+        {
+            using (var conn = factory())
+            {
+                using (var command = conn.CreateCommand())
+                {
+                    command.CommandText = commandText;
+                    //command.ExecuteNonQuery();
+                }
+            };
         }
 
         return Task.CompletedTask;
-    }
-
-    string GetStorageDir()
-    {
-        var testRunId = TestContext.CurrentContext.Test.ID;
-        //make sure to run in a non-default directory to not clash with learning transport and other acceptance tests
-        return Path.Combine(Path.GetTempPath(), testRunId, "learning");
     }
 }
