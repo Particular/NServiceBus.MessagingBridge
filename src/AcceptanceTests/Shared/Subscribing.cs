@@ -10,7 +10,7 @@ class Subscribing : RouterAcceptanceTest
     [Test]
     public async Task Should_get_the_event()
     {
-        var routerConfiguration = new MessageRouterConfiguration();
+        var routerConfiguration = new RouterConfiguration();
 
         routerConfiguration.AddTransport(TransportBeingTested)
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))

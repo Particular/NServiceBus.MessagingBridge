@@ -10,7 +10,7 @@ public class Request_reply_custom_address : RouterAcceptanceTest
     [Test]
     public async Task Should_get_the_reply()
     {
-        var routerConfiguration = new MessageRouterConfiguration();
+        var routerConfiguration = new RouterConfiguration();
 
         routerConfiguration.AddTransport(TransportBeingTested)
           .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)))

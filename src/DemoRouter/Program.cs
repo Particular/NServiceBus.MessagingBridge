@@ -16,7 +16,7 @@ class Program
              })
             .UseRouter(_ =>
             {
-                var rc = new MessageRouterConfiguration();
+                var rc = new RouterConfiguration();
 
                 rc.AddTransport(new MsmqTransport())
                     .HasEndpoint("Sales") //.AtMachine("ServerA")

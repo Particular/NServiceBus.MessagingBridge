@@ -15,7 +15,7 @@
         /// <summary>
         /// Configures the host to start the TODO
         /// </summary>
-        public static IHostBuilder UseRouter(this IHostBuilder hostBuilder, Func<HostBuilderContext, MessageRouterConfiguration> routerConfigurationBuilder)
+        public static IHostBuilder UseRouter(this IHostBuilder hostBuilder, Func<HostBuilderContext, RouterConfiguration> routerConfigurationBuilder)
         {
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);

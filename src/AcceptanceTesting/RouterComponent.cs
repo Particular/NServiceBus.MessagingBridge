@@ -7,9 +7,9 @@ using NServiceBus.AcceptanceTesting.Support;
 partial class RouterComponent<TContext> : IComponentBehavior
     where TContext : ScenarioContext
 {
-    MessageRouterConfiguration routerConfiguration;
+    RouterConfiguration routerConfiguration;
 
-    public RouterComponent(MessageRouterConfiguration routerConfiguration) => this.routerConfiguration = routerConfiguration;
+    public RouterComponent(RouterConfiguration routerConfiguration) => this.routerConfiguration = routerConfiguration;
 
 #pragma warning disable PS0018 // A task-returning method should have a CancellationToken parameter unless it has a parameter implementing ICancellableContext
     public Task<ComponentRunner> CreateRunner(RunDescriptor run)
@@ -20,7 +20,7 @@ partial class RouterComponent<TContext> : IComponentBehavior
 
     class Runner : ComponentRunner
     {
-        public Runner(MessageRouterConfiguration routerConfiguration, ILoggerFactory loggerFactory)
+        public Runner(RouterConfiguration routerConfiguration, ILoggerFactory loggerFactory)
         {
             this.routerConfiguration = routerConfiguration;
             this.loggerFactory = loggerFactory;
@@ -40,7 +40,7 @@ partial class RouterComponent<TContext> : IComponentBehavior
 
         RunningRouter router;
 
-        readonly MessageRouterConfiguration routerConfiguration;
+        readonly RouterConfiguration routerConfiguration;
         readonly ILoggerFactory loggerFactory;
     }
 }

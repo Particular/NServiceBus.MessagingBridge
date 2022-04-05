@@ -5,15 +5,15 @@ using NServiceBus.Raw;
 
 public class RunningRouter
 {
-    readonly List<IReceivingRawEndpoint> stoppableRawEndpoints;
-
-    public RunningRouter(List<IReceivingRawEndpoint> stoppableRawEndpoints) => this.stoppableRawEndpoints = stoppableRawEndpoints;
+    public RunningRouter(List<IReceivingRawEndpoint> runningEndpoints) => this.runningEndpoints = runningEndpoints;
 
     public async Task Stop(CancellationToken cancellationToken = default)
     {
-        foreach (var stoppableRawEndpoint in stoppableRawEndpoints)
+        foreach (var endpoint in runningEndpoints)
         {
-            await stoppableRawEndpoint.Stop(cancellationToken).ConfigureAwait(false);
+            await endpoint.Stop(cancellationToken).ConfigureAwait(false);
         }
     }
+
+    readonly List<IReceivingRawEndpoint> runningEndpoints;
 }

@@ -9,7 +9,7 @@ class Publishing : RouterAcceptanceTest
     [Test]
     public async Task Subscriber_should_get_the_event()
     {
-        var routerConfiguration = new MessageRouterConfiguration();
+        var routerConfiguration = new RouterConfiguration();
 
         routerConfiguration.AddTransport(TransportBeingTested)
             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Publisher)));

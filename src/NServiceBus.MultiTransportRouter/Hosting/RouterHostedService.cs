@@ -8,7 +8,7 @@ using ILoggerFactory = Microsoft.Extensions.Logging.ILoggerFactory;
 class RouterHostedService : IHostedService
 {
     public RouterHostedService(
-        MessageRouterConfiguration routerConfiguration,
+        RouterConfiguration routerConfiguration,
         IConfiguration configuration,
         ILoggerFactory loggerFactory,
         DeferredLoggerFactory deferredLoggerFactory)
@@ -33,7 +33,7 @@ class RouterHostedService : IHostedService
         return router.Stop(cancellationToken);
     }
 
-    readonly MessageRouterConfiguration routerConfiguration;
+    readonly RouterConfiguration routerConfiguration;
     readonly IConfiguration configuration;
     readonly DeferredLoggerFactory deferredLoggerFactory;
     readonly ILoggerFactory loggerFactory;
