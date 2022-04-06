@@ -51,6 +51,8 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
         {
             var queueAddress = QueueAddress.Parse(queue);
             commandTextBuilder.AppendLine($"IF OBJECT_ID('{queueAddress.QualifiedTableName}', 'U') IS NOT NULL DROP TABLE {queueAddress.QualifiedTableName}");
+            //commandTextBuilder.AppendLine($"IF OBJECT_ID('{queueAddress.QualifiedTableName}.delayed', 'U') IS NOT NULL DROP TABLE {queueAddress.QualifiedTableName}.delayed");
+            commandTextBuilder.AppendLine($"IF OBJECT_ID('SubscriptionRouting', 'U') IS NOT NULL DROP TABLE SubscriptionRouting");
         }
         var commandText = commandTextBuilder.ToString();
         Console.WriteLine(commandText);
