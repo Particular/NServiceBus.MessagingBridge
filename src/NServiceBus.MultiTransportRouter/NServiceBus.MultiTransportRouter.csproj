@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net48</TargetFrameworks>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\NServiceBus.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,4 +14,7 @@
     <ProjectReference Include="..\NServiceBus.Raw\NServiceBus.Raw.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="UnitTests" Key="$(NServiceBusTestsKey)" />
+  </ItemGroup>
 </Project>

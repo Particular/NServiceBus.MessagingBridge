@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using NServiceBus.Transport;
 
@@ -32,6 +33,12 @@ public class RouterConfiguration
         transportConfiguration.Concurrency = concurrency;
 
         transportConfiguration.AutoCreateQueues = autoCreateQueues;
+
+
+        if (transports.Any(t => t.Name == transportConfiguration.Name))
+        {
+            throw new InvalidOperationException($"A transport with the name {transportConfiguration.Name} has already been configured. Use a different transport type or specify a custom name");
+        }
 
         transports.Add(transportConfiguration);
         return transportConfiguration;
