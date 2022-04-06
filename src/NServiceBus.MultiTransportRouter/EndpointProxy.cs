@@ -47,10 +47,7 @@ public class EndpointProxy
         await SubscribeToEvents(endpointToProxy.Subscriptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public Task Stop(CancellationToken cancellationToken = default)
-    {
-        return runningRawEndpoint.Stop(cancellationToken);
-    }
+    public Task Stop(CancellationToken cancellationToken = default) => runningRawEndpoint.Stop(cancellationToken);
 
     async Task SubscribeToEvents(
         IList<Subscription> subscriptions,
@@ -64,7 +61,7 @@ public class EndpointProxy
         var eventTypes = new List<MessageMetadata>();
         foreach (var subscription in subscriptions)
         {
-            var eventType = typeGenerator.GetType(subscription.EventTypeFullName);
+            var eventType = TypeGenerator.GetType(subscription.EventTypeFullName);
 
             eventTypes.Add(new MessageMetadata(eventType));
         }
@@ -128,7 +125,7 @@ public class EndpointProxy
         // TODO: Sql contains schema-name and possibly more
         // Sql format is like - Billing@[dbo]@[databaseName]
         // TODO: Azure Service Bus can shorten the name
-        // ThisIsMyOfficalNameButItsWayTooLong -> ThisIsMyOff
+        // ThisIsMyOfficialNameButItsWayTooLong -> ThisIsMyOff
     }
 
     IReceivingRawEndpoint runningRawEndpoint;
@@ -136,7 +133,7 @@ public class EndpointProxy
     readonly FinalizedRouterConfiguration configuration;
     readonly ILogger<EndpointProxy> logger;
 
-    static RuntimeTypeGenerator typeGenerator = new RuntimeTypeGenerator();
+    static readonly RuntimeTypeGenerator TypeGenerator = new RuntimeTypeGenerator();
 
-    public IRawEndpoint RawEndpoint => runningRawEndpoint;
+    IRawEndpoint RawEndpoint => runningRawEndpoint;
 }
