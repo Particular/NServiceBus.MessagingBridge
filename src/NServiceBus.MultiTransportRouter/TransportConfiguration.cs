@@ -10,7 +10,6 @@ public class TransportConfiguration
     {
         Endpoints = new List<Endpoint>();
         TransportDefinition = transportDefinition;
-        Name = transportDefinition.GetType().Name.ToLower().Replace("transport", "");
     }
 
     public TransportConfiguration HasEndpoint(string endpoint)
@@ -32,9 +31,14 @@ public class TransportConfiguration
     }
 
     public string Name { get; set; }
+    public string ErrorQueue { get; set; }
+    public bool AutoCreateQueues { get; set; }
+
+    Endpoint ConfiguringEndpoint { get; set; }
+    public int Concurrency { get; set; }
+
     internal List<Endpoint> Endpoints { get; private set; }
     internal EndpointProxy Proxy { get; set; }
-    Endpoint ConfiguringEndpoint { get; set; }
 
     /// <summary>
     /// Register a publisher to forward its events to this transport  

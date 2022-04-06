@@ -31,10 +31,14 @@ public class EndpointProxy
         endpointToProxy.QueueAddress.BaseAddress,
         transportConfiguration.TransportDefinition,
         (mt, _, ct) => MoveMessage(endpointToProxy.QueueAddress, mt, ct),
-        "error");
+        transportConfiguration.ErrorQueue);
 
-        transportEndpointConfiguration.AutoCreateQueues();
-        transportEndpointConfiguration.LimitMessageProcessingConcurrencyTo(1);
+        if (transportConfiguration.AutoCreateQueues)
+        {
+            transportEndpointConfiguration.AutoCreateQueues();
+        }
+
+        transportEndpointConfiguration.LimitMessageProcessingConcurrencyTo(transportConfiguration.Concurrency);
 
         // Create the actual endpoint
         runningRawEndpoint = await NServiceBus.Raw.RawEndpoint.Start(transportEndpointConfiguration, cancellationToken)
