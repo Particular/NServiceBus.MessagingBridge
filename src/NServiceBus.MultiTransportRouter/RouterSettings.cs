@@ -7,6 +7,6 @@ public class RouterSettings
     public class Transport
     {
         public string Name { get; set; }
-        public string Concurrency { get; set; }
+        public int Concurrency { get; set; }
     }
 }

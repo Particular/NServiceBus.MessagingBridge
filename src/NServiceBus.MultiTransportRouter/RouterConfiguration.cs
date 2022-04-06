@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using NServiceBus.Transport;
 
 public class RouterConfiguration
@@ -35,37 +36,43 @@ public class RouterConfiguration
         transportConfiguration.AutoCreateQueues = autoCreateQueues;
 
 
-        if (transports.Any(t => t.Name == transportConfiguration.Name))
+        if (transportConfigurations.Any(t => t.Name == transportConfiguration.Name))
         {
             throw new InvalidOperationException($"A transport with the name {transportConfiguration.Name} has already been configured. Use a different transport type or specify a custom name");
         }
 
-        transports.Add(transportConfiguration);
+        transportConfigurations.Add(transportConfiguration);
         return transportConfiguration;
     }
 
-    public FinalizedRouterConfiguration Finalize(IConfiguration configuration)
-    {
-        if (configuration != null)
-        {
-            ApplyConfiguration(configuration);
-        }
-
-        return new FinalizedRouterConfiguration(transports);
-    }
-
-    void ApplyConfiguration(IConfiguration configuration)
+    public FinalizedRouterConfiguration Finalize(IConfiguration configuration, ILogger<RouterConfiguration> logger)
     {
         var settings = configuration.GetSection("Router").Get<RouterSettings>();
 
         if (settings == null)
         {
-            Console.WriteLine("No router settings found");
-            return;
+            logger.LogInformation("No router settings to apply found in configuration");
+            return new FinalizedRouterConfiguration(transportConfigurations);
         }
 
-        Console.WriteLine(settings.Transports.Count);
+        foreach (var transportSetting in settings.Transports)
+        {
+            var transportConfiguration = transportConfigurations.SingleOrDefault(t => t.Name == transportSetting.Name);
+
+            if (transportConfiguration == null)
+            {
+                throw new InvalidOperationException($"No transport with name {transportSetting.Name} could be found.");
+            }
+
+            if (transportSetting.Concurrency > 0)
+            {
+                transportConfiguration.Concurrency = transportSetting.Concurrency;
+            }
+
+        }
+
+        return new FinalizedRouterConfiguration(transportConfigurations);
     }
 
-    readonly List<TransportConfiguration> transports = new List<TransportConfiguration>();
+    readonly List<TransportConfiguration> transportConfigurations = new List<TransportConfiguration>();
 }

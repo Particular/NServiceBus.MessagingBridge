@@ -4,6 +4,7 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging;
     using NServiceBus.Logging;
 
     /// <summary>
@@ -27,7 +28,7 @@
 
                 serviceCollection.AddSingleton(sp =>
                 {
-                    return routerConfiguration.Finalize(sp.GetRequiredService<IConfiguration>());
+                    return routerConfiguration.Finalize(sp.GetRequiredService<IConfiguration>(), sp.GetRequiredService<ILogger<RouterConfiguration>>());
                 });
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, RouterHostedService>();
