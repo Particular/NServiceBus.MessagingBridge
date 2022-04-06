@@ -10,7 +10,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.MultiTransportRouter\NServiceBus.MultiTransportRouter.csproj" />
+    <ProjectReference Include="..\NServiceBus.Transport.Bridge\NServiceBus.Transport.Bridge.csproj" />
   </ItemGroup>
 
 </Project>

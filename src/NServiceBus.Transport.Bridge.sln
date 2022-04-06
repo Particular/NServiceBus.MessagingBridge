@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBilling", "SqlBilling\Sq
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{15620AAE-73A9-489D-99A5-895DB0E5A1BF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.MultiTransportRouter", "NServiceBus.MultiTransportRouter\NServiceBus.MultiTransportRouter.csproj", "{64580C11-646C-414C-B86E-456E6ABFC31E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Transport.Bridge", "NServiceBus.Transport.Bridge\NServiceBus.Transport.Bridge.csproj", "{64580C11-646C-414C-B86E-456E6ABFC31E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTesting", "AcceptanceTesting\AcceptanceTesting.csproj", "{005F90DA-F476-4A08-BA67-D0464FD872B1}"
 EndProject
