@@ -8,12 +8,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
         <PackageReference Include="NServiceBus" Version="8.0.0-beta.1" />
         <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.0.0-beta.1" />
         <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.0.0-beta.1" />
-        <PackageReference Include="NUnit" Version="3.13.2" />
-        <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+        <PackageReference Include="NUnit" Version="3.13.3" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
         <PackageReference Include="coverlet.collector" Version="3.1.0" />
     </ItemGroup>
 
@@ -33,6 +33,9 @@
       <Compile Include="..\AcceptanceTests\Shared\Subscribing_using_type.cs">
         <Link>Subscribing_using_type.cs</Link>
       </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Support\BridgeAcceptanceTest.cs">
+        <Link>Support\BridgeAcceptanceTest.cs</Link>
+      </Compile>
       <Compile Include="..\AcceptanceTests\Shared\Support\DefaultPublisher.cs">
         <Link>Support\DefaultPublisher.cs</Link>
       </Compile>
@@ -47,9 +50,6 @@
       </Compile>
       <Compile Include="..\AcceptanceTests\Shared\Support\ITestSuiteConfiguration.cs">
         <Link>Support\ITestSuiteConfiguration.cs</Link>
-      </Compile>
-      <Compile Include="..\AcceptanceTests\Shared\Support\RouterAcceptanceTest.cs">
-        <Link>Support\RouterAcceptanceTest.cs</Link>
       </Compile>
       <Compile Include="..\AcceptanceTests\Shared\Support\TestSuiteConfiguration.cs">
         <Link>Support\TestSuiteConfiguration.cs</Link>

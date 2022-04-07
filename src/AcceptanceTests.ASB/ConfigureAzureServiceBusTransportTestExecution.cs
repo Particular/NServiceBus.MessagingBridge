@@ -8,7 +8,7 @@ using NServiceBus.AcceptanceTesting.Support;
 public class ConfigureAzureServiceBusTransportTestExecution : IConfigureTransportTestExecution
 {
     readonly string? connectionString = Environment.GetEnvironmentVariable("AzureServiceBus_ConnectionString");
-    public RouterTransportDefinition GetRouterTransport()
+    public BridgeTransportDefinition GetBridgeTransport()
     {
         if (string.IsNullOrEmpty(connectionString))
         {
@@ -20,7 +20,7 @@ public class ConfigureAzureServiceBusTransportTestExecution : IConfigureTranspor
             TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive
         };
 
-        return new RouterTransportDefinition
+        return new BridgeTransportDefinition()
         {
             TransportDefinition = transportDefinition,
             Cleanup = (ct) => Cleanup(transportDefinition, ct)
