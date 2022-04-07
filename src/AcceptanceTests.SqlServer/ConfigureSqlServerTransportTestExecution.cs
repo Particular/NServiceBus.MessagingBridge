@@ -46,29 +46,45 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
             return transport.ConnectionFactory(CancellationToken.None).Result;
         };
 
-        var commandTextBuilder = new StringBuilder();
-        foreach (var queue in transport.QueuesToCleanup)
+        using (var conn = factory())
         {
-            var queueAddress = QueueAddress.Parse(queue);
-            commandTextBuilder.AppendLine($"IF OBJECT_ID('{queueAddress.QualifiedTableName}', 'U') IS NOT NULL DROP TABLE {queueAddress.QualifiedTableName}");
-            //commandTextBuilder.AppendLine($"IF OBJECT_ID('{queueAddress.QualifiedTableName}.delayed', 'U') IS NOT NULL DROP TABLE {queueAddress.QualifiedTableName}.delayed");
-            commandTextBuilder.AppendLine($"IF OBJECT_ID('SubscriptionRouting', 'U') IS NOT NULL DROP TABLE SubscriptionRouting");
-        }
-        var commandText = commandTextBuilder.ToString();
-        Console.WriteLine(commandText);
-        if (!string.IsNullOrEmpty(commandText))
-        {
-            using (var conn = factory())
+            using (var command = conn.CreateCommand())
             {
-                using (var command = conn.CreateCommand())
+                var commandTextBuilder = new StringBuilder();
+                var schema = "";
+                var catalog = "";
+                foreach (var queue in transport.QueuesToCleanup)
                 {
-                    command.CommandText = commandText;
-                    command.ExecuteNonQuery();
+                    var queueAddress = QueueAddress.Parse(queue);
+                    schema = queueAddress.Schema;
+                    catalog = queueAddress.Catalog;
+                    TryDeleteTable(conn, queueAddress);
+                    TryDeleteTable(conn, new QueueAddress(queueAddress.Table + ".Delayed", schema, catalog));
                 }
-            };
-        }
+                TryDeleteTable(conn, new QueueAddress("SubscriptionRouting", schema, catalog));
+            }
+        };
 
         return Task.CompletedTask;
+    }
+
+    static void TryDeleteTable(SqlConnection conn, QueueAddress address)
+    {
+        try
+        {
+            using (var comm = conn.CreateCommand())
+            {
+                comm.CommandText = $"IF OBJECT_ID('{address.QualifiedTableName}', 'U') IS NOT NULL DROP TABLE {address.QualifiedTableName}";
+                comm.ExecuteNonQuery();
+            }
+        }
+        catch (Exception e)
+        {
+            if (!e.Message.Contains("it does not exist or you do not have permission"))
+            {
+                throw;
+            }
+        }
     }
 
     class QueueAddress
