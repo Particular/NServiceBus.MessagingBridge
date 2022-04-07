@@ -35,6 +35,11 @@ public class RouterAcceptanceTest
         return routerTransportDefinition.Cleanup(CancellationToken.None);
     }
 
+    protected TransportConfiguration AddTestTransport(RouterConfiguration routerConfiguration)
+    {
+        return routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition(), "right");
+    }
+
     protected TransportDefinition TransportBeingTested => routerTransportDefinition.TransportDefinition;
     protected TransportDefinition TestTransport;
 

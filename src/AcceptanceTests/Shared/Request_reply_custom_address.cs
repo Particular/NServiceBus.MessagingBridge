@@ -28,7 +28,7 @@ public class Request_reply_custom_address : RouterAcceptanceTest
                             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)))
                             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint)));
 
-                        routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
+                        AddTestTransport(routerConfiguration)
                             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
                     })
                     .Done(c => c.SendingEndpointGotResponse)

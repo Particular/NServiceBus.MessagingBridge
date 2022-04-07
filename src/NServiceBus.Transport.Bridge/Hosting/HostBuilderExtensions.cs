@@ -13,7 +13,7 @@
         /// <summary>
         /// Configures the host to start the bridge
         /// </summary>
-        public static IHostBuilder UseRouter(
+        public static IHostBuilder UseNServiceBusBridge(
             this IHostBuilder hostBuilder,
             Action<RouterConfiguration> routerConfigurationAction)
         {

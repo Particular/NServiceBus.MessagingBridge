@@ -36,7 +36,7 @@ partial class RouterComponent<TContext> : IComponentBehavior
         {
             var hostBuilder = new HostBuilder();
 
-            hostBuilder.UseRouter(routerConfigurationAction)
+            hostBuilder.UseNServiceBusBridge(routerConfigurationAction)
                 .ConfigureServices((_, serviceCollection) =>
                 {
                     serviceCollection.AddSingleton(loggerFactory);

@@ -19,7 +19,7 @@ public class Request_reply : RouterAcceptanceTest
                         routerConfiguration.AddTransport(TransportBeingTested)
                             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)));
 
-                        routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
+                        AddTestTransport(routerConfiguration)
                             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
                     })
                     .Done(c => c.SendingEndpointGotResponse)

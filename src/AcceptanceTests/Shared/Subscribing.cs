@@ -31,7 +31,7 @@ class Subscribing : RouterAcceptanceTest
                     .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))
                         .RegisterPublisher(typeof(MyEvent).FullName, Conventions.EndpointNamingConvention(typeof(Publisher)));
 
-                routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition())
+                AddTestTransport(routerConfiguration)
                     .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Publisher)));
             })
             .Done(c => c.SubscriberGotEvent)
