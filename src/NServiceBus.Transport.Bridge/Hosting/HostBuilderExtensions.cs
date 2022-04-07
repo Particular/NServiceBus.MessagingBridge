@@ -1,34 +1,44 @@
 ﻿namespace NServiceBus
 {
     using System;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
-    using Microsoft.Extensions.Logging;
     using NServiceBus.Logging;
 
     /// <summary>
-    /// Extension methods to configure TODO for the .NET Core generic host.
+    /// Extension methods to configure the bridge for the .NET Core generic host.
     /// </summary>
     public static class HostBuilderExtensions
     {
         /// <summary>
-        /// Configures the host to start the TODO
+        /// Configures the host to start the bridge
         /// </summary>
-        public static IHostBuilder UseRouter(this IHostBuilder hostBuilder, Action<RouterConfiguration> routerConfigurationAction)
+        public static IHostBuilder UseRouter(
+            this IHostBuilder hostBuilder,
+            Action<RouterConfiguration> routerConfigurationAction)
+        {
+            return hostBuilder.UseRouter((_, rc) => routerConfigurationAction(rc));
+        }
+
+        /// <summary>
+        /// Configures the host to start the bridge
+        /// </summary>
+        public static IHostBuilder UseRouter(
+        this IHostBuilder hostBuilder,
+        Action<HostBuilderContext, RouterConfiguration> routerConfigurationAction)
         {
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);
 
-            hostBuilder.ConfigureServices((_, serviceCollection) =>
+            hostBuilder.ConfigureServices((hostBuilderContext, serviceCollection) =>
             {
-                var routerConfiguration = new RouterConfiguration();
-
-                routerConfigurationAction(routerConfiguration);
-
                 serviceCollection.AddSingleton(sp =>
                 {
-                    return routerConfiguration.Finalize(sp.GetRequiredService<IConfiguration>(), sp.GetRequiredService<ILogger<RouterConfiguration>>());
+                    var routerConfiguration = new RouterConfiguration();
+
+                    routerConfigurationAction(hostBuilderContext, routerConfiguration);
+
+                    return routerConfiguration;
                 });
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, RouterHostedService>();

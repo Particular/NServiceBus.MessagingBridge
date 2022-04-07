@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 public class StartableRouter
 {
     public StartableRouter(
-        FinalizedRouterConfiguration configuration,
+        RouterConfiguration configuration,
         ILogger<StartableRouter> logger,
         IServiceProvider serviceProvider)
     {
@@ -20,7 +20,7 @@ public class StartableRouter
 
     public async Task<RunningRouter> Start(CancellationToken cancellationToken = default)
     {
-        var transports = configuration.Transports;
+        var transports = configuration.TransportConfigurations;
         var proxies = new List<EndpointProxy>();
 
         // Loop through all configured transports
@@ -55,7 +55,7 @@ public class StartableRouter
         return new RunningRouter(proxies);
     }
 
-    readonly FinalizedRouterConfiguration configuration;
+    readonly RouterConfiguration configuration;
     readonly ILogger<StartableRouter> logger;
     readonly IServiceProvider serviceProvider;
 }

@@ -15,7 +15,7 @@ using NServiceBus.Unicast.Transport;
 public class EndpointProxy
 {
     public EndpointProxy(
-        FinalizedRouterConfiguration configuration,
+        RouterConfiguration configuration,
         ILogger<EndpointProxy> logger)
     {
         this.configuration = configuration;
@@ -97,7 +97,7 @@ public class EndpointProxy
     async Task MoveMessage(QueueAddress queueAddress, MessageContext messageContext,
         CancellationToken cancellationToken)
     {
-        var transports = configuration.Transports;
+        var transports = configuration.TransportConfigurations;
 
         var rawEndpoint = transports.Single(s => s.Endpoints.Any(q => q.QueueAddress == queueAddress))
             .Proxy.RawEndpoint;
@@ -130,7 +130,7 @@ public class EndpointProxy
 
     IReceivingRawEndpoint runningRawEndpoint;
 
-    readonly FinalizedRouterConfiguration configuration;
+    readonly RouterConfiguration configuration;
     readonly ILogger<EndpointProxy> logger;
 
     static readonly RuntimeTypeGenerator TypeGenerator = new RuntimeTypeGenerator();
