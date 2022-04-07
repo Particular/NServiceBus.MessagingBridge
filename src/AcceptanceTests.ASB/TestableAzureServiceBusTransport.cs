@@ -7,7 +7,7 @@ using NServiceBus.Transport;
 
 public class TestableAzureServiceBusTransport : AzureServiceBusTransport
 {
-    public TestableAzureServiceBusTransport(string? connectionString) : base(connectionString)
+    public TestableAzureServiceBusTransport(string connectionString) : base(connectionString)
     {
     }
 

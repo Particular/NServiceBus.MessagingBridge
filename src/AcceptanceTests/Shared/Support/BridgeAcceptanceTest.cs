@@ -6,7 +6,6 @@ using NServiceBus;
 using NServiceBus.Transport;
 using NServiceBus.Transport.Bridge;
 using NUnit.Framework;
-#pragma warning disable CS8618
 
 public class BridgeAcceptanceTest
 {

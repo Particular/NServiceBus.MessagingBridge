@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
@@ -7,7 +6,7 @@ using NServiceBus.AcceptanceTesting.Support;
 
 public class ConfigureAzureServiceBusTransportTestExecution : IConfigureTransportTestExecution
 {
-    readonly string? connectionString = Environment.GetEnvironmentVariable("AzureServiceBus_ConnectionString");
+    readonly string connectionString = Environment.GetEnvironmentVariable("AzureServiceBus_ConnectionString");
     public BridgeTransportDefinition GetBridgeTransport()
     {
         if (string.IsNullOrEmpty(connectionString))
