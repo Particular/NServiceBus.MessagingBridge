@@ -3,7 +3,6 @@ using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
 using NUnit.Framework;
-using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
 public class Request_reply : BridgeAcceptanceTest
 {
@@ -16,11 +15,12 @@ public class Request_reply : BridgeAcceptanceTest
                     .WithEndpoint<ReplyingEndpoint>()
                     .WithBridge(bridgeConfiguration =>
                     {
-                        bridgeConfiguration.AddTransport(TransportBeingTested)
-                            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)));
+                        var bridgeTransportConfiguration = new BridgeTransportConfiguration(TransportBeingTested);
 
-                        AddTestTransport(bridgeConfiguration)
-                            .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
+                        bridgeTransportConfiguration.AddTestEndpoint<SendingEndpoint>();
+                        bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
+
+                        bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
                     })
                     .Done(c => c.SendingEndpointGotResponse)
                     .Run().ConfigureAwait(false);
