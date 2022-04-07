@@ -20,7 +20,7 @@ public static class BridgeConfigurationExtensions
     {
         var bridgeTransportConfiguration = new BridgeTransportConfiguration(DefaultTestServer.GetTestTransportDefinition())
         {
-            Name = "right"
+            Name = "DefaultTestingTransport"
         };
 
         bridgeTransportConfiguration.HasEndpoint(bridgeEndpoint);
