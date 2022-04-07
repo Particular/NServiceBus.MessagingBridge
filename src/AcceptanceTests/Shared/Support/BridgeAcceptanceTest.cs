@@ -44,7 +44,7 @@ public class BridgeAcceptanceTest
 
     protected TransportConfiguration AddTestTransport(BridgeConfiguration bridgeConfiguration)
     {
-        return bridgeConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition(), "right");
+        return bridgeConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition(), "DefaultTestingTransport");
     }
 
     protected TransportDefinition TransportBeingTested => bridgeTransportDefinition.TransportDefinition;
