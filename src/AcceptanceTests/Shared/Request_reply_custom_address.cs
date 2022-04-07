@@ -22,13 +22,13 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
                         }))
                     .WithEndpoint<ReplyingEndpoint>()
                     .WithEndpoint<ReplyReceivingEndpoint>()
-                    .WithBridge(routerConfiguration =>
+                    .WithBridge(bridgeConfiguration =>
                     {
-                        routerConfiguration.AddTransport(TransportBeingTested)
+                        bridgeConfiguration.AddTransport(TransportBeingTested)
                             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)))
                             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint)));
 
-                        AddTestTransport(routerConfiguration)
+                        AddTestTransport(bridgeConfiguration)
                             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(ReplyingEndpoint)));
                     })
                     .Done(c => c.SendingEndpointGotResponse)

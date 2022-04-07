@@ -2,7 +2,7 @@
 using NServiceBus;
 using NUnit.Framework;
 
-partial class RouterConfigurationTests
+public class BridgeConfigurationTests
 {
     [Test]
     public void Should_require_transports_of_the_same_type_to_be_uniquely_identifiable_by_name()

@@ -25,13 +25,13 @@ class Subscribing : BridgeAcceptanceTest
 
                     return session.Publish(new MyEvent(), options);
                 }))
-            .WithBridge(routerConfiguration =>
+            .WithBridge(bridgeConfiguration =>
             {
-                routerConfiguration.AddTransport(TransportBeingTested)
+                bridgeConfiguration.AddTransport(TransportBeingTested)
                     .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))
                         .RegisterPublisher(typeof(MyEvent).FullName, Conventions.EndpointNamingConvention(typeof(Publisher)));
 
-                AddTestTransport(routerConfiguration)
+                AddTestTransport(bridgeConfiguration)
                     .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Publisher)));
             })
             .Done(c => c.SubscriberGotEvent)

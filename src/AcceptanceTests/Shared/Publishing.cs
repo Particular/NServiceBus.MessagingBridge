@@ -10,12 +10,12 @@ class Publishing : BridgeAcceptanceTest
     public async Task Subscriber_should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
-            .WithBridge(routerConfiguration =>
+            .WithBridge(bridgeConfiguration =>
             {
-                routerConfiguration.AddTransport(TransportBeingTested)
+                bridgeConfiguration.AddTransport(TransportBeingTested)
                     .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Publisher)));
 
-                AddTestTransport(routerConfiguration)
+                AddTestTransport(bridgeConfiguration)
                     .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))
                      .RegisterPublisher(typeof(MyEvent).FullName, Conventions.EndpointNamingConvention(typeof(Publisher)));
             })

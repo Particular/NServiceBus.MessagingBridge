@@ -36,9 +36,9 @@ public class BridgeAcceptanceTest
         return BridgeTransportDefinition.Cleanup(CancellationToken.None);
     }
 
-    protected TransportConfiguration AddTestTransport(BridgeConfiguration routerConfiguration)
+    protected TransportConfiguration AddTestTransport(BridgeConfiguration bridgeConfiguration)
     {
-        return routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition(), "right");
+        return bridgeConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition(), "right");
     }
 
     protected TransportDefinition TransportBeingTested => BridgeTransportDefinition.TransportDefinition;

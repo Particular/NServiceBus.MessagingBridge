@@ -52,7 +52,7 @@ class StartableBridge : IStartableBridge
             }
         }
 
-        logger.LogInformation("Router startup complete");
+        logger.LogInformation("Bridge startup complete");
 
         return new RunningBridge(proxies);
     }

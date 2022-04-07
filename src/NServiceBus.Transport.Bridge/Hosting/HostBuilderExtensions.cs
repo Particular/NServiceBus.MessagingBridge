@@ -16,9 +16,9 @@
         /// </summary>
         public static IHostBuilder UseNServiceBusBridge(
             this IHostBuilder hostBuilder,
-            Action<BridgeConfiguration> routerConfigurationAction)
+            Action<BridgeConfiguration> bridgeConfigurationAction)
         {
-            return hostBuilder.UseNServiceBusBridge((_, rc) => routerConfigurationAction(rc));
+            return hostBuilder.UseNServiceBusBridge((_, rc) => bridgeConfigurationAction(rc));
         }
 
         /// <summary>
@@ -26,7 +26,7 @@
         /// </summary>
         public static IHostBuilder UseNServiceBusBridge(
         this IHostBuilder hostBuilder,
-        Action<HostBuilderContext, BridgeConfiguration> routerConfigurationAction)
+        Action<HostBuilderContext, BridgeConfiguration> bridgeConfigurationAction)
         {
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);
@@ -35,11 +35,11 @@
             {
                 serviceCollection.AddSingleton(sp =>
                 {
-                    var routerConfiguration = new BridgeConfiguration();
+                    var bridgeConfiguration = new BridgeConfiguration();
 
-                    routerConfigurationAction(hostBuilderContext, routerConfiguration);
+                    bridgeConfigurationAction(hostBuilderContext, bridgeConfiguration);
 
-                    return routerConfiguration;
+                    return bridgeConfiguration;
                 });
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
