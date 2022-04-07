@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Raw", "NServiceBus.Raw\NServiceBus.Raw.csproj", "{9874A999-E36A-4B2F-B321-95B48AAE06B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoRouter", "DemoRouter\DemoRouter.csproj", "{2957AED2-F5DA-4611-964B-D90E2653ECF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoBridge", "DemoRouter\DemoBridge.csproj", "{2957AED2-F5DA-4611-964B-D90E2653ECF3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsmqSales", "MsmqSales\MsmqSales.csproj", "{340D8ABA-F9A0-4B32-A709-2407D201736C}"
 EndProject

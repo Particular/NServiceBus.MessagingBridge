@@ -17,13 +17,13 @@
             this IHostBuilder hostBuilder,
             Action<RouterConfiguration> routerConfigurationAction)
         {
-            return hostBuilder.UseRouter((_, rc) => routerConfigurationAction(rc));
+            return hostBuilder.UseNServiceBusBridge((_, rc) => routerConfigurationAction(rc));
         }
 
         /// <summary>
         /// Configures the host to start the bridge
         /// </summary>
-        public static IHostBuilder UseRouter(
+        public static IHostBuilder UseNServiceBusBridge(
         this IHostBuilder hostBuilder,
         Action<HostBuilderContext, RouterConfiguration> routerConfigurationAction)
         {

@@ -15,7 +15,7 @@ class Program
                  logging.AddConsole();
                  logging.AddEventLog();
              })
-            .UseRouter((ctx, rc) =>
+            .UseNServiceBusBridge((ctx, rc) =>
             {
                 // demo use of IConfiguration
                 var settings = ctx.Configuration.GetSection("Bridge").Get<BridgeSettings>();
