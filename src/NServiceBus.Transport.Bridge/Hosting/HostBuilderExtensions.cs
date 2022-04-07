@@ -41,7 +41,7 @@
                     return routerConfiguration;
                 });
                 serviceCollection.AddSingleton(deferredLoggerFactory);
-                serviceCollection.AddSingleton<IHostedService, RouterHostedService>();
+                serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
                 serviceCollection.AddSingleton<StartableRouter>();
                 serviceCollection.AddTransient<EndpointProxy>();
             });

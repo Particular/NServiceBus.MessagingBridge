@@ -4,9 +4,9 @@ using Microsoft.Extensions.Hosting;
 using NServiceBus.Logging;
 using ILoggerFactory = Microsoft.Extensions.Logging.ILoggerFactory;
 
-class RouterHostedService : IHostedService
+class BridgeHostedService : IHostedService
 {
-    public RouterHostedService(
+    public BridgeHostedService(
         StartableRouter startableRouter,
         ILoggerFactory loggerFactory,
         DeferredLoggerFactory deferredLoggerFactory)
