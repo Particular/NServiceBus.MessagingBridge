@@ -2,4 +2,3 @@
 {
     public IConfigureTransportTestExecution CreateTransportConfiguration() => new ConfigureMsmqTransportTestExecution();
 }
-
