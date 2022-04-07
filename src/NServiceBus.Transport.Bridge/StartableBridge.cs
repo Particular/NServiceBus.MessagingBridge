@@ -5,12 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NServiceBus.Transport.Bridge;
 
-public class StartableRouter
+class StartableBridge : IStartableBridge
 {
-    public StartableRouter(
+    public StartableBridge(
         RouterConfiguration configuration,
-        ILogger<StartableRouter> logger,
+        ILogger<StartableBridge> logger,
         IServiceProvider serviceProvider)
     {
         this.configuration = configuration;
@@ -18,7 +19,7 @@ public class StartableRouter
         this.serviceProvider = serviceProvider;
     }
 
-    public async Task<RunningBridge> Start(CancellationToken cancellationToken = default)
+    public async Task<IStoppableBridge> Start(CancellationToken cancellationToken = default)
     {
         var transports = configuration.TransportConfigurations;
         var proxies = new List<EndpointProxy>();
@@ -56,6 +57,6 @@ public class StartableRouter
     }
 
     readonly RouterConfiguration configuration;
-    readonly ILogger<StartableRouter> logger;
+    readonly ILogger<StartableBridge> logger;
     readonly IServiceProvider serviceProvider;
 }

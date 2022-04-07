@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NServiceBus.Transport.Bridge;
 
-public class RunningBridge
+class RunningBridge : IStoppableBridge
 {
     public RunningBridge(List<EndpointProxy> endpointProxies) => this.endpointProxies = endpointProxies;
 

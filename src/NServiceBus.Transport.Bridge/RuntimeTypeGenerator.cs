@@ -4,14 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-/// <summary>
-/// Converts type names to type objects.
-/// </summary>
-public class RuntimeTypeGenerator
+class RuntimeTypeGenerator
 {
-    /// <summary>
-    /// Returns the type object for a given message type string.
-    /// </summary>
     public Type GetType(string messageType)
     {
         var knownType = Type.GetType(messageType, false);

@@ -4,6 +4,7 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using NServiceBus.Logging;
+    using NServiceBus.Transport.Bridge;
 
     /// <summary>
     /// Extension methods to configure the bridge for the .NET Core generic host.
@@ -42,7 +43,7 @@
                 });
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
-                serviceCollection.AddSingleton<StartableRouter>();
+                serviceCollection.AddSingleton<IStartableBridge, StartableBridge>();
                 serviceCollection.AddTransient<EndpointProxy>();
             });
 

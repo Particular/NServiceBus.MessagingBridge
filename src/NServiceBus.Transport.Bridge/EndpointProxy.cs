@@ -12,7 +12,7 @@ using NServiceBus.Transport;
 using NServiceBus.Unicast.Messages;
 using NServiceBus.Unicast.Transport;
 
-public class EndpointProxy
+class EndpointProxy
 {
     public EndpointProxy(
         RouterConfiguration configuration,
