@@ -9,7 +9,6 @@ using NServiceBus.Extensibility;
 using NServiceBus.Raw;
 using NServiceBus.Routing;
 using NServiceBus.Transport;
-using NServiceBus.Transport.Bridge;
 using NServiceBus.Unicast.Messages;
 using NServiceBus.Unicast.Transport;
 
@@ -24,12 +23,12 @@ class EndpointProxy
     }
 
     public async Task Start(
-        TransportConfiguration.Endpoint endpointToProxy,
-        TransportConfiguration transportConfiguration,
+        BridgeEndpoint endpointToProxy,
+        BridgeTransportConfiguration transportConfiguration,
         CancellationToken cancellationToken = default)
     {
         var transportEndpointConfiguration = RawEndpointConfiguration.Create(
-        endpointToProxy.QueueAddress.BaseAddress,
+        endpointToProxy.Name,
         transportConfiguration.TransportDefinition,
         (mt, _, ct) => MoveMessage(endpointToProxy.QueueAddress, mt, ct),
         transportConfiguration.ErrorQueue);
@@ -51,7 +50,7 @@ class EndpointProxy
     public Task Stop(CancellationToken cancellationToken = default) => runningRawEndpoint.Stop(cancellationToken);
 
     async Task SubscribeToEvents(
-        IList<TransportConfiguration.Subscription> subscriptions,
+        IList<BridgeEndpointSubscription> subscriptions,
         CancellationToken cancellationToken)
     {
         if (!subscriptions.Any())

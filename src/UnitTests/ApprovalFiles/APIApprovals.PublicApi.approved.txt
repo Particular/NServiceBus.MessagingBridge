@@ -4,7 +4,35 @@ namespace NServiceBus
     public class BridgeConfiguration
     {
         public BridgeConfiguration() { }
-        public NServiceBus.Transport.Bridge.TransportConfiguration AddTransport(NServiceBus.Transport.TransportDefinition transportDefinition, string name = null, int concurrency = 1, string errorQueue = "error", bool autoCreateQueues = true) { }
+        public void AddTransport(NServiceBus.BridgeTransportConfiguration transportConfiguration) { }
+    }
+    public class BridgeEndpoint
+    {
+        public BridgeEndpoint(NServiceBus.Transport.QueueAddress queueAddress) { }
+        public BridgeEndpoint(string name) { }
+        public string Name { get; }
+        public NServiceBus.Transport.QueueAddress QueueAddress { get; }
+        public void RegisterPublisher(string eventTypeFullName, string publisher) { }
+        public void RegisterPublisher(string publisher, System.Type eventType) { }
+        public void RegisterPublisher<T>(string publisher) { }
+    }
+    public class BridgeEndpointSubscription
+    {
+        public BridgeEndpointSubscription(string eventTypeFullName, string publisher) { }
+        public string EventTypeFullName { get; }
+        public string Publisher { get; }
+    }
+    public class BridgeTransportConfiguration
+    {
+        public BridgeTransportConfiguration(NServiceBus.Transport.TransportDefinition transportDefinition) { }
+        public bool AutoCreateQueues { get; set; }
+        public int Concurrency { get; set; }
+        public string ErrorQueue { get; set; }
+        public string Name { get; set; }
+        public NServiceBus.Transport.TransportDefinition TransportDefinition { get; }
+        public void HasEndpoint(NServiceBus.BridgeEndpoint endpoint) { }
+        public void HasEndpoint(NServiceBus.Transport.QueueAddress queueAddress) { }
+        public void HasEndpoint(string endpoint) { }
     }
     public static class HostBuilderExtensions
     {
@@ -21,31 +49,5 @@ namespace NServiceBus.Transport.Bridge
     public interface IStoppableBridge
     {
         System.Threading.Tasks.Task Stop(System.Threading.CancellationToken cancellationToken = default);
-    }
-    public class TransportConfiguration
-    {
-        public TransportConfiguration(NServiceBus.Transport.TransportDefinition transportDefinition) { }
-        public bool AutoCreateQueues { get; set; }
-        public int Concurrency { get; set; }
-        public string ErrorQueue { get; set; }
-        public string Name { get; set; }
-        public NServiceBus.Transport.TransportDefinition TransportDefinition { get; }
-        public NServiceBus.Transport.Bridge.TransportConfiguration HasEndpoint(NServiceBus.Transport.QueueAddress queueAddress) { }
-        public NServiceBus.Transport.Bridge.TransportConfiguration HasEndpoint(string endpoint) { }
-        public NServiceBus.Transport.Bridge.TransportConfiguration RegisterPublisher(string eventTypeFullName, string publisher) { }
-        public NServiceBus.Transport.Bridge.TransportConfiguration RegisterPublisher(System.Type eventType, string publisher) { }
-        public class Endpoint
-        {
-            public Endpoint() { }
-            public string Name { get; set; }
-            public NServiceBus.Transport.QueueAddress QueueAddress { get; set; }
-            public System.Collections.Generic.List<NServiceBus.Transport.Bridge.TransportConfiguration.Subscription> Subscriptions { get; set; }
-        }
-        public class Subscription
-        {
-            public Subscription() { }
-            public string EventTypeFullName { get; set; }
-            public string Publisher { get; set; }
-        }
     }
 }

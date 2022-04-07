@@ -3,7 +3,6 @@ using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.Features;
 using NUnit.Framework;
-using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
 class Subscribing : BridgeAcceptanceTest
 {
@@ -27,12 +26,12 @@ class Subscribing : BridgeAcceptanceTest
                 }))
             .WithBridge(bridgeConfiguration =>
             {
-                bridgeConfiguration.AddTransport(TransportBeingTested)
-                    .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))
-                        .RegisterPublisher(typeof(MyEvent).FullName, Conventions.EndpointNamingConvention(typeof(Publisher)));
+                var bridgeTransportConfiguration = new BridgeTransportConfiguration(TransportBeingTested);
 
-                AddTestTransport(bridgeConfiguration)
-                    .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Publisher)));
+                bridgeTransportConfiguration.AddTestEndpoint<Subscriber>();
+                bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
+
+                bridgeConfiguration.AddTestTransportEndpoint<Publisher>();
             })
             .Done(c => c.SubscriberGotEvent)
             .Run().ConfigureAwait(false);

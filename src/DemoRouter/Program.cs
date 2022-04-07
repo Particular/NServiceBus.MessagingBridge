@@ -18,16 +18,33 @@ class Program
             .UseNServiceBusBridge((ctx, rc) =>
             {
                 // demo use of IConfiguration
-                var settings = ctx.Configuration.GetSection("Bridge").Get<BridgeSettings>();
+                var settings = ctx.Configuration.GetSection("Bridge").Get<MyBridgeSettings>();
 
-                rc.AddTransport(new MsmqTransport(), concurrency: settings.Concurrency, errorQueue: settings.ErrorQueue)
-                    .HasEndpoint("Sales") //.AtMachine("ServerA")
-                    .HasEndpoint("Finance") //.AtMachine("ServerB");
-                    .RegisterPublisher("MyNamespace.MyEvent", "Shipping");
+                var msmqTransport = new BridgeTransportConfiguration(new MsmqTransport())
+                {
+                    Concurrency = settings.Concurrency,
+                    ErrorQueue = settings.ErrorQueue
+                };
 
-                rc.AddTransport(new LearningTransport(), concurrency: settings.Concurrency, errorQueue: settings.ErrorQueue)
-                    .HasEndpoint("Shipping")
-                    .HasEndpoint("Marketing");
+                var financeEndpoint = new BridgeEndpoint("Finance");
+
+                financeEndpoint.RegisterPublisher("MyNamespace.MyEvent", "Shipping");
+
+                msmqTransport.HasEndpoint(financeEndpoint);
+                msmqTransport.HasEndpoint("Sales");
+
+                rc.AddTransport(msmqTransport);
+
+                var learningTransport = new BridgeTransportConfiguration(new MsmqTransport())
+                {
+                    Concurrency = settings.Concurrency,
+                    ErrorQueue = settings.ErrorQueue
+                };
+
+                learningTransport.HasEndpoint("Shipping");
+                learningTransport.HasEndpoint("Marketing");
+
+                rc.AddTransport(learningTransport);
             })
             .Build()
             .RunAsync().ConfigureAwait(false);
