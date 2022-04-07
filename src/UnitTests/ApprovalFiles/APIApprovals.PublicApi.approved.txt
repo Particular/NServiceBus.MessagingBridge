@@ -1,0 +1,77 @@
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(@"UnitTests, PublicKey=00240000048000009400000006020000002400005253413100040000010001007f16e21368ff041183fab592d9e8ed37e7be355e93323147a1d29983d6e591b04282e4da0c9e18bd901e112c0033925eb7d7872c2f1706655891c5c9d57297994f707d16ee9a8f40d978f064ee1ffc73c0db3f4712691b23bf596f75130f4ec978cf78757ec034625a5f27e6bb50c618931ea49f6f628fd74271c32959efb1c5")]
+public class Endpoint
+{
+    public Endpoint() { }
+    public string Name { get; set; }
+    public NServiceBus.Transport.QueueAddress QueueAddress { get; set; }
+    public System.Collections.Generic.List<Subscription> Subscriptions { get; set; }
+}
+public class EndpointProxy
+{
+    public EndpointProxy(FinalizedRouterConfiguration configuration, Microsoft.Extensions.Logging.ILogger<EndpointProxy> logger) { }
+    public System.Threading.Tasks.Task Start(Endpoint endpointToProxy, TransportConfiguration transportConfiguration, System.Threading.CancellationToken cancellationToken = default) { }
+    public System.Threading.Tasks.Task Stop(System.Threading.CancellationToken cancellationToken = default) { }
+}
+public class FinalizedRouterConfiguration
+{
+    public FinalizedRouterConfiguration(System.Collections.Generic.List<TransportConfiguration> transports) { }
+    public System.Collections.Generic.List<TransportConfiguration> Transports { get; }
+}
+public class RouterConfiguration
+{
+    public RouterConfiguration() { }
+    public TransportConfiguration AddTransport(NServiceBus.Transport.TransportDefinition transportDefinition, string name = null, int concurrency = 1, string errorQueue = "error", bool autoCreateQueues = true) { }
+    public FinalizedRouterConfiguration Finalize(Microsoft.Extensions.Configuration.IConfiguration configuration, Microsoft.Extensions.Logging.ILogger<RouterConfiguration> logger) { }
+}
+public class RouterSettings
+{
+    public RouterSettings() { }
+    public System.Collections.Generic.List<RouterSettings.Transport> Transports { get; set; }
+    public class Transport
+    {
+        public Transport() { }
+        public int Concurrency { get; set; }
+        public string Name { get; set; }
+    }
+}
+public class RunningRouter
+{
+    public RunningRouter(System.Collections.Generic.List<EndpointProxy> endpointProxies) { }
+    public System.Threading.Tasks.Task Stop(System.Threading.CancellationToken cancellationToken = default) { }
+}
+public class RuntimeTypeGenerator
+{
+    public RuntimeTypeGenerator() { }
+    public System.Type GetType(string messageType) { }
+}
+public class StartableRouter
+{
+    public StartableRouter(FinalizedRouterConfiguration configuration, Microsoft.Extensions.Logging.ILogger<StartableRouter> logger, System.IServiceProvider serviceProvider) { }
+    public System.Threading.Tasks.Task<RunningRouter> Start(System.Threading.CancellationToken cancellationToken = default) { }
+}
+public class Subscription
+{
+    public Subscription() { }
+    public string EventTypeFullName { get; set; }
+    public string Publisher { get; set; }
+}
+public class TransportConfiguration
+{
+    public TransportConfiguration(NServiceBus.Transport.TransportDefinition transportDefinition) { }
+    public bool AutoCreateQueues { get; set; }
+    public int Concurrency { get; set; }
+    public string ErrorQueue { get; set; }
+    public string Name { get; set; }
+    public NServiceBus.Transport.TransportDefinition TransportDefinition { get; }
+    public TransportConfiguration HasEndpoint(NServiceBus.Transport.QueueAddress queueAddress) { }
+    public TransportConfiguration HasEndpoint(string endpoint) { }
+    public TransportConfiguration RegisterPublisher(string eventTypeFullName, string publisher) { }
+    public TransportConfiguration RegisterPublisher(System.Type eventType, string publisher) { }
+}
+namespace NServiceBus
+{
+    public static class HostBuilderExtensions
+    {
+        public static Microsoft.Extensions.Hosting.IHostBuilder UseRouter(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder, System.Action<RouterConfiguration> routerConfigurationAction) { }
+    }
+}
