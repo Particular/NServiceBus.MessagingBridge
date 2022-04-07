@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus.Transport;
 
-public class RouterTransportDefinition
+public class BridgeTransportDefinition
 {
     public TransportDefinition TransportDefinition { get; set; }
 

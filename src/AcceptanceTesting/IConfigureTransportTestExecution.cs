@@ -6,7 +6,7 @@ using NServiceBus.AcceptanceTesting.Support;
 
 public interface IConfigureTransportTestExecution
 {
-    RouterTransportDefinition GetRouterTransport();
+    BridgeTransportDefinition GetBridgeTransport();
 
     Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata);
 }

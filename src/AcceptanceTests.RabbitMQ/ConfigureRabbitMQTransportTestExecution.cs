@@ -11,9 +11,9 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
     readonly string connectionString = Environment.GetEnvironmentVariable("RabbitMQTransport_ConnectionString") ?? "host=localhost";
     TestableRabbitMQTransport transport;
 
-    public RouterTransportDefinition GetRouterTransport()
+    public BridgeTransportDefinition GetBridgeTransport()
     {
-        return new RouterTransportDefinition
+        return new BridgeTransportDefinition
         {
             TransportDefinition = new TestableRabbitMQTransport(
                 new ConventionalRoutingTopology(true),

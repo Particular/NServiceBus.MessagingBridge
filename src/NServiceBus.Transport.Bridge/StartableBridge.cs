@@ -5,12 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NServiceBus;
 using NServiceBus.Transport.Bridge;
 
 class StartableBridge : IStartableBridge
 {
     public StartableBridge(
-        RouterConfiguration configuration,
+        BridgeConfiguration configuration,
         ILogger<StartableBridge> logger,
         IServiceProvider serviceProvider)
     {
@@ -56,7 +57,7 @@ class StartableBridge : IStartableBridge
         return new RunningBridge(proxies);
     }
 
-    readonly RouterConfiguration configuration;
+    readonly BridgeConfiguration configuration;
     readonly ILogger<StartableBridge> logger;
     readonly IServiceProvider serviceProvider;
 }

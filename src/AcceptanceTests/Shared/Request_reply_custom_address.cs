@@ -5,7 +5,7 @@ using NServiceBus.AcceptanceTesting.Customization;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-public class Request_reply_custom_address : RouterAcceptanceTest
+public class Request_reply_custom_address : BridgeAcceptanceTest
 {
     [Test]
     public async Task Should_get_the_reply()
@@ -22,7 +22,7 @@ public class Request_reply_custom_address : RouterAcceptanceTest
                         }))
                     .WithEndpoint<ReplyingEndpoint>()
                     .WithEndpoint<ReplyReceivingEndpoint>()
-                    .WithRouter(routerConfiguration =>
+                    .WithBridge(routerConfiguration =>
                     {
                         routerConfiguration.AddTransport(TransportBeingTested)
                             .HasEndpoint(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)))

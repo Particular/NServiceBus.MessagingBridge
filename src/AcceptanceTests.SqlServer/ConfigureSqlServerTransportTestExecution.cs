@@ -10,13 +10,13 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
 {
     readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString") ?? @"Data Source=.\SQLEXPRESS;Initial Catalog=nservicebus;Integrated Security=True";
 
-    public RouterTransportDefinition GetRouterTransport()
+    public BridgeTransportDefinition GetBridgeTransport()
     {
         var transportDefinition = new TestableSqlServerTransport(connectionString)
         {
             TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive
         };
-        return new RouterTransportDefinition
+        return new BridgeTransportDefinition
         {
             TransportDefinition = transportDefinition,
             Cleanup = (ct) => Cleanup(transportDefinition, ct)

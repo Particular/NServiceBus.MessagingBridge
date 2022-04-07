@@ -1,16 +1,17 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NServiceBus.AcceptanceTesting.Customization;
+using NServiceBus;
 using NServiceBus.Transport;
+using NServiceBus.Transport.Bridge;
 using NUnit.Framework;
 
-public class RouterAcceptanceTest
+public class BridgeAcceptanceTest
 {
     [SetUp]
     public void SetUp()
     {
-        Conventions.EndpointNamingConvention = t =>
+        NServiceBus.AcceptanceTesting.Customization.Conventions.EndpointNamingConvention = t =>
         {
             var classAndEndpoint = t.FullName.Split('.').Last();
 
@@ -26,22 +27,22 @@ public class RouterAcceptanceTest
         };
 
         var transportConfig = TestSuiteConfiguration.Current.CreateTransportConfiguration();
-        routerTransportDefinition = transportConfig.GetRouterTransport();
+        BridgeTransportDefinition = transportConfig.GetBridgeTransport();
     }
 
     [TearDown]
     public Task TearDown()
     {
-        return routerTransportDefinition.Cleanup(CancellationToken.None);
+        return BridgeTransportDefinition.Cleanup(CancellationToken.None);
     }
 
-    protected TransportConfiguration AddTestTransport(RouterConfiguration routerConfiguration)
+    protected TransportConfiguration AddTestTransport(BridgeConfiguration routerConfiguration)
     {
         return routerConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition(), "right");
     }
 
-    protected TransportDefinition TransportBeingTested => routerTransportDefinition.TransportDefinition;
+    protected TransportDefinition TransportBeingTested => BridgeTransportDefinition.TransportDefinition;
     protected TransportDefinition TestTransport;
 
-    RouterTransportDefinition routerTransportDefinition;
+    BridgeTransportDefinition BridgeTransportDefinition;
 }

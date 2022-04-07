@@ -5,7 +5,7 @@ using NServiceBus.Features;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-class Subscribing : RouterAcceptanceTest
+class Subscribing : BridgeAcceptanceTest
 {
     [Test]
     public async Task Should_get_the_event()
@@ -25,7 +25,7 @@ class Subscribing : RouterAcceptanceTest
 
                     return session.Publish(new MyEvent(), options);
                 }))
-            .WithRouter(routerConfiguration =>
+            .WithBridge(routerConfiguration =>
             {
                 routerConfiguration.AddTransport(TransportBeingTested)
                     .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)))

@@ -8,9 +8,9 @@ using NUnit.Framework;
 
 class ConfigureLearningTransportTestExecution : IConfigureTransportTestExecution
 {
-    public RouterTransportDefinition GetRouterTransport()
+    public BridgeTransportDefinition GetBridgeTransport()
     {
-        return new RouterTransportDefinition
+        return new BridgeTransportDefinition
         {
             TransportDefinition = new LearningTransport { StorageDirectory = GetStorageDir() },
             Cleanup = (ct) => Cleanup(ct)

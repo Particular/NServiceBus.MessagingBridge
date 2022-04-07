@@ -4,13 +4,13 @@ using NServiceBus.AcceptanceTesting;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-class Publishing : RouterAcceptanceTest
+class Publishing : BridgeAcceptanceTest
 {
     [Test]
     public async Task Subscriber_should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
-            .WithRouter(routerConfiguration =>
+            .WithBridge(routerConfiguration =>
             {
                 routerConfiguration.AddTransport(TransportBeingTested)
                     .HasEndpoint(Conventions.EndpointNamingConvention(typeof(Publisher)));

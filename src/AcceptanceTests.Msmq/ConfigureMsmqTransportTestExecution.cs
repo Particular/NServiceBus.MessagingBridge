@@ -9,11 +9,11 @@ using NServiceBus.AcceptanceTesting.Support;
 
 class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
 {
-    public RouterTransportDefinition GetRouterTransport()
+    public BridgeTransportDefinition GetBridgeTransport()
     {
         var transportDefinition = new TestableMsmqTransport();
 
-        return new RouterTransportDefinition
+        return new BridgeTransportDefinition
         {
             TransportDefinition = transportDefinition,
             Cleanup = (ct) => Cleanup(transportDefinition, ct)
