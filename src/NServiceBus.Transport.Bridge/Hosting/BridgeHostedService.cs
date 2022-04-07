@@ -34,5 +34,5 @@ class BridgeHostedService : IHostedService
     readonly DeferredLoggerFactory deferredLoggerFactory;
     readonly ILoggerFactory loggerFactory;
 
-    RunningRouter router;
+    RunningBridge router;
 }

@@ -18,7 +18,7 @@ public class StartableRouter
         this.serviceProvider = serviceProvider;
     }
 
-    public async Task<RunningRouter> Start(CancellationToken cancellationToken = default)
+    public async Task<RunningBridge> Start(CancellationToken cancellationToken = default)
     {
         var transports = configuration.TransportConfigurations;
         var proxies = new List<EndpointProxy>();
@@ -52,7 +52,7 @@ public class StartableRouter
 
         logger.LogInformation("Router startup complete");
 
-        return new RunningRouter(proxies);
+        return new RunningBridge(proxies);
     }
 
     readonly RouterConfiguration configuration;

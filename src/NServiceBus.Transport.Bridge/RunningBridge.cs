@@ -2,9 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-public class RunningRouter
+public class RunningBridge
 {
-    public RunningRouter(List<EndpointProxy> endpointProxies) => this.endpointProxies = endpointProxies;
+    public RunningBridge(List<EndpointProxy> endpointProxies) => this.endpointProxies = endpointProxies;
 
     public async Task Stop(CancellationToken cancellationToken = default)
     {
