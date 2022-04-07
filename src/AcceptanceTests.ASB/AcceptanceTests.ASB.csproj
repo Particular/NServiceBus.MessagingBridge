@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+        <PackageReference Include="NServiceBus" Version="8.0.0-beta.1" />
+        <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.0.0-beta.1" />
+        <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.0.0-beta.1" />
+        <PackageReference Include="NUnit" Version="3.13.3" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+        <PackageReference Include="coverlet.collector" Version="3.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Include="..\AcceptanceTests\Shared\Publishing.cs">
+        <Link>Publishing.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Request_reply.cs">
+        <Link>Request_reply.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Request_reply_custom_address.cs">
+        <Link>Request_reply_custom_address.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Subscribing.cs">
+        <Link>Subscribing.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Subscribing_using_type.cs">
+        <Link>Subscribing_using_type.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Support\BridgeAcceptanceTest.cs">
+        <Link>Support\BridgeAcceptanceTest.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Support\DefaultPublisher.cs">
+        <Link>Support\DefaultPublisher.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Support\DefaultServer.cs">
+        <Link>Support\DefaultServer.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Support\DefaultTestPublisher.cs">
+        <Link>Support\DefaultTestPublisher.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Support\DefaultTestServer.cs">
+        <Link>Support\DefaultTestServer.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Support\ITestSuiteConfiguration.cs">
+        <Link>Support\ITestSuiteConfiguration.cs</Link>
+      </Compile>
+      <Compile Include="..\AcceptanceTests\Shared\Support\TestSuiteConfiguration.cs">
+        <Link>Support\TestSuiteConfiguration.cs</Link>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AcceptanceTesting\AcceptanceTesting.csproj" />
+      <ProjectReference Include="..\NServiceBus.Transport.Bridge\NServiceBus.Transport.Bridge.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -35,6 +35,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.RabbitMQ", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{F2DDEC46-20A1-4D33-BF7F-270EB1263511}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcceptanceTests.ASB", "AcceptanceTests.ASB\AcceptanceTests.ASB.csproj", "{121DAD2E-C872-4921-BA6F-9F5772784829}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,10 @@ Global
 		{F2DDEC46-20A1-4D33-BF7F-270EB1263511}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2DDEC46-20A1-4D33-BF7F-270EB1263511}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2DDEC46-20A1-4D33-BF7F-270EB1263511}.Release|Any CPU.Build.0 = Release|Any CPU
+		{121DAD2E-C872-4921-BA6F-9F5772784829}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{121DAD2E-C872-4921-BA6F-9F5772784829}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{121DAD2E-C872-4921-BA6F-9F5772784829}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{121DAD2E-C872-4921-BA6F-9F5772784829}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,6 +119,7 @@ Global
 		{89B29A1A-D92E-4099-97D3-48CCA08D0025} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 		{DBC0573A-4B20-4176-98A2-9B05F924D4B4} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 		{F2DDEC46-20A1-4D33-BF7F-270EB1263511} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
+		{121DAD2E-C872-4921-BA6F-9F5772784829} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1B296A99-AC69-4840-BC9B-502101AE9B76}

@@ -1,10 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Transport;
 using NServiceBus.Transport.Bridge;
 using NUnit.Framework;
+#pragma warning disable CS8618
 
 public class BridgeAcceptanceTest
 {
@@ -13,6 +15,11 @@ public class BridgeAcceptanceTest
     {
         NServiceBus.AcceptanceTesting.Customization.Conventions.EndpointNamingConvention = t =>
         {
+            if (string.IsNullOrWhiteSpace(t.FullName))
+            {
+                throw new InvalidOperationException($"The type {nameof(t)} has no fullname to work with.");
+            }
+
             var classAndEndpoint = t.FullName.Split('.').Last();
 
             var testName = classAndEndpoint.Split('+').First();
@@ -27,13 +34,13 @@ public class BridgeAcceptanceTest
         };
 
         var transportConfig = TestSuiteConfiguration.Current.CreateTransportConfiguration();
-        BridgeTransportDefinition = transportConfig.GetBridgeTransport();
+        bridgeTransportDefinition = transportConfig.GetBridgeTransport();
     }
 
     [TearDown]
     public Task TearDown()
     {
-        return BridgeTransportDefinition.Cleanup(CancellationToken.None);
+        return bridgeTransportDefinition.Cleanup(CancellationToken.None);
     }
 
     protected TransportConfiguration AddTestTransport(BridgeConfiguration bridgeConfiguration)
@@ -41,8 +48,8 @@ public class BridgeAcceptanceTest
         return bridgeConfiguration.AddTransport(DefaultTestServer.GetTestTransportDefinition(), "right");
     }
 
-    protected TransportDefinition TransportBeingTested => BridgeTransportDefinition.TransportDefinition;
+    protected TransportDefinition TransportBeingTested => bridgeTransportDefinition.TransportDefinition;
     protected TransportDefinition TestTransport;
 
-    BridgeTransportDefinition BridgeTransportDefinition;
+    BridgeTransportDefinition bridgeTransportDefinition;
 }
