@@ -20,10 +20,10 @@
 
         public void RegisterPublisher<T>(string publisher)
         {
-            RegisterPublisher(publisher, typeof(T));
+            RegisterPublisher(typeof(T), publisher);
         }
 
-        public void RegisterPublisher(string publisher, Type eventType)
+        public void RegisterPublisher(Type eventType, string publisher)
         {
             RegisterPublisher(eventType.FullName, publisher);
         }
