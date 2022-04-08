@@ -32,7 +32,7 @@ public class BridgeComponent<TContext> : IComponentBehavior
 
         public override string Name => "Bridge";
 
-        public override async Task ComponentsStarted(CancellationToken cancellationToken = default)
+        public override async Task Start(CancellationToken cancellationToken = default)
         {
             var hostBuilder = new HostBuilder();
 

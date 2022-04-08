@@ -12,7 +12,7 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
     {
         var ctx = await Scenario.Define<Context>()
                     .WithEndpoint<SendingEndpoint>(c => c
-                        .When(b =>
+                        .When(cc => cc.EndpointsStarted, (b, _) =>
                         {
                             var sendOptions = new SendOptions();
 
