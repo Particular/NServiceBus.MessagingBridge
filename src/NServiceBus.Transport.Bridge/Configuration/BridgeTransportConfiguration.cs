@@ -40,8 +40,5 @@
         }
 
         internal List<BridgeEndpoint> Endpoints { get; private set; }
-
-        //TODO: move this elsewhere
-        internal EndpointProxy Proxy { get; set; }
     }
 }

@@ -1,19 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus.Transport.Bridge;
 
 class RunningBridge : IStoppableBridge
 {
-    public RunningBridge(List<EndpointProxy> endpointProxies) => this.endpointProxies = endpointProxies;
+    public RunningBridge(EndpointProxyRegistry endpointProxyRegistry) => this.endpointProxyRegistry = endpointProxyRegistry;
 
     public async Task Stop(CancellationToken cancellationToken = default)
     {
-        foreach (var endpoint in endpointProxies)
+        foreach (var endpointProxy in endpointProxyRegistry.StoppableEndpoints)
         {
-            await endpoint.Stop(cancellationToken).ConfigureAwait(false);
+            await endpointProxy.Stop(cancellationToken).ConfigureAwait(false);
         }
     }
 
-    readonly List<EndpointProxy> endpointProxies;
+    readonly EndpointProxyRegistry endpointProxyRegistry;
 }

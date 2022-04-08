@@ -6,58 +6,74 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
+using NServiceBus.Raw;
 using NServiceBus.Transport.Bridge;
 
 class StartableBridge : IStartableBridge
 {
     public StartableBridge(
         BridgeConfiguration configuration,
-        ILogger<StartableBridge> logger,
-        IServiceProvider serviceProvider)
+        EndpointProxyFactory endpointProxyFactory,
+        EndpointProxyRegistry endpointProxyRegistry,
+        SubscriptionManager subscriptionManager,
+        ILogger<StartableBridge> logger)
     {
         this.configuration = configuration;
+        this.endpointProxyFactory = endpointProxyFactory;
+        this.endpointProxyRegistry = endpointProxyRegistry;
+        this.subscriptionManager = subscriptionManager;
         this.logger = logger;
-        this.serviceProvider = serviceProvider;
     }
 
     public async Task<IStoppableBridge> Start(CancellationToken cancellationToken = default)
     {
         var transports = configuration.TransportConfigurations;
-        var proxies = new List<EndpointProxy>();
+        var startableEndpointProxies = new Dictionary<string, IStartableRawEndpoint>();
 
-        // Loop through all configured transports
+        // create required proxy endpoints on all transports
         foreach (var transportConfiguration in transports)
         {
             logger.LogInformation("Starting proxies for transport {name}", transportConfiguration.Name);
 
-            // Get all endpoint-names that I need to fake (host)
-            // That is all endpoint-names that I don't have on this transport.
+            // get all endpoints that we need to proxy in this transport, ie all that don't exist this transport.
             var endpoints = transports.Where(s => s != transportConfiguration).SelectMany(s => s.Endpoints);
 
-            // Go through all endpoints that we need to fake on our transport
+            // create the proxy and subscribe it to configured events
             foreach (var endpointToSimulate in endpoints)
             {
-                var endpointProxy = serviceProvider.GetRequiredService<EndpointProxy>();
+                var startableEndpointProxy = await endpointProxyFactory.CreateProxy(
+                   endpointToSimulate,
+                   transportConfiguration,
+                   cancellationToken)
+                   .ConfigureAwait(false);
 
-                await endpointProxy.Start(endpointToSimulate, transportConfiguration, cancellationToken)
+                await subscriptionManager.SubscribeToEvents(startableEndpointProxy, endpointToSimulate.Subscriptions, cancellationToken)
                     .ConfigureAwait(false);
 
-                // Find the transport that has my TransportDefinition and attach it
-                transports.Single(s => s.TransportDefinition == transportConfiguration.TransportDefinition)
-                    .Proxy = endpointProxy;
+                logger.LogInformation("Proxy for endpoint {endpoint} created on {transport}", endpointToSimulate.Name, transportConfiguration.Name);
 
-                proxies.Add(endpointProxy);
-
-                logger.LogInformation("Proxy for endpoint {endpoint} started on {transport}", endpointToSimulate.Name, transportConfiguration.Name);
+                startableEndpointProxies.Add(endpointToSimulate.Name, startableEndpointProxy);
             }
+        }
+
+        // now that all proxies are created and subscriptions are setup we can
+        // start them up to make messages start flowing across the transports
+        foreach (var endpointProxy in startableEndpointProxies)
+        {
+            var stoppableRawEndpoint = await endpointProxy.Value.Start(cancellationToken)
+                .ConfigureAwait(false);
+
+            endpointProxyRegistry.AddProxy(endpointProxy.Key, stoppableRawEndpoint);
         }
 
         logger.LogInformation("Bridge startup complete");
 
-        return new RunningBridge(proxies);
+        return new RunningBridge(endpointProxyRegistry);
     }
 
     readonly BridgeConfiguration configuration;
+    readonly EndpointProxyFactory endpointProxyFactory;
+    readonly EndpointProxyRegistry endpointProxyRegistry;
+    readonly SubscriptionManager subscriptionManager;
     readonly ILogger<StartableBridge> logger;
-    readonly IServiceProvider serviceProvider;
 }

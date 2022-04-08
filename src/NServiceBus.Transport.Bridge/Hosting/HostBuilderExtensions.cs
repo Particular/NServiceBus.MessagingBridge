@@ -44,7 +44,10 @@
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
                 serviceCollection.AddSingleton<IStartableBridge, StartableBridge>();
-                serviceCollection.AddTransient<EndpointProxy>();
+                serviceCollection.AddSingleton<EndpointProxyFactory>();
+                serviceCollection.AddSingleton<SubscriptionManager>();
+                serviceCollection.AddSingleton<EndpointProxyRegistry>();
+                serviceCollection.AddTransient<MessageShovel>();
             });
 
             return hostBuilder;
