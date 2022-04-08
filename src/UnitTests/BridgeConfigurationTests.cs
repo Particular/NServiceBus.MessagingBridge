@@ -13,11 +13,23 @@ public class BridgeConfigurationTests
 
         configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport()));
 
-        Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
 
+        StringAssert.Contains("At least two", ex.Message);
+    }
+
+    [Test]
+    public void At_least_on_endpoint_per_endpoint_should_be_configured()
+    {
+        var configuration = new BridgeConfiguration();
+
+        configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport()));
         configuration.AddTransport(new BridgeTransportConfiguration(new SomeOtherTransport()));
 
-        configuration.Validate();
+        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+
+        StringAssert.Contains("At least one", ex.Message);
+        StringAssert.Contains("some, someother", ex.Message);
     }
 
     [Test]
