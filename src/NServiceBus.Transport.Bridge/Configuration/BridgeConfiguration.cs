@@ -17,6 +17,15 @@
             transportConfigurations.Add(transportConfiguration);
         }
 
+        internal void Validate()
+        {
+            if (transportConfigurations.Count < 2)
+            {
+                throw new InvalidOperationException("At least two transports needs to be configured");
+            }
+
+        }
+
         internal IReadOnlyCollection<BridgeTransportConfiguration> TransportConfigurations => transportConfigurations;
 
         readonly List<BridgeTransportConfiguration> transportConfigurations = new List<BridgeTransportConfiguration>();
