@@ -35,7 +35,7 @@ class Program
 
                 rc.AddTransport(msmqTransport);
 
-                var learningTransport = new BridgeTransportConfiguration(new MsmqTransport())
+                var learningTransport = new BridgeTransportConfiguration(new LearningTransport())
                 {
                     Concurrency = settings.Concurrency,
                     ErrorQueue = settings.ErrorQueue

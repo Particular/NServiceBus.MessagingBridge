@@ -33,6 +33,28 @@ public class BridgeConfigurationTests
     }
 
     [Test]
+    public void Endpoints_should_only_be_added_to_one_transport()
+    {
+        var duplicatedEndpointName = "DuplicatedEndpoint";
+        var configuration = new BridgeConfiguration();
+
+        var someTransport = new BridgeTransportConfiguration(new SomeTransport());
+
+        someTransport.HasEndpoint(duplicatedEndpointName);
+        configuration.AddTransport(someTransport);
+
+        var someOtherTransport = new BridgeTransportConfiguration(new SomeOtherTransport());
+
+        someOtherTransport.HasEndpoint(duplicatedEndpointName);
+        configuration.AddTransport(someOtherTransport);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+
+        StringAssert.Contains("Endpoints can only be associated with a single transport", ex.Message);
+        StringAssert.Contains(duplicatedEndpointName, ex.Message);
+    }
+
+    [Test]
     public void Should_require_transports_of_the_same_type_to_be_uniquely_identifiable_by_name()
     {
         var configuration = new BridgeConfiguration();

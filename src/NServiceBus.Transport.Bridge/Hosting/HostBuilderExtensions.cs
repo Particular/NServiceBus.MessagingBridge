@@ -33,14 +33,13 @@
 
             hostBuilder.ConfigureServices((hostBuilderContext, serviceCollection) =>
             {
-                serviceCollection.AddSingleton(sp =>
-                {
-                    var bridgeConfiguration = new BridgeConfiguration();
+                var bridgeConfiguration = new BridgeConfiguration();
 
-                    bridgeConfigurationAction(hostBuilderContext, bridgeConfiguration);
+                bridgeConfigurationAction(hostBuilderContext, bridgeConfiguration);
 
-                    return bridgeConfiguration;
-                });
+                bridgeConfiguration.Validate();
+
+                serviceCollection.AddSingleton(bridgeConfiguration);
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
                 serviceCollection.AddSingleton<IStartableBridge, StartableBridge>();

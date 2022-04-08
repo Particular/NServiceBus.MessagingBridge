@@ -32,6 +32,14 @@
                 var endpointNames = string.Join(", ", tranportsWithNoEndpoints);
                 throw new InvalidOperationException($"At least one endpoint needs to be configured for transport(s): {endpointNames}");
             }
+
+            var duplicatedEndpoints = transportConfigurations.SelectMany(t => t.Endpoints.Select(e => e.Name));
+
+            if (duplicatedEndpoints.Any())
+            {
+                var endpointNames = string.Join(", ", duplicatedEndpoints);
+                throw new InvalidOperationException($"Endpoints can only be associated with a single transport, please remove endpoint(s): {endpointNames} from one transport");
+            }
         }
 
         internal IReadOnlyCollection<BridgeTransportConfiguration> TransportConfigurations => transportConfigurations;
