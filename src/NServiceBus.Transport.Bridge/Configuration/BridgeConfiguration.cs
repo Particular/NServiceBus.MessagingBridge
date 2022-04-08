@@ -34,8 +34,10 @@
                 throw new InvalidOperationException($"At least one endpoint needs to be configured for transport(s): {endpointNames}");
             }
 
-            var duplicatedEndpoints = transportConfigurations
-                .SelectMany(t => t.Endpoints)
+            var allEndpoints = transportConfigurations
+                .SelectMany(t => t.Endpoints);
+
+            var duplicatedEndpoints = allEndpoints
                 .GroupBy(e => e.Name)
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key);
@@ -46,6 +48,23 @@
                 throw new InvalidOperationException($"Endpoints can only be associated with a single transport, please remove endpoint(s): {endpointNames} from one transport");
             }
 
+            var eventsWithNoRegisteredPublisher = transportConfigurations
+               .SelectMany(t => t.Endpoints)
+               .SelectMany(e => e.Subscriptions)
+               .Where(s => !allEndpoints.Any(e => e.Name == s.Publisher));
+
+            if (eventsWithNoRegisteredPublisher.Any())
+            {
+                var sb = new StringBuilder();
+
+                sb.AppendLine("Publisher not registered for events:");
+                sb.AppendLine();
+                foreach (var eventType in eventsWithNoRegisteredPublisher)
+                {
+                    sb.AppendLine($"- {eventType.EventTypeFullName}, publisher: {eventType.Publisher}");
+                }
+                throw new InvalidOperationException(sb.ToString());
+            }
 
             var eventsWithMultiplePublishers = transportConfigurations
                 .SelectMany(t => t.Endpoints)

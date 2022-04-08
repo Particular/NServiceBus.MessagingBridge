@@ -55,6 +55,31 @@ public class BridgeConfigurationTests
     }
 
     [Test]
+    public void Publisher_endpoints_should_be_registered_for_all_subscriptions()
+    {
+        var configuration = new BridgeConfiguration();
+
+        var someTransport = new BridgeTransportConfiguration(new SomeTransport());
+
+        someTransport.HasEndpoint("Publisher");
+        configuration.AddTransport(someTransport);
+
+        var someOtherTransport = new BridgeTransportConfiguration(new SomeOtherTransport());
+
+        var subscriber = new BridgeEndpoint("Subscriber");
+
+        subscriber.RegisterPublisher<MyEvent>("NotThePublisher");
+        someOtherTransport.HasEndpoint(subscriber);
+        configuration.AddTransport(someOtherTransport);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+
+        StringAssert.Contains("Publisher not registered for", ex.Message);
+        StringAssert.Contains(typeof(MyEvent).FullName, ex.Message);
+        StringAssert.Contains("NotThePublisher", ex.Message);
+    }
+
+    [Test]
     public void Subscriptions_for_same_event_should_have_matching_publisher()
     {
         var configuration = new BridgeConfiguration();
