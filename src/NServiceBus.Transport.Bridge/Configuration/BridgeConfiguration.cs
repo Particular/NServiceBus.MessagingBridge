@@ -25,6 +25,17 @@
                 throw new InvalidOperationException("At least two transports needs to be configured");
             }
 
+
+            var transactionScopeEnabledTransports = transportConfigurations
+                .Where(tc => tc.TransportDefinition.TransportTransactionMode == TransportTransactionMode.TransactionScope);
+
+            if (transactionScopeEnabledTransports.Count() > 0 &&
+                transactionScopeEnabledTransports.Count() != transportConfigurations.Count())
+            {
+                throw new InvalidOperationException("TransportTransactionMode.TransactionScope is only allowed if all transports are configured to use it");
+            }
+
+
             var tranportsWithNoEndpoints = transportConfigurations.Where(tc => !tc.Endpoints.Any())
                 .Select(t => t.Name);
 

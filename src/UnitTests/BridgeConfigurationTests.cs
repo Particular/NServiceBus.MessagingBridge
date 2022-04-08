@@ -129,6 +129,31 @@ public class BridgeConfigurationTests
         Assert.Throws<InvalidOperationException>(() => configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport())));
     }
 
+    [Test]
+    public void Should_only_allow_transaction_scope_if_all_transports_are_configured_for_it()
+    {
+        var configuration = new BridgeConfiguration();
+
+        configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport
+        {
+            TransportTransactionMode = TransportTransactionMode.TransactionScope
+        }));
+        configuration.AddTransport(new BridgeTransportConfiguration(new SomeOtherTransport
+        {
+            TransportTransactionMode = TransportTransactionMode.ReceiveOnly
+        }));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+
+        StringAssert.Contains("TransportTransactionMode.TransactionScope is only allowed if all transports are configured to use it", ex.Message);
+    }
+
+    [Test]
+    public void Should_require_receive_only_mode_if_transaction_scope_is_not_being_used()
+    {
+        //TODO: discuss with TF
+    }
+
     class SomeTransport : FakeTransport { }
     class SomeOtherTransport : FakeTransport { }
 
