@@ -13,7 +13,7 @@ namespace NServiceBus
         public string Name { get; }
         public NServiceBus.Transport.QueueAddress QueueAddress { get; }
         public void RegisterPublisher(string eventTypeFullName, string publisher) { }
-        public void RegisterPublisher(string publisher, System.Type eventType) { }
+        public void RegisterPublisher(System.Type eventType, string publisher) { }
         public void RegisterPublisher<T>(string publisher) { }
     }
     public class BridgeEndpointSubscription
