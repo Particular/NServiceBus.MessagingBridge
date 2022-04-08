@@ -10,12 +10,21 @@ public class BridgeEndpointConfigurationTests
         var endpoint = new BridgeEndpoint("Sales");
 
         endpoint.RegisterPublisher<MyEvent>("Billing");
+        endpoint.RegisterPublisher("Shipping", typeof(MyOtherEvent));
 
-        Assert.AreEqual(endpoint.Subscriptions.Single().EventTypeFullName, typeof(MyEvent).FullName);
-        Assert.AreEqual(endpoint.Subscriptions.Single().Publisher, "Billing");
+        var billingSubscription = endpoint.Subscriptions.SingleOrDefault(t => t.EventTypeFullName == typeof(MyEvent).FullName);
+        Assert.AreEqual("Billing", billingSubscription.Publisher);
+
+        var shippingSubscription = endpoint.Subscriptions.SingleOrDefault(t => t.EventTypeFullName == typeof(MyOtherEvent).FullName);
+        Assert.AreEqual("Shipping", shippingSubscription.Publisher);
+
     }
 
     class MyEvent
+    {
+    }
+
+    class MyOtherEvent
     {
     }
 }
