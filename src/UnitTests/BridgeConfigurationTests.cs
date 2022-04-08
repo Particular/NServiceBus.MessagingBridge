@@ -55,6 +55,38 @@ public class BridgeConfigurationTests
     }
 
     [Test]
+    public void Subscriptions_for_same_event_should_have_matching_publisher()
+    {
+        var configuration = new BridgeConfiguration();
+
+        var someTransport = new BridgeTransportConfiguration(new SomeTransport());
+
+        someTransport.HasEndpoint("Publisher");
+        someTransport.HasEndpoint("OtherEndpoint");
+        configuration.AddTransport(someTransport);
+
+        var someOtherTransport = new BridgeTransportConfiguration(new SomeOtherTransport());
+
+        var subscriber1 = new BridgeEndpoint("Subscriber1");
+
+        subscriber1.RegisterPublisher<MyEvent>("Publisher");
+        someOtherTransport.HasEndpoint(subscriber1);
+
+        var subscriber2 = new BridgeEndpoint("Subscriber2");
+
+        subscriber1.RegisterPublisher<MyEvent>("OtherEndpoint");
+        someOtherTransport.HasEndpoint(subscriber2);
+        configuration.AddTransport(someOtherTransport);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+
+        StringAssert.Contains("Events can only be associated with a single publisher", ex.Message);
+        StringAssert.Contains(typeof(MyEvent).FullName, ex.Message);
+        StringAssert.Contains("Publisher", ex.Message);
+        StringAssert.Contains("OtherEndpoint", ex.Message);
+    }
+
+    [Test]
     public void Should_require_transports_of_the_same_type_to_be_uniquely_identifiable_by_name()
     {
         var configuration = new BridgeConfiguration();
@@ -74,5 +106,9 @@ public class BridgeConfigurationTests
 
     class SomeTransport : FakeTransport { }
     class SomeOtherTransport : FakeTransport { }
+
+    class MyEvent
+    {
+    }
 }
 

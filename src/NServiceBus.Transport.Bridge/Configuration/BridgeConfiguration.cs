@@ -4,6 +4,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
 
     public class BridgeConfiguration
     {
@@ -33,12 +34,37 @@
                 throw new InvalidOperationException($"At least one endpoint needs to be configured for transport(s): {endpointNames}");
             }
 
-            var duplicatedEndpoints = transportConfigurations.SelectMany(t => t.Endpoints.Select(e => e.Name));
+            var duplicatedEndpoints = transportConfigurations
+                .SelectMany(t => t.Endpoints)
+                .GroupBy(e => e.Name)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key);
 
             if (duplicatedEndpoints.Any())
             {
                 var endpointNames = string.Join(", ", duplicatedEndpoints);
                 throw new InvalidOperationException($"Endpoints can only be associated with a single transport, please remove endpoint(s): {endpointNames} from one transport");
+            }
+
+
+            var eventsWithMultiplePublishers = transportConfigurations
+                .SelectMany(t => t.Endpoints)
+                .SelectMany(e => e.Subscriptions)
+                .GroupBy(e => e.EventTypeFullName)
+                .Where(g => g.GroupBy(s => s.Publisher).Count() > 1);
+
+            if (eventsWithMultiplePublishers.Any())
+            {
+                var sb = new StringBuilder();
+
+                sb.AppendLine("Events can only be associated with a single publisher, please verify subscriptions for:");
+                sb.AppendLine();
+                foreach (var eventType in eventsWithMultiplePublishers)
+                {
+                    var publishers = string.Join(", ", eventType.Select(e => e.Publisher));
+                    sb.AppendLine($"- {eventType.Key}, registered publishers: {publishers}");
+                }
+                throw new InvalidOperationException(sb.ToString());
             }
         }
 
