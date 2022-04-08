@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-2019, ubuntu-20.04 ]
-        transport: [ Learning, RabbitMQ ]
+        transport: [ Learning, RabbitMQ, AzureServiceBus ]
         include:
           - os: windows-2019
             os-name: Windows
@@ -66,6 +66,12 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_ACI_CREDENTIALS }}
           enable-AzPSSession: true
+      - name: Setup Azure Service Bus
+        if: matrix.transport == 'AzureServiceBus'
+        uses: Particular/setup-azureservicebus-action@v1.0.0
+        with:
+          connection-string-name: AzureServiceBus_ConnectionString
+          tag: ASBTransport
       - name: Setup RabbitMQ
         if: matrix.transport == 'RabbitMQ'
         id: setup-rabbitmq
