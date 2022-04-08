@@ -59,11 +59,7 @@ class SubscriptionManager
 
         subscriptionMessage.Headers[Headers.SubscriptionMessageType] = subscription.EventTypeFullName + ",Version=1.0.0";
         subscriptionMessage.Headers[Headers.ReplyToAddress] = localAddress;
-
-        if (localAddress != null)
-        {
-            subscriptionMessage.Headers[Headers.SubscriberTransportAddress] = localAddress;
-        }
+        subscriptionMessage.Headers[Headers.SubscriberTransportAddress] = localAddress;
 
         subscriptionMessage.Headers[Headers.SubscriberEndpoint] = endpointProxy.EndpointName;
         subscriptionMessage.Headers[Headers.TimeSent] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
