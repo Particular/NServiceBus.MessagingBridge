@@ -18,17 +18,15 @@ class MessageShovel
         this.targetEndpointProxyRegistry = targetEndpointProxyRegistry;
     }
 
-    public async Task TransferMessage(
-        string proxyEndpointName,
-        QueueAddress proxyQueueAddress,
-        MessageContext messageContext,
-        CancellationToken cancellationToken = default)
+    public async Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
     {
-        var targetEndpointProxy = targetEndpointProxyRegistry.GetTargetEndpointProxy(proxyEndpointName);
+        var targetEndpointProxy = targetEndpointProxyRegistry.GetTargetEndpointProxy(transferContext.ProxyEndpointName);
+
+        var messageContext = transferContext.MessageToTransfer;
 
         var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
 
-        var targetEndpointAddress = targetEndpointProxy.ToTransportAddress(proxyQueueAddress);
+        var targetEndpointAddress = targetEndpointProxy.ToTransportAddress(transferContext.ProxyQueueAddress);
 
         TransformAddressHeader(messageToSend, targetEndpointProxy, Headers.ReplyToAddress);
         TransformAddressHeader(messageToSend, targetEndpointProxy, FaultsHeaderKeys.FailedQ);

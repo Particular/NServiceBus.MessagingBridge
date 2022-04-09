@@ -69,7 +69,9 @@ public class MessageShovelTests
             "SourceEndpointAddress",
             new NServiceBus.Extensibility.ContextBag());
 
-        await shovel.TransferMessage("SourceEndpoint", new QueueAddress("SourceEndpointAddress"), messageContext, CancellationToken.None);
+        var transferContext = new TransferContext("SourceEndpoint", new QueueAddress("SourceEndpointAddress"), messageContext);
+
+        await shovel.TransferMessage(transferContext, CancellationToken.None);
 
         return targetEndpoint.OutgoingMessages;
     }

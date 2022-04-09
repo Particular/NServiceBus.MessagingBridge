@@ -20,7 +20,13 @@ class EndpointProxyFactory
         var transportEndpointConfiguration = RawEndpointConfiguration.Create(
         endpointToProxy.Name,
         transportConfiguration.TransportDefinition,
-        (mt, _, ct) => serviceProvider.GetRequiredService<MessageShovel>().TransferMessage(endpointToProxy.Name, endpointToProxy.QueueAddress, mt, ct),
+        (messageContext, _, ct) =>
+        {
+            var transferContext = new TransferContext(endpointToProxy.Name, endpointToProxy.QueueAddress, messageContext);
+
+            return serviceProvider.GetRequiredService<MessageShovel>()
+                .TransferMessage(transferContext, ct);
+        },
         transportConfiguration.ErrorQueue);
 
         if (transportConfiguration.AutoCreateQueues)
