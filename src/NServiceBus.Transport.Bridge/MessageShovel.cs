@@ -19,27 +19,27 @@ class MessageShovel
     }
 
     public async Task TransferMessage(
-        string localEndpointName,
-        QueueAddress queueAddress,
+        string proxyEndpointName,
+        QueueAddress proxyQueueAddress,
         MessageContext messageContext,
         CancellationToken cancellationToken = default)
     {
-        var targetEndpointProxy = targetEndpointProxyRegistry.GetTargetEndpointProxy(localEndpointName);
+        var targetEndpointProxy = targetEndpointProxyRegistry.GetTargetEndpointProxy(proxyEndpointName);
 
         var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
 
-        var address = targetEndpointProxy.ToTransportAddress(queueAddress);
+        var targetEndpointAddress = targetEndpointProxy.ToTransportAddress(proxyQueueAddress);
 
         TransformAddressHeader(messageToSend, targetEndpointProxy, Headers.ReplyToAddress);
         TransformAddressHeader(messageToSend, targetEndpointProxy, FaultsHeaderKeys.FailedQ);
 
-        var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
+        var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(targetEndpointAddress));
         await targetEndpointProxy.Dispatch(new TransportOperations(transportOperation),
                 messageContext.TransportTransaction,
                 cancellationToken)
             .ConfigureAwait(false);
 
-        logger.LogDebug("Moving message over to: [{0}]", address);
+        logger.LogDebug("Moving message over target endpoint: [{0}]", targetEndpointAddress);
     }
 
     void TransformAddressHeader(OutgoingMessage messageToSend, IRawEndpoint targetEndpointProxy, string headerKey)
