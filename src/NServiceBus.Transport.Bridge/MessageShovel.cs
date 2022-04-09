@@ -32,10 +32,11 @@ class MessageShovel
         TransformAddressHeader(messageToSend, targetEndpointProxy, FaultsHeaderKeys.FailedQ);
 
         var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(targetEndpointAddress));
-        await targetEndpointProxy.Dispatch(new TransportOperations(transportOperation),
-                messageContext.TransportTransaction,
-                cancellationToken)
-            .ConfigureAwait(false);
+
+        await targetEndpointProxy.Dispatch(
+            new TransportOperations(transportOperation),
+            transferContext.PassTransportTransaction ? messageContext.TransportTransaction : new TransportTransaction(),
+            cancellationToken).ConfigureAwait(false);
 
         logger.LogDebug("Moving message over target endpoint: [{0}]", targetEndpointAddress);
     }

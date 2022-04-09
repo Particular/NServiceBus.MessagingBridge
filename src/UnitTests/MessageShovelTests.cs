@@ -15,34 +15,51 @@ public class MessageShovelTests
     [Test]
     public async Task Should_transform_reply_to_address()
     {
-        var transferedMessages = await Transfer("SendingEndpointReplyAddress@MyMachine");
-        var transferedMessage = transferedMessages.Single();
+        var transferDetails = await Transfer("SendingEndpointReplyAddress@MyMachine");
 
-        Assert.AreEqual("SendingEndpointReplyAddress", transferedMessage.Message.Headers[Headers.ReplyToAddress]);
+        Assert.AreEqual("SendingEndpointReplyAddress", transferDetails.OutgoingOperation.Message.Headers[Headers.ReplyToAddress]);
     }
 
     [Test]
     public async Task Should_transform_failed_queue_header()
     {
-        var transferedMessages = await Transfer(failedQueueAddress: "error@MyMachine");
-        var transferedMessage = transferedMessages.Single();
+        var transferDetails = await Transfer(failedQueueAddress: "error@MyMachine");
 
-        Assert.AreEqual("error", transferedMessage.Message.Headers[FaultsHeaderKeys.FailedQ]);
+        Assert.AreEqual("error", transferDetails.OutgoingOperation.Message.Headers[FaultsHeaderKeys.FailedQ]);
     }
 
     [Test]
     public async Task Should_handle_send_only_endpoints()
     {
         //send only endpoints doesn't attach a reply to address
-        var transferedMessages = await Transfer(null);
+        var transferDetails = await Transfer();
 
-        CollectionAssert.IsNotEmpty(transferedMessages);
+        Assert.NotNull(transferDetails.OutgoingOperation);
     }
 
-    static async Task<List<UnicastTransportOperation>> Transfer(
+    [Test]
+    public async Task Should_pass_transport_transaction_if_specified()
+    {
+        var transportTransaction = new TransportTransaction();
+
+        var transferWithoutTransaction = await Transfer(
+            transportTransaction: transportTransaction,
+            passTransportTransaction: false);
+
+        Assert.AreNotSame(transportTransaction, transferWithoutTransaction.TransportTransaction);
+
+        var transferWithTransaction = await Transfer(
+             transportTransaction: transportTransaction,
+             passTransportTransaction: true);
+
+        Assert.AreSame(transportTransaction, transferWithTransaction.TransportTransaction);
+    }
+
+    static async Task<TransferDetails> Transfer(
         string replyToAddress = null,
-        string failedQueueAddress = null
-        )
+        string failedQueueAddress = null,
+        TransportTransaction transportTransaction = null,
+        bool passTransportTransaction = false)
     {
         var logger = new NullLogger<MessageShovel>();
         var targetEndpoint = new FakeRawEndpoint("TargetEndpoint");
@@ -65,15 +82,19 @@ public class MessageShovelTests
             "some-id",
             headers,
             ReadOnlyMemory<byte>.Empty,
-            new TransportTransaction(),
+            transportTransaction ?? new TransportTransaction(),
             "SourceEndpointAddress",
             new NServiceBus.Extensibility.ContextBag());
 
-        var transferContext = new TransferContext("SourceEndpoint", new QueueAddress("SourceEndpointAddress"), messageContext);
+        var transferContext = new TransferContext(
+            "SourceEndpoint",
+            new QueueAddress("SourceEndpointAddress"),
+            messageContext,
+            passTransportTransaction);
 
         await shovel.TransferMessage(transferContext, CancellationToken.None);
 
-        return targetEndpoint.OutgoingMessages;
+        return targetEndpoint.TransferDetails;
     }
 
     class FakeRawEndpoint : IStoppableRawEndpoint, IRawEndpoint
@@ -89,11 +110,15 @@ public class MessageShovelTests
 
         public ISubscriptionManager SubscriptionManager => null;
 
-        public List<UnicastTransportOperation> OutgoingMessages { get; private set; }
+        public TransferDetails TransferDetails { get; private set; }
 
         public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, CancellationToken cancellationToken = default)
         {
-            OutgoingMessages = outgoingMessages.UnicastTransportOperations;
+            TransferDetails = new TransferDetails
+            {
+                OutgoingOperation = outgoingMessages.UnicastTransportOperations.Single(),
+                TransportTransaction = transaction
+            };
 
             return Task.CompletedTask;
         }
@@ -118,3 +143,8 @@ public class MessageShovelTests
     }
 }
 
+public class TransferDetails
+{
+    public UnicastTransportOperation OutgoingOperation { get; set; }
+    public TransportTransaction TransportTransaction { get; set; }
+}
