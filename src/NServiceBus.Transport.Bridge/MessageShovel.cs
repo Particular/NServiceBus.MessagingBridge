@@ -40,9 +40,7 @@ class MessageShovel
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            messageToSend.Headers.TryGetValue(Headers.ReplyToAddress, out var replyToAddress);
-
-            logger.LogDebug("Moving the message over to: [{0}] with a reply address of [{1}]", address, replyToAddress);
+            logger.LogDebug("Moving message over to: [{0}] with a reply address of [{1}]", address);
         }
     }
 
