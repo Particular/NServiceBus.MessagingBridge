@@ -1,22 +1,51 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using NServiceBus;
 using NServiceBus.Raw;
 
-class EndpointProxyRegistry
+class EndpointProxyRegistry : ITargetEndpointProxyRegistry
 {
-    public void AddProxy(string name, IStoppableRawEndpoint stoppableRawEndpoint)
+    public void RegisterProxy(
+        string endpointName,
+        string targetTransportName,
+        IRawEndpoint proxy)
     {
-        runningEndpoints.Add((name, stoppableRawEndpoint));
+        registrations.Add(new ProxyRegistration
+        {
+            EndpointName = endpointName,
+            TranportName = targetTransportName,
+            RawEndpoint = proxy
+        });
     }
 
-    public IEnumerable<IStoppableRawEndpoint> StoppableEndpoints => runningEndpoints.Select(e => e.Item2);
-
-    public IEnumerable<IRawEndpoint> GetTargetEndpointProxies(string endpointName)
+    public void DetermineTargetEndpointProxies(IReadOnlyCollection<BridgeTransportConfiguration> transportConfigurations)
     {
-        //TODO: do we need to cache for better perf?
-        return runningEndpoints.Where(e => e.Item1 != endpointName)
-            .Select(i => i.Item2 as IRawEndpoint);
+        foreach (var registration in registrations)
+        {
+            // target transport is the transport where this endpoint is actually running
+            var targetTransportName = transportConfigurations.Single(t => t.Endpoints.Any(e => e.Name == registration.EndpointName))
+                .Name;
+
+            // just pick the first proxy that is running on the target transport since
+            // we just need to be able to send messages to that transport
+            targetEndpointProxies[registration.EndpointName] = registrations
+                .First(r => r.TranportName == targetTransportName)
+                .RawEndpoint;
+        }
     }
 
-    readonly List<(string, IStoppableRawEndpoint)> runningEndpoints = new List<(string, IStoppableRawEndpoint)>();
+    public IRawEndpoint GetTargetEndpointProxy(string sourceEndpointName)
+    {
+        return targetEndpointProxies[sourceEndpointName];
+    }
+
+    readonly Dictionary<string, IRawEndpoint> targetEndpointProxies = new Dictionary<string, IRawEndpoint>();
+    readonly List<ProxyRegistration> registrations = new List<ProxyRegistration>();
+
+    class ProxyRegistration
+    {
+        public string EndpointName;
+        public string TranportName;
+        public IRawEndpoint RawEndpoint;
+    }
 }

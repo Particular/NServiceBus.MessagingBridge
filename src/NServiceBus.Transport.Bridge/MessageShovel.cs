@@ -10,10 +10,12 @@ using NServiceBus.Transport;
 
 class MessageShovel
 {
-    public MessageShovel(ILogger<MessageShovel> logger, EndpointProxyRegistry endpointProxyRegistry)
+    public MessageShovel(
+        ILogger<MessageShovel> logger,
+        ITargetEndpointProxyRegistry targetEndpointProxyRegistry)
     {
         this.logger = logger;
-        this.endpointProxyRegistry = endpointProxyRegistry;
+        this.targetEndpointProxyRegistry = targetEndpointProxyRegistry;
     }
 
     public async Task TransferMessage(
@@ -22,26 +24,22 @@ class MessageShovel
         MessageContext messageContext,
         CancellationToken cancellationToken = default)
     {
-        var targetEndpointProxies = endpointProxyRegistry.GetTargetEndpointProxies(localEndpointName);
+        var targetEndpointProxy = targetEndpointProxyRegistry.GetTargetEndpointProxy(localEndpointName);
 
-        foreach (var targetEndpointProxy in targetEndpointProxies)
-        {
-            var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers,
-                messageContext.Body);
+        var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
 
-            var address = targetEndpointProxy.ToTransportAddress(queueAddress);
+        var address = targetEndpointProxy.ToTransportAddress(queueAddress);
 
-            TransformAddressHeader(messageToSend, targetEndpointProxy, Headers.ReplyToAddress);
-            TransformAddressHeader(messageToSend, targetEndpointProxy, FaultsHeaderKeys.FailedQ);
+        TransformAddressHeader(messageToSend, targetEndpointProxy, Headers.ReplyToAddress);
+        TransformAddressHeader(messageToSend, targetEndpointProxy, FaultsHeaderKeys.FailedQ);
 
-            var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
-            await targetEndpointProxy.Dispatch(new TransportOperations(transportOperation),
-                    messageContext.TransportTransaction,
-                    cancellationToken)
-                .ConfigureAwait(false);
+        var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
+        await targetEndpointProxy.Dispatch(new TransportOperations(transportOperation),
+                messageContext.TransportTransaction,
+                cancellationToken)
+            .ConfigureAwait(false);
 
-            logger.LogDebug("Moving message over to: [{0}] with a reply address of [{1}]", address);
-        }
+        logger.LogDebug("Moving message over to: [{0}]", address);
     }
 
     void TransformAddressHeader(OutgoingMessage messageToSend, IRawEndpoint targetEndpointProxy, string headerKey)
@@ -68,5 +66,5 @@ class MessageShovel
     }
 
     readonly ILogger<MessageShovel> logger;
-    readonly EndpointProxyRegistry endpointProxyRegistry;
+    readonly ITargetEndpointProxyRegistry targetEndpointProxyRegistry;
 }

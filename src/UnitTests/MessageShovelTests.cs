@@ -45,10 +45,8 @@ public class MessageShovelTests
         )
     {
         var logger = new NullLogger<MessageShovel>();
-        var endpointProxyRegistry = new EndpointProxyRegistry();
         var targetEndpoint = new FakeRawEndpoint("TargetEndpoint");
-
-        endpointProxyRegistry.AddProxy(targetEndpoint.EndpointName, targetEndpoint);
+        var endpointProxyRegistry = new FakeTargetEndpointProxyRegistry(targetEndpoint);
 
         var headers = new Dictionary<string, string>();
 
@@ -98,8 +96,23 @@ public class MessageShovelTests
             return Task.CompletedTask;
         }
 
-        public Task Stop(CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public Task Stop(CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public string ToTransportAddress(QueueAddress logicalAddress) => logicalAddress.ToString();
+    }
+
+    class FakeTargetEndpointProxyRegistry : ITargetEndpointProxyRegistry
+    {
+        public FakeTargetEndpointProxyRegistry(FakeRawEndpoint targetEndpoint)
+        {
+            this.targetEndpoint = targetEndpoint;
+        }
+
+        public IRawEndpoint GetTargetEndpointProxy(string sourceEndpointName)
+        {
+            return targetEndpoint;
+        }
+
+        readonly FakeRawEndpoint targetEndpoint;
     }
 }
 

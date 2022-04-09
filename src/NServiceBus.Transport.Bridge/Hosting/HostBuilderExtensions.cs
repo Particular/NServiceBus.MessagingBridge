@@ -46,6 +46,7 @@
                 serviceCollection.AddSingleton<EndpointProxyFactory>();
                 serviceCollection.AddSingleton<SubscriptionManager>();
                 serviceCollection.AddSingleton<EndpointProxyRegistry>();
+                serviceCollection.AddSingleton<ITargetEndpointProxyRegistry>(sp => sp.GetRequiredService<EndpointProxyRegistry>());
                 serviceCollection.AddTransient<MessageShovel>();
             });
 
