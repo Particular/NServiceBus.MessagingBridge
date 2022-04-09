@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
+using NServiceBus.Faults;
 using NServiceBus.Raw;
 using NServiceBus.Routing;
 using NServiceBus.Transport;
@@ -30,8 +31,8 @@ class MessageShovel
 
             var address = targetEndpointProxy.ToTransportAddress(queueAddress);
 
-            TransformHeader(messageToSend, targetEndpointProxy, Headers.ReplyToAddress);
-            TransformHeader(messageToSend, targetEndpointProxy, "NServiceBus.FailedQ");
+            TransformAddressHeader(messageToSend, targetEndpointProxy, Headers.ReplyToAddress);
+            TransformAddressHeader(messageToSend, targetEndpointProxy, FaultsHeaderKeys.FailedQ);
 
             var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(address));
             await targetEndpointProxy.Dispatch(new TransportOperations(transportOperation),
@@ -40,21 +41,23 @@ class MessageShovel
                 .ConfigureAwait(false);
 
             messageToSend.Headers.TryGetValue(Headers.ReplyToAddress, out var replyToAddress);
-            logger.LogInformation("Moving the message over to: [{0}] with a reply address of [{1}]", address, replyToAddress);
+
+            logger.LogDebug("Moving the message over to: [{0}] with a reply address of [{1}]", address, replyToAddress);
         }
     }
 
-    void TransformHeader(OutgoingMessage messageToSend, IRawEndpoint targetEndpointProxy, string header)
+    void TransformAddressHeader(OutgoingMessage messageToSend, IRawEndpoint targetEndpointProxy, string headerKey)
     {
-        if (!messageToSend.Headers.TryGetValue(header, out var replyToAddress))
+        if (!messageToSend.Headers.TryGetValue(headerKey, out var headerValue))
         {
             return;
         }
 
-        var replyToLogicalEndpointName = ParseEndpointAddress(replyToAddress);
+        var replyToLogicalEndpointName = ParseEndpointAddress(headerValue);
         var targetSpecificReplyToAddress =
             targetEndpointProxy.ToTransportAddress(new QueueAddress(replyToLogicalEndpointName));
-        messageToSend.Headers[header] = targetSpecificReplyToAddress;
+
+        messageToSend.Headers[headerKey] = targetSpecificReplyToAddress;
     }
 
     string ParseEndpointAddress(string replyToAddress)

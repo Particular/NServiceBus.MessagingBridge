@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Transport;
+
 /// <summary>
 /// A dedicated subclass of the MsmqTransport that enables us to intercept the receive queues for the test.
 /// </summary>
