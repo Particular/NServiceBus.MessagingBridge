@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using Microsoft.Extensions.Logging.Abstractions;
 using NServiceBus;
 using NUnit.Framework;
 
@@ -9,11 +11,11 @@ public class BridgeConfigurationTests
     {
         var configuration = new BridgeConfiguration();
 
-        Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+        Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
         configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport()));
 
-        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+        var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
         StringAssert.Contains("At least two", ex.Message);
     }
@@ -26,7 +28,7 @@ public class BridgeConfigurationTests
         configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport()));
         configuration.AddTransport(new BridgeTransportConfiguration(new SomeOtherTransport()));
 
-        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+        var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
         StringAssert.Contains("At least one", ex.Message);
         StringAssert.Contains("some, someother", ex.Message);
@@ -48,7 +50,7 @@ public class BridgeConfigurationTests
         someOtherTransport.HasEndpoint(duplicatedEndpointName);
         configuration.AddTransport(someOtherTransport);
 
-        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+        var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
         StringAssert.Contains("Endpoints can only be associated with a single transport", ex.Message);
         StringAssert.Contains(duplicatedEndpointName, ex.Message);
@@ -72,7 +74,7 @@ public class BridgeConfigurationTests
         someOtherTransport.HasEndpoint(subscriber);
         configuration.AddTransport(someOtherTransport);
 
-        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+        var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
         StringAssert.Contains("Publisher not registered for", ex.Message);
         StringAssert.Contains(typeof(MyEvent).FullName, ex.Message);
@@ -103,7 +105,7 @@ public class BridgeConfigurationTests
         someOtherTransport.HasEndpoint(subscriber2);
         configuration.AddTransport(someOtherTransport);
 
-        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+        var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
         StringAssert.Contains("Events can only be associated with a single publisher", ex.Message);
         StringAssert.Contains(typeof(MyEvent).FullName, ex.Message);
@@ -130,28 +132,91 @@ public class BridgeConfigurationTests
     }
 
     [Test]
-    public void Should_only_allow_transaction_scope_if_all_transports_are_configured_for_it()
+    public void Should_default_to_transaction_scope_mode_if_all_transports_supports_it()
     {
         var configuration = new BridgeConfiguration();
 
-        configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport
-        {
-            TransportTransactionMode = TransportTransactionMode.TransactionScope
-        }));
-        configuration.AddTransport(new BridgeTransportConfiguration(new SomeOtherTransport
-        {
-            TransportTransactionMode = TransportTransactionMode.ReceiveOnly
-        }));
+        var someScopeTransport = new BridgeTransportConfiguration(new SomeScopeSupportingTransport());
 
-        var ex = Assert.Throws<InvalidOperationException>(() => configuration.Validate());
+        someScopeTransport.HasEndpoint("Sales");
+        configuration.AddTransport(someScopeTransport);
 
-        StringAssert.Contains("TransportTransactionMode.TransactionScope is only allowed if all transports are configured to use it", ex.Message);
+
+        var someOtherScopeTransport = new BridgeTransportConfiguration(new SomeOtherScopeSupportingTransport());
+
+        someOtherScopeTransport.HasEndpoint("Billing");
+        configuration.AddTransport(someOtherScopeTransport);
+
+        FinalizeConfiguration(configuration);
+
+        Assert.False(configuration.TransportConfigurations.Any(tc => tc.TransportDefinition
+            .TransportTransactionMode != TransportTransactionMode.TransactionScope));
     }
 
     [Test]
-    public void Should_require_receive_only_mode_if_transaction_scope_is_not_being_used()
+    public void Should_default_to_receive_only_mode_if_any_of_the_transports_doesnt_support_transaction_scopes()
     {
-        //TODO: discuss with TF
+        var configuration = new BridgeConfiguration();
+
+        var someScopeTransport = new BridgeTransportConfiguration(new SomeScopeSupportingTransport());
+
+        someScopeTransport.HasEndpoint("Sales");
+        configuration.AddTransport(someScopeTransport);
+
+
+        var someOtherScopeTransport = new BridgeTransportConfiguration(new SomeOtherTransport());
+
+        someOtherScopeTransport.HasEndpoint("Billing");
+        configuration.AddTransport(someOtherScopeTransport);
+
+        FinalizeConfiguration(configuration);
+
+        Assert.False(configuration.TransportConfigurations.Any(tc => tc.TransportDefinition
+            .TransportTransactionMode != TransportTransactionMode.ReceiveOnly));
+    }
+
+    [Test]
+    public void Should_allow_receive_only_mode_to_be_configured_even_if_all_transports_support_scopes()
+    {
+        var configuration = new BridgeConfiguration();
+
+        var someScopeTransport = new BridgeTransportConfiguration(new SomeScopeSupportingTransport());
+
+        someScopeTransport.HasEndpoint("Sales");
+        configuration.AddTransport(someScopeTransport);
+
+
+        var someOtherScopeTransport = new BridgeTransportConfiguration(new SomeOtherScopeSupportingTransport());
+
+        someOtherScopeTransport.HasEndpoint("Billing");
+        configuration.AddTransport(someOtherScopeTransport);
+
+        configuration.RunInReceiveOnlyTransactionMode();
+
+        FinalizeConfiguration(configuration);
+
+        Assert.False(configuration.TransportConfigurations.Any(tc => tc.TransportDefinition
+            .TransportTransactionMode != TransportTransactionMode.ReceiveOnly));
+    }
+
+    [Test, Ignore("There is currently no way to know if the default was changed by the user")]
+    public void Should_throw_if_users_tries_to_set_transaction_mode_on_individual_transports()
+    {
+    }
+
+    void FinalizeConfiguration(BridgeConfiguration bridgeConfiguration)
+    {
+        bridgeConfiguration.FinalizeConfiguration(new NullLogger<BridgeConfiguration>());
+    }
+
+    class SomeScopeSupportingTransport : FakeTransport
+    {
+        public SomeScopeSupportingTransport() : base(TransportTransactionMode.TransactionScope) { }
+    }
+
+    class SomeOtherScopeSupportingTransport : FakeTransport
+    {
+        public SomeOtherScopeSupportingTransport() : base(TransportTransactionMode.TransactionScope) { }
     }
 
     class SomeTransport : FakeTransport { }

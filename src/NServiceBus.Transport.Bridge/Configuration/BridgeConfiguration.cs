@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Microsoft.Extensions.Logging;
 
     public class BridgeConfiguration
     {
@@ -18,23 +19,17 @@
             transportConfigurations.Add(transportConfiguration);
         }
 
-        internal void Validate()
+        public void RunInReceiveOnlyTransactionMode()
+        {
+            runInReceiveOnlyTransactionMode = true;
+        }
+
+        internal void FinalizeConfiguration(ILogger<BridgeConfiguration> logger)
         {
             if (transportConfigurations.Count < 2)
             {
                 throw new InvalidOperationException("At least two transports needs to be configured");
             }
-
-
-            var transactionScopeEnabledTransports = transportConfigurations
-                .Where(tc => tc.TransportDefinition.TransportTransactionMode == TransportTransactionMode.TransactionScope);
-
-            if (transactionScopeEnabledTransports.Count() > 0 &&
-                transactionScopeEnabledTransports.Count() != transportConfigurations.Count())
-            {
-                throw new InvalidOperationException("TransportTransactionMode.TransactionScope is only allowed if all transports are configured to use it");
-            }
-
 
             var tranportsWithNoEndpoints = transportConfigurations.Where(tc => !tc.Endpoints.Any())
                 .Select(t => t.Name);
@@ -96,10 +91,44 @@
                 }
                 throw new InvalidOperationException(sb.ToString());
             }
+
+            // determine transaction mode
+            var transactionScopeCapableTransports = transportConfigurations
+                .Where(tc => tc.TransportDefinition.GetSupportedTransactionModes()
+                    .Contains(TransportTransactionMode.TransactionScope));
+
+            TransportTransactionMode transportTransactionMode;
+
+            if (transactionScopeCapableTransports.Count() != transportConfigurations.Count())
+            {
+                transportTransactionMode = TransportTransactionMode.ReceiveOnly;
+
+                logger.LogInformation("Bridge transaction mode defaulted to TransportTransactionMode.ReceiveOnly");
+            }
+            else
+            {
+                if (runInReceiveOnlyTransactionMode)
+                {
+                    transportTransactionMode = TransportTransactionMode.ReceiveOnly;
+
+                    logger.LogInformation("Bridge transaction mode explicitly lowered to ReceiveOnly");
+                }
+                else
+                {
+                    transportTransactionMode = TransportTransactionMode.TransactionScope;
+                    logger.LogInformation("Bridge transaction mode defaulted to TransportTransactionMode.TransactionScope since all transports supports it");
+                }
+            }
+
+            foreach (var transportConfiguration in transportConfigurations)
+            {
+                transportConfiguration.TransportDefinition.TransportTransactionMode = transportTransactionMode;
+            }
         }
 
         internal IReadOnlyCollection<BridgeTransportConfiguration> TransportConfigurations => transportConfigurations;
 
+        bool runInReceiveOnlyTransactionMode;
         readonly List<BridgeTransportConfiguration> transportConfigurations = new List<BridgeTransportConfiguration>();
     }
 }

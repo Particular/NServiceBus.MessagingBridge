@@ -3,6 +3,7 @@
     using System;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging;
     using NServiceBus.Logging;
     using NServiceBus.Transport.Bridge;
 
@@ -37,9 +38,12 @@
 
                 bridgeConfigurationAction(hostBuilderContext, bridgeConfiguration);
 
-                bridgeConfiguration.Validate();
+                serviceCollection.AddSingleton(sp =>
+                {
+                    bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>());
+                    return bridgeConfiguration;
+                });
 
-                serviceCollection.AddSingleton(bridgeConfiguration);
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
                 serviceCollection.AddSingleton<IStartableBridge, StartableBridge>();
