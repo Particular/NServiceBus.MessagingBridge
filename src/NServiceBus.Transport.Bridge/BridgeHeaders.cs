@@ -1,4 +1,4 @@
 ﻿class BridgeHeaders
 {
-    public static string Transfer { get; } => "NServiceBus.Bridge.Transfer";
+    public static string Transfer = "NServiceBus.Bridge.Transfer";
 }

@@ -27,6 +27,7 @@ class EndpointProxyFactory
         (messageContext, _, ct) =>
         {
             var transferContext = new TransferContext(
+                transportConfiguration.Name,
                 endpointToProxy.Name,
                 endpointToProxy.QueueAddress,
                 messageContext,

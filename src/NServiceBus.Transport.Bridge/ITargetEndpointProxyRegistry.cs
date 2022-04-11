@@ -1,6 +1,4 @@
-﻿using NServiceBus.Raw;
-
-interface ITargetEndpointProxyRegistry
+﻿interface ITargetEndpointProxyRegistry
 {
-    IRawEndpoint GetTargetEndpointProxy(string sourceEndpointName);
+    TargetEndpointProxy GetTargetEndpointProxy(string sourceEndpointName);
 }

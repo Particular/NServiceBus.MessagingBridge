@@ -37,6 +37,15 @@ public class MessageShovelTests
         Assert.NotNull(transferDetails.OutgoingOperation);
     }
 
+
+    [Test]
+    public async Task Should_attach_transfer_header()
+    {
+        var transferDetails = await Transfer();
+
+        Assert.AreEqual("SourceTransport->TargetTransport", transferDetails.OutgoingOperation.Message.Headers[BridgeHeaders.Transfer]);
+    }
+
     [Test]
     public async Task Should_pass_transport_transaction_if_specified()
     {
@@ -63,7 +72,7 @@ public class MessageShovelTests
     {
         var logger = new NullLogger<MessageShovel>();
         var targetEndpoint = new FakeRawEndpoint("TargetEndpoint");
-        var endpointProxyRegistry = new FakeTargetEndpointProxyRegistry(targetEndpoint);
+        var endpointProxyRegistry = new FakeTargetEndpointProxyRegistry("TargetTransport", targetEndpoint);
 
         var headers = new Dictionary<string, string>();
 
@@ -87,6 +96,7 @@ public class MessageShovelTests
             new NServiceBus.Extensibility.ContextBag());
 
         var transferContext = new TransferContext(
+            "SourceTransport",
             "SourceEndpoint",
             new QueueAddress("SourceEndpointAddress"),
             messageContext,
@@ -129,16 +139,18 @@ public class MessageShovelTests
 
     class FakeTargetEndpointProxyRegistry : ITargetEndpointProxyRegistry
     {
-        public FakeTargetEndpointProxyRegistry(FakeRawEndpoint targetEndpoint)
+        public FakeTargetEndpointProxyRegistry(string targetTransport, FakeRawEndpoint targetEndpoint)
         {
+            this.targetTransport = targetTransport;
             this.targetEndpoint = targetEndpoint;
         }
 
-        public IRawEndpoint GetTargetEndpointProxy(string sourceEndpointName)
+        public TargetEndpointProxy GetTargetEndpointProxy(string sourceEndpointName)
         {
-            return targetEndpoint;
+            return new TargetEndpointProxy(targetTransport, targetEndpoint);
         }
 
+        readonly string targetTransport;
         readonly FakeRawEndpoint targetEndpoint;
     }
 }

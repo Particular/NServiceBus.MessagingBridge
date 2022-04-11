@@ -21,19 +21,22 @@ class MessageShovel
     public async Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
     {
         var targetEndpointProxy = targetEndpointProxyRegistry.GetTargetEndpointProxy(transferContext.ProxyEndpointName);
+        var rawEndpoint = targetEndpointProxy.RawEndpoint;
 
         var messageContext = transferContext.MessageToTransfer;
 
         var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
 
-        var targetEndpointAddress = targetEndpointProxy.ToTransportAddress(transferContext.ProxyQueueAddress);
+        var targetEndpointAddress = rawEndpoint.ToTransportAddress(transferContext.ProxyQueueAddress);
 
-        TransformAddressHeader(messageToSend, targetEndpointProxy, Headers.ReplyToAddress);
-        TransformAddressHeader(messageToSend, targetEndpointProxy, FaultsHeaderKeys.FailedQ);
+        messageToSend.Headers[BridgeHeaders.Transfer] = $"{transferContext.SourceTransport}->{targetEndpointProxy.TransportName}";
+
+        TransformAddressHeader(messageToSend, rawEndpoint, Headers.ReplyToAddress);
+        TransformAddressHeader(messageToSend, rawEndpoint, FaultsHeaderKeys.FailedQ);
 
         var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(targetEndpointAddress));
 
-        await targetEndpointProxy.Dispatch(
+        await rawEndpoint.Dispatch(
             new TransportOperations(transportOperation),
             transferContext.PassTransportTransaction ? messageContext.TransportTransaction : new TransportTransaction(),
             cancellationToken).ConfigureAwait(false);
