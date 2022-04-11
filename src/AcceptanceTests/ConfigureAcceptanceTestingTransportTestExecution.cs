@@ -13,7 +13,7 @@ class ConfigureAcceptanceTestingTransportTestExecution : IConfigureTransportTest
         return new BridgeTransportDefinition
         {
             TransportDefinition = new AcceptanceTestingTransport { StorageLocation = GetStorageDir() },
-            Cleanup = (ct) => Cleanup(ct)
+            Cleanup = (ct) => Cleanup(ct),
         };
     }
 

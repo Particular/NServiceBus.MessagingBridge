@@ -13,12 +13,10 @@ using NServiceBus.Transport;
 
 public class TestableSQSTransport : SqsTransport
 {
-    public TestableSQSTransport() : base(CreateSqsClient(), CreateSnsClient())
+    public TestableSQSTransport(string namePrefix) : base(CreateSqsClient(), CreateSnsClient())
     {
-        var setupFixture = new SetupFixture();
-        setupFixture.OneTimeSetUp();
-        QueueNamePrefix = SetupFixture.NamePrefix;
-        TopicNamePrefix = SetupFixture.NamePrefix;
+        QueueNamePrefix = namePrefix;
+        TopicNamePrefix = namePrefix;
         QueueNameGenerator = TestNameHelper.GetSqsQueueName;
         TopicNameGenerator = TestNameHelper.GetSnsTopicName;
 

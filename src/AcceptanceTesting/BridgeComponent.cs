@@ -17,7 +17,7 @@ public class BridgeComponent<TContext> : IComponentBehavior
     public Task<ComponentRunner> CreateRunner(RunDescriptor run)
 #pragma warning restore PS0018 // A task-returning method should have a CancellationToken parameter unless it has a parameter implementing ICancellableContext
     {
-        return Task.FromResult<ComponentRunner>(new Runner(bridgeConfigurationAction, new AccptanceTestLoggerFactory(run.ScenarioContext)));
+        return Task.FromResult<ComponentRunner>(new Runner(bridgeConfigurationAction, new AcceptanceTestLoggerFactory(run.ScenarioContext)));
     }
 
     readonly Action<BridgeConfiguration> bridgeConfigurationAction;
