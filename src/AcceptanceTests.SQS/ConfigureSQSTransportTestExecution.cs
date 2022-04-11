@@ -2,11 +2,13 @@
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
+using NServiceBus.AcceptanceTests;
 
 public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecution
 {
@@ -19,7 +21,7 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         return new BridgeTransportDefinition()
         {
             TransportDefinition = transportDefinition,
-            Cleanup = (ct) => Cleanup(transportDefinition, ct),
+            Cleanup = (ct) => Cleanup(ct),
         };
     }
 
@@ -28,12 +30,11 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         var transportDefinition = new TestableSQSTransport(NamePrefix);
         endpointConfiguration.UseTransport(transportDefinition);
 
-        return ct => Cleanup(transportDefinition, ct);
+        return ct => Cleanup(ct);
     }
 
-    async Task Cleanup(TestableSQSTransport transport, CancellationToken cancellationToken)
+    async Task Cleanup(CancellationToken cancellationToken)
     {
-        _ = transport;
         var accessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
         var secretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
 
@@ -49,4 +50,22 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         //}
 
     }
+    public static IAmazonSQS CreateSqsClient()
+    {
+        var credentials = new EnvironmentVariablesAWSCredentials();
+        return new AmazonSQSClient(credentials);
+    }
+
+    public static IAmazonSimpleNotificationService CreateSnsClient()
+    {
+        var credentials = new EnvironmentVariablesAWSCredentials();
+        return new AmazonSimpleNotificationServiceClient(credentials);
+    }
+
+    public static IAmazonS3 CreateS3Client()
+    {
+        var credentials = new EnvironmentVariablesAWSCredentials();
+        return new AmazonS3Client(credentials);
+    }
+
 }
