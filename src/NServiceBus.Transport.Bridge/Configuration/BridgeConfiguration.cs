@@ -24,7 +24,7 @@
             runInReceiveOnlyTransactionMode = true;
         }
 
-        internal void FinalizeConfiguration(ILogger<BridgeConfiguration> logger)
+        internal FinalizedBridgeConfiguration FinalizeConfiguration(ILogger<BridgeConfiguration> logger)
         {
             if (transportConfigurations.Count < 2)
             {
@@ -124,11 +124,12 @@
             {
                 transportConfiguration.TransportDefinition.TransportTransactionMode = transportTransactionMode;
             }
+
+            return new FinalizedBridgeConfiguration(transportConfigurations);
         }
 
-        internal IReadOnlyCollection<BridgeTransportConfiguration> TransportConfigurations => transportConfigurations;
-
         bool runInReceiveOnlyTransactionMode;
+
         readonly List<BridgeTransportConfiguration> transportConfigurations = new List<BridgeTransportConfiguration>();
     }
 }

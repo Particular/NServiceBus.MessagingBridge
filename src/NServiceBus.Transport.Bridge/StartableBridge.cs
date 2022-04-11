@@ -3,14 +3,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Transport.Bridge;
 
 class StartableBridge : IStartableBridge
 {
     public StartableBridge(
-        BridgeConfiguration configuration,
+        FinalizedBridgeConfiguration configuration,
         EndpointProxyFactory endpointProxyFactory,
         EndpointProxyRegistry endpointProxyRegistry,
         SubscriptionManager subscriptionManager,
@@ -75,7 +74,7 @@ class StartableBridge : IStartableBridge
         return new RunningBridge(stoppableEndpointProxies);
     }
 
-    readonly BridgeConfiguration configuration;
+    readonly FinalizedBridgeConfiguration configuration;
     readonly EndpointProxyFactory endpointProxyFactory;
     readonly EndpointProxyRegistry endpointProxyRegistry;
     readonly SubscriptionManager subscriptionManager;

@@ -147,9 +147,9 @@ public class BridgeConfigurationTests
         someOtherScopeTransport.HasEndpoint("Billing");
         configuration.AddTransport(someOtherScopeTransport);
 
-        FinalizeConfiguration(configuration);
+        var finalizedConfiguration = FinalizeConfiguration(configuration);
 
-        Assert.False(configuration.TransportConfigurations.Any(tc => tc.TransportDefinition
+        Assert.False(finalizedConfiguration.TransportConfigurations.Any(tc => tc.TransportDefinition
             .TransportTransactionMode != TransportTransactionMode.TransactionScope));
     }
 
@@ -169,9 +169,9 @@ public class BridgeConfigurationTests
         someOtherScopeTransport.HasEndpoint("Billing");
         configuration.AddTransport(someOtherScopeTransport);
 
-        FinalizeConfiguration(configuration);
+        var finalizedConfiguration = FinalizeConfiguration(configuration);
 
-        Assert.False(configuration.TransportConfigurations.Any(tc => tc.TransportDefinition
+        Assert.False(finalizedConfiguration.TransportConfigurations.Any(tc => tc.TransportDefinition
             .TransportTransactionMode != TransportTransactionMode.ReceiveOnly));
     }
 
@@ -193,9 +193,9 @@ public class BridgeConfigurationTests
 
         configuration.RunInReceiveOnlyTransactionMode();
 
-        FinalizeConfiguration(configuration);
+        var finalizedConfiguration = FinalizeConfiguration(configuration);
 
-        Assert.False(configuration.TransportConfigurations.Any(tc => tc.TransportDefinition
+        Assert.False(finalizedConfiguration.TransportConfigurations.Any(tc => tc.TransportDefinition
             .TransportTransactionMode != TransportTransactionMode.ReceiveOnly));
     }
 
@@ -204,9 +204,9 @@ public class BridgeConfigurationTests
     {
     }
 
-    void FinalizeConfiguration(BridgeConfiguration bridgeConfiguration)
+    FinalizedBridgeConfiguration FinalizeConfiguration(BridgeConfiguration bridgeConfiguration)
     {
-        bridgeConfiguration.FinalizeConfiguration(new NullLogger<BridgeConfiguration>());
+        return bridgeConfiguration.FinalizeConfiguration(new NullLogger<BridgeConfiguration>());
     }
 
     class SomeScopeSupportingTransport : FakeTransport

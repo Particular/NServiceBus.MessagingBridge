@@ -40,8 +40,7 @@
 
                 serviceCollection.AddSingleton(sp =>
                 {
-                    bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>());
-                    return bridgeConfiguration;
+                    return bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>());
                 });
 
                 serviceCollection.AddSingleton(deferredLoggerFactory);
