@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-2019, ubuntu-20.04 ]
-        transport: [ Learning, RabbitMQ, AzureServiceBus, SqlServer ]
+        transport: [ Learning, RabbitMQ, AzureServiceBus, SqlServer, AmazonSQS ]
         include:
           - os: windows-2019
             os-name: Windows
@@ -78,6 +78,14 @@ jobs:
         with:
           connection-string-name: AzureServiceBus_ConnectionString
           tag: ASBTransport
+      - name: Setup AWS SDK environment
+        if: matrix.transport == 'AmazonSQS'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          NSERVICEBUS_AMAZONSQS_S3BUCKET: ${{ secrets.NSERVICEBUS_AMAZONSQS_S3BUCKET }}
       - name: Setup RabbitMQ
         if: matrix.transport == 'RabbitMQ'
         id: setup-rabbitmq
