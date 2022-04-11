@@ -54,6 +54,22 @@
                 throw new InvalidOperationException($"Endpoints can only be associated with a single transport, please remove endpoint(s): {endpointNames} from one transport");
             }
 
+            var transportsWithMappedErrorQueue = transportConfigurations.Where(tc => tc.Endpoints.Any(e => e.Name.ToLower() == tc.ErrorQueue.ToLower()));
+
+            if (transportsWithMappedErrorQueue.Any())
+            {
+                var sb = new StringBuilder();
+
+                sb.AppendLine("It is not allowed to register the bridge error queue as an endpoint, please change the error queue or remove the endpoint mapping:");
+                sb.AppendLine();
+
+                foreach (var transport in transportsWithMappedErrorQueue)
+                {
+                    sb.AppendLine($"- Transport: {transport.Name} | ErrorQueue/EndpointName: {transport.ErrorQueue}");
+                }
+                throw new InvalidOperationException(sb.ToString());
+            }
+
             var eventsWithNoRegisteredPublisher = transportConfigurations
                .SelectMany(t => t.Endpoints)
                .SelectMany(e => e.Subscriptions)

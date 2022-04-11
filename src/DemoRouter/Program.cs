@@ -32,6 +32,7 @@ class Program
 
                 msmqTransport.HasEndpoint(financeEndpoint);
                 msmqTransport.HasEndpoint("Sales");
+                msmqTransport.HasEndpoint("Error");
 
                 rc.AddTransport(msmqTransport);
 

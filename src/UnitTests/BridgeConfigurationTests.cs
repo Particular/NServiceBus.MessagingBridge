@@ -35,6 +35,31 @@ public class BridgeConfigurationTests
     }
 
     [Test]
+    public void It_shouldnt_be_allowed_to_shovel_the_error_queue_of_the_bridge()
+    {
+        var configuration = new BridgeConfiguration();
+        var bridgeErrorQueue = "my-error";
+        var transport = new BridgeTransportConfiguration(new SomeTransport())
+        {
+            ErrorQueue = bridgeErrorQueue
+        };
+
+        transport.HasEndpoint("SomeEndpoint");
+        transport.HasEndpoint(bridgeErrorQueue);
+        configuration.AddTransport(transport);
+
+        var someOtherTransport = new BridgeTransportConfiguration(new SomeOtherTransport());
+
+        someOtherTransport.HasEndpoint("SomeOtherEndpoint");
+        configuration.AddTransport(someOtherTransport);
+        var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
+
+        StringAssert.Contains("It is not allowed to register the bridge error queue as an endpoint, please change the error queue or remove the endpoint mapping", ex.Message);
+        StringAssert.Contains(bridgeErrorQueue, ex.Message);
+        StringAssert.Contains(transport.Name, ex.Message);
+    }
+
+    [Test]
     public void Endpoints_should_only_be_added_to_one_transport()
     {
         var duplicatedEndpointName = "DuplicatedEndpoint";

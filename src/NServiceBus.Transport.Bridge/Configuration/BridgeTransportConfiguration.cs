@@ -17,7 +17,7 @@
             Endpoints = new List<BridgeEndpoint>();
             TransportDefinition = transportDefinition;
             Name = transportDefinition.GetType().Name.ToLower().Replace("transport", "");
-            ErrorQueue = "error";
+            ErrorQueue = "bridge.error";
             AutoCreateQueues = true;
             Concurrency = 1;
         }
