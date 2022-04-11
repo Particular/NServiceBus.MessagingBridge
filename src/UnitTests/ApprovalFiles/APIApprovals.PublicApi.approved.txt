@@ -1,0 +1,54 @@
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(@"UnitTests, PublicKey=00240000048000009400000006020000002400005253413100040000010001007f16e21368ff041183fab592d9e8ed37e7be355e93323147a1d29983d6e591b04282e4da0c9e18bd901e112c0033925eb7d7872c2f1706655891c5c9d57297994f707d16ee9a8f40d978f064ee1ffc73c0db3f4712691b23bf596f75130f4ec978cf78757ec034625a5f27e6bb50c618931ea49f6f628fd74271c32959efb1c5")]
+namespace NServiceBus
+{
+    public class BridgeConfiguration
+    {
+        public BridgeConfiguration() { }
+        public void AddTransport(NServiceBus.BridgeTransportConfiguration transportConfiguration) { }
+        public void RunInReceiveOnlyTransactionMode() { }
+    }
+    public class BridgeEndpoint
+    {
+        public BridgeEndpoint(NServiceBus.Transport.QueueAddress queueAddress) { }
+        public BridgeEndpoint(string name) { }
+        public string Name { get; }
+        public NServiceBus.Transport.QueueAddress QueueAddress { get; }
+        public void RegisterPublisher(string eventTypeFullName, string publisher) { }
+        public void RegisterPublisher(System.Type eventType, string publisher) { }
+        public void RegisterPublisher<T>(string publisher) { }
+    }
+    public class BridgeEndpointSubscription
+    {
+        public BridgeEndpointSubscription(string eventTypeFullName, string publisher) { }
+        public string EventTypeFullName { get; }
+        public string Publisher { get; }
+    }
+    public class BridgeTransportConfiguration
+    {
+        public BridgeTransportConfiguration(NServiceBus.Transport.TransportDefinition transportDefinition) { }
+        public bool AutoCreateQueues { get; set; }
+        public int Concurrency { get; set; }
+        public string ErrorQueue { get; set; }
+        public string Name { get; set; }
+        public NServiceBus.Transport.TransportDefinition TransportDefinition { get; }
+        public void HasEndpoint(NServiceBus.BridgeEndpoint endpoint) { }
+        public void HasEndpoint(NServiceBus.Transport.QueueAddress queueAddress) { }
+        public void HasEndpoint(string endpoint) { }
+    }
+    public static class HostBuilderExtensions
+    {
+        public static Microsoft.Extensions.Hosting.IHostBuilder UseNServiceBusBridge(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder, System.Action<NServiceBus.BridgeConfiguration> bridgeConfigurationAction) { }
+        public static Microsoft.Extensions.Hosting.IHostBuilder UseNServiceBusBridge(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder, System.Action<Microsoft.Extensions.Hosting.HostBuilderContext, NServiceBus.BridgeConfiguration> bridgeConfigurationAction) { }
+    }
+}
+namespace NServiceBus.Transport.Bridge
+{
+    public interface IStartableBridge
+    {
+        System.Threading.Tasks.Task<NServiceBus.Transport.Bridge.IStoppableBridge> Start(System.Threading.CancellationToken cancellationToken = default);
+    }
+    public interface IStoppableBridge
+    {
+        System.Threading.Tasks.Task Stop(System.Threading.CancellationToken cancellationToken = default);
+    }
+}
