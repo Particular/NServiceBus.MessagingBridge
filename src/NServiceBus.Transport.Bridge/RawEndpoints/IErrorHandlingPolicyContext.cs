@@ -7,7 +7,7 @@ namespace NServiceBus.Raw
     /// <summary>
     /// Context for error handling policy.
     /// </summary>
-    public interface IErrorHandlingPolicyContext
+    interface IErrorHandlingPolicyContext
     {
         /// <summary>
         /// Moves a given message to the error queue.

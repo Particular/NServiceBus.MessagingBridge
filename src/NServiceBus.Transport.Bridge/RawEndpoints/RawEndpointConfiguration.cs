@@ -8,7 +8,7 @@ namespace NServiceBus.Raw
     /// <summary>
     /// Configuration used to create a raw endpoint instance.
     /// </summary>
-    public class RawEndpointConfiguration
+    class RawEndpointConfiguration
     {
         /// <summary>
         /// Creates a send-only raw endpoint config.
