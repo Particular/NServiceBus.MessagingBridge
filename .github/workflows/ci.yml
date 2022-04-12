@@ -121,7 +121,7 @@ jobs:
           echo "Tagging container image"
 
           $dateTag = "Created=$(Get-Date -Format "yyyy-MM-dd")"
-          $ignore = az tag create --resource-id $details.id --tags Package=RabbitMQTransport RunnerOS=${{ runner.os }} $dateTag
+          $ignore = az tag create --resource-id $details.id --tags Package=TransportBridge RunnerOS=${{ runner.os }} $dateTag
 
           echo "RabbitMQTransport_ConnectionString=host=$ip" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
 
