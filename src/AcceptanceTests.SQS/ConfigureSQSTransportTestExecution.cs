@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Text.RegularExpressions;
+//using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.S3;
@@ -7,7 +7,6 @@ using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
-//using NServiceBus.AcceptanceTests;
 
 public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecution
 {
