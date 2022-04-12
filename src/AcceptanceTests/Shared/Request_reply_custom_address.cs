@@ -34,7 +34,7 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
                         bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
                     })
                     .Done(c => c.SendingEndpointGotResponse)
-                    .Run().ConfigureAwait(false);
+                    .Run();
 
         Assert.IsTrue(ctx.SendingEndpointGotResponse);
     }

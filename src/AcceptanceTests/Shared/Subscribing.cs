@@ -34,7 +34,7 @@ class Subscribing : BridgeAcceptanceTest
                 bridgeConfiguration.AddTestTransportEndpoint<Publisher>();
             })
             .Done(c => c.SubscriberGotEvent)
-            .Run().ConfigureAwait(false);
+            .Run();
 
         Assert.IsTrue(context.SubscriberGotEvent);
     }
