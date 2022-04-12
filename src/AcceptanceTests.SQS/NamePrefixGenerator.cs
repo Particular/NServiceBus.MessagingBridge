@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using NUnit.Framework;
 
 class NamePrefixGenerator
 {
@@ -8,6 +9,7 @@ class NamePrefixGenerator
 
     public static string GetNamePrefix()
     {
-        return NamePrefix;
+        var testRunId = TestContext.CurrentContext.Test.ID;
+        return NamePrefix + testRunId;
     }
 }

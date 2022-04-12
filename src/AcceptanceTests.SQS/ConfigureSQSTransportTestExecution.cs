@@ -10,8 +10,6 @@ using NServiceBus.AcceptanceTesting.Support;
 
 public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecution
 {
-    //string NamePrefix = $"AT{Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "").ToUpperInvariant()}";
-
     public BridgeTransportDefinition GetBridgeTransport()
     {
         var transportDefinition = new TestableSQSTransport(NamePrefixGenerator.GetNamePrefix());

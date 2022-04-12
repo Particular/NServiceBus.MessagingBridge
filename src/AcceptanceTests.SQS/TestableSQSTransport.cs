@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 using NServiceBus;
 using NServiceBus.AcceptanceTests;
-using NServiceBus.Transport;
 
 public class TestableSQSTransport : SqsTransport
 {
@@ -26,18 +21,6 @@ public class TestableSQSTransport : SqsTransport
         {
             S3 = new S3Settings(S3BucketName, S3Prefix, CreateS3Client());
         }
-    }
-
-    public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings,
-        ReceiveSettings[] receivers,
-        string[] sendingAddresses,
-        CancellationToken cancellationToken = new CancellationToken())
-    {
-        var infrastructure = await base.Initialize(hostSettings, receivers, sendingAddresses, cancellationToken)
-            .ConfigureAwait(false);
-        QueuesToCleanup.AddRange(infrastructure.Receivers.Select(x => x.Value.ReceiveAddress).Concat(sendingAddresses)
-            .Distinct());
-        return infrastructure;
     }
 
     public static IAmazonSQS CreateSqsClient()
@@ -61,5 +44,4 @@ public class TestableSQSTransport : SqsTransport
     string S3BucketEnvironmentVariableName = "NSERVICEBUS_AMAZONSQS_S3BUCKET";
     string S3Prefix = "test";
     string S3BucketName;
-    public List<string> QueuesToCleanup { get; } = new List<string>();
 }
