@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-2019, ubuntu-20.04 ]
-        transport: [ Learning, AmazonSQS ]
+        transport: [ Learning, RabbitMQ, AzureServiceBus, SqlServer, AmazonSQS ]
         include:
           - os: windows-2019
             os-name: Windows
