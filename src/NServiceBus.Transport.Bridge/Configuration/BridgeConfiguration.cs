@@ -7,8 +7,14 @@
     using System.Text;
     using Microsoft.Extensions.Logging;
 
+    /// <summary>
+    /// TBD
+    /// </summary>
     public class BridgeConfiguration
     {
+        /// <summary>
+        /// TBD
+        /// </summary>
         public void AddTransport(BridgeTransportConfiguration transportConfiguration)
         {
             if (transportConfigurations.Any(t => t.Name == transportConfiguration.Name))
@@ -19,6 +25,9 @@
             transportConfigurations.Add(transportConfiguration);
         }
 
+        /// <summary>
+        /// TBD
+        /// </summary>
         public void RunInReceiveOnlyTransactionMode()
         {
             runInReceiveOnlyTransactionMode = true;

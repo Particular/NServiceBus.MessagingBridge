@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Particular.Packaging" Version="2.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="UnitTests" Key="$(NServiceBusTestsKey)" />
   </ItemGroup>
 </Project>

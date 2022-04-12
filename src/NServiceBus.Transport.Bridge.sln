@@ -37,6 +37,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.ASB", "Acce
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.SQS", "AcceptanceTests.SQS\AcceptanceTests.SQS.csproj", "{AD10AF05-2BFF-4C4C-9C42-F9A862F159FE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7C9AAE78-1698-46A0-89C8-DE78587C1B29}"
+	ProjectSection(SolutionItems) = preProject
+		Custom.Build.props = Custom.Build.props
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
