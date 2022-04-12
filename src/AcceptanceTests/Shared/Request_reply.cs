@@ -31,7 +31,7 @@ public class Request_reply : BridgeAcceptanceTest
                         bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
                     })
                     .Done(c => c.SendingEndpointGotResponse)
-                    .Run().ConfigureAwait(false);
+                    .Run();
 
         Assert.IsTrue(ctx.SendingEndpointGotResponse);
     }

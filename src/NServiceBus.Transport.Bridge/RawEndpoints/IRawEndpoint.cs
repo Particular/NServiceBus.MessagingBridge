@@ -5,7 +5,7 @@ namespace NServiceBus.Raw
     /// <summary>
     /// Allows to send raw messages.
     /// </summary>
-    public interface IRawEndpoint : IMessageDispatcher
+    interface IRawEndpoint : IMessageDispatcher
     {
         /// <summary>
         /// Translates a given logical address into a transport address.

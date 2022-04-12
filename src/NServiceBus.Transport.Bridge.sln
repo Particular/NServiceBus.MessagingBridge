@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Raw", "NServiceBus.Raw\NServiceBus.Raw.csproj", "{9874A999-E36A-4B2F-B321-95B48AAE06B3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoBridge", "DemoRouter\DemoBridge.csproj", "{2957AED2-F5DA-4611-964B-D90E2653ECF3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsmqSales", "MsmqSales\MsmqSales.csproj", "{340D8ABA-F9A0-4B32-A709-2407D201736C}"
@@ -39,16 +37,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.ASB", "Acce
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.SQS", "AcceptanceTests.SQS\AcceptanceTests.SQS.csproj", "{AD10AF05-2BFF-4C4C-9C42-F9A862F159FE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7C9AAE78-1698-46A0-89C8-DE78587C1B29}"
+	ProjectSection(SolutionItems) = preProject
+		Custom.Build.props = Custom.Build.props
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9874A999-E36A-4B2F-B321-95B48AAE06B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9874A999-E36A-4B2F-B321-95B48AAE06B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9874A999-E36A-4B2F-B321-95B48AAE06B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9874A999-E36A-4B2F-B321-95B48AAE06B3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2957AED2-F5DA-4611-964B-D90E2653ECF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2957AED2-F5DA-4611-964B-D90E2653ECF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2957AED2-F5DA-4611-964B-D90E2653ECF3}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -6,7 +6,7 @@ namespace NServiceBus.Raw
     /// <summary>
     /// Represents an endpoint in the start-up phase.
     /// </summary>
-    public interface IStartableRawEndpoint : IRawEndpoint
+    interface IStartableRawEndpoint : IRawEndpoint
     {
         /// <summary>
         /// Starts the endpoint and returns a reference to it.

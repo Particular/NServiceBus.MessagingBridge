@@ -7,7 +7,7 @@ namespace NServiceBus.Raw
     /// <summary>
     /// Represents a policy for handling errors.
     /// </summary>
-    public interface IErrorHandlingPolicy
+    interface IErrorHandlingPolicy
     {
         /// <summary>
         /// Invoked when an error occurs while processing a message.

@@ -6,7 +6,7 @@ namespace NServiceBus.Raw
     /// <summary>
     /// Provides factory methods for creating and starting endpoint instances.
     /// </summary>
-    public static class RawEndpoint
+    static class RawEndpoint
     {
         /// <summary>
         /// Creates a new startable endpoint based on the provided configuration.
