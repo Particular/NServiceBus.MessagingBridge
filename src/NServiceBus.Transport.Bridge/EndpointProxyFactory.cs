@@ -72,6 +72,11 @@ class EndpointProxyFactory
             return new MsmqAddressParser();
         }
 
+        if (transportConfiguration.TransportDefinition.GetType().Name.ToLower().Contains("sqlserver"))
+        {
+            return new SqlServerAddressParser();
+        }
+
         return new NoOpAddressParser();
     }
 
