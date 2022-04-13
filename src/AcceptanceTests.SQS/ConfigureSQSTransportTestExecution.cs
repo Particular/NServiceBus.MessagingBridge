@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.S3;
@@ -13,11 +14,26 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
     {
         var transportDefinition = new TestableSQSTransport(NamePrefixGenerator.GetNamePrefix());
 
+        var bridgeTransportConfiguration = new BridgeTransportConfiguration(transportDefinition);
+
+        bridgeTransportConfiguration.RegisterAddressParser(address =>
+        {
+            return address.Split(NamePrefixGenerator.Separator).Last();
+        });
+
         return new BridgeTransportDefinition()
         {
-            TransportDefinition = transportDefinition,
+            TransportConfiguration = bridgeTransportConfiguration,
             Cleanup = (ct) => Cleanup(ct),
         };
+    }
+
+    public void ConfigureBridgeTransport(BridgeTransportConfiguration bridgeTransportConfiguration)
+    {
+        bridgeTransportConfiguration.RegisterAddressParser(address =>
+        {
+            return address.Split(NamePrefixGenerator.Separator)[1];
+        });
     }
 
     public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)

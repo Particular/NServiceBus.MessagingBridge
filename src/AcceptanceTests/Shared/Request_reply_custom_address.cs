@@ -24,12 +24,10 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
                     .WithEndpoint<ReplyReceivingEndpoint>()
                     .WithBridge(bridgeConfiguration =>
                     {
-                        var bridgeTransportConfiguration = new BridgeTransportConfiguration(TransportBeingTested);
+                        BridgeTransportConfiguration.AddTestEndpoint<SendingEndpoint>();
+                        BridgeTransportConfiguration.AddTestEndpoint<ReplyReceivingEndpoint>();
 
-                        bridgeTransportConfiguration.AddTestEndpoint<SendingEndpoint>();
-                        bridgeTransportConfiguration.AddTestEndpoint<ReplyReceivingEndpoint>();
-
-                        bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
+                        bridgeConfiguration.AddTransport(BridgeTransportConfiguration);
 
                         bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
                     })

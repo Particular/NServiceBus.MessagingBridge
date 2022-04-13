@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NServiceBus.Transport;
+using NServiceBus;
 using NUnit.Framework;
 
 public class BridgeAcceptanceTest
@@ -40,8 +40,7 @@ public class BridgeAcceptanceTest
         return bridgeTransportDefinition.Cleanup(CancellationToken.None);
     }
 
-    protected TransportDefinition TransportBeingTested => bridgeTransportDefinition.TransportDefinition;
-    protected TransportDefinition TestTransport;
+    protected BridgeTransportConfiguration BridgeTransportConfiguration => bridgeTransportDefinition.TransportConfiguration;
 
     BridgeTransportDefinition bridgeTransportDefinition;
 }

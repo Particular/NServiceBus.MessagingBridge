@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using NServiceBus.Transport;
+using NServiceBus;
 
 public class BridgeTransportDefinition
 {
-    public TransportDefinition TransportDefinition { get; set; }
+    public BridgeTransportConfiguration TransportConfiguration { get; set; }
 
     public Func<CancellationToken, Task> Cleanup { get; set; }
 }

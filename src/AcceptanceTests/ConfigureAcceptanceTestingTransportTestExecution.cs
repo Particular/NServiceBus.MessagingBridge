@@ -10,9 +10,11 @@ class ConfigureAcceptanceTestingTransportTestExecution : IConfigureTransportTest
 {
     public BridgeTransportDefinition GetBridgeTransport()
     {
+        var transportDefinition = new AcceptanceTestingTransport { StorageLocation = GetStorageDir() };
+
         return new BridgeTransportDefinition
         {
-            TransportDefinition = new AcceptanceTestingTransport { StorageLocation = GetStorageDir() },
+            TransportConfiguration = new BridgeTransportConfiguration(transportDefinition),
             Cleanup = (ct) => Cleanup(ct),
         };
     }
