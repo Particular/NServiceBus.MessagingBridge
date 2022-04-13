@@ -18,7 +18,10 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
 
         bridgeTransportConfiguration.RegisterAddressParser(address =>
         {
-            return address.Split(NamePrefixGenerator.Separator).Last();
+            var endpointNameWithoutPrefix = address.Split(NamePrefixGenerator.Separator).Last();
+            var endpointNameWithWithReversedNamingConvention = endpointNameWithoutPrefix.Replace("-", ".");
+
+            return endpointNameWithWithReversedNamingConvention;
         });
 
         return new BridgeTransportDefinition()
@@ -26,14 +29,6 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
             TransportConfiguration = bridgeTransportConfiguration,
             Cleanup = (ct) => Cleanup(ct),
         };
-    }
-
-    public void ConfigureBridgeTransport(BridgeTransportConfiguration bridgeTransportConfiguration)
-    {
-        bridgeTransportConfiguration.RegisterAddressParser(address =>
-        {
-            return address.Split(NamePrefixGenerator.Separator)[1];
-        });
     }
 
     public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)

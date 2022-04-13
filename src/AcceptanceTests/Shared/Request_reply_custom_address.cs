@@ -3,7 +3,6 @@ using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
 using NUnit.Framework;
-using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
 public class Request_reply_custom_address : BridgeAcceptanceTest
 {
@@ -16,7 +15,7 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
                         {
                             var sendOptions = new SendOptions();
 
-                            sendOptions.RouteReplyTo(Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint)));
+                            sendOptions.RouteReplyTo(GetNativeTransportAddress<ReplyReceivingEndpoint>());
 
                             return b.Send(new MyMessage(), sendOptions);
                         }))
@@ -31,15 +30,15 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
 
                         bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
                     })
-                    .Done(c => c.SendingEndpointGotResponse)
+                    .Done(c => c.ReplyReceivingEndpointGotResponse)
                     .Run();
 
-        Assert.IsTrue(ctx.SendingEndpointGotResponse);
+        Assert.IsTrue(ctx.ReplyReceivingEndpointGotResponse);
     }
 
     public class Context : ScenarioContext
     {
-        public bool SendingEndpointGotResponse { get; set; }
+        public bool ReplyReceivingEndpointGotResponse { get; set; }
     }
 
     public class SendingEndpoint : EndpointConfigurationBuilder
@@ -69,7 +68,7 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
 
             public Task Handle(MyReply messageThatIsEnlisted, IMessageHandlerContext context)
             {
-                testContext.SendingEndpointGotResponse = true;
+                testContext.ReplyReceivingEndpointGotResponse = true;
                 return Task.CompletedTask;
             }
 
