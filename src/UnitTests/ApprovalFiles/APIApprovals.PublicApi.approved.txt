@@ -34,6 +34,7 @@ namespace NServiceBus
         public void HasEndpoint(NServiceBus.BridgeEndpoint endpoint) { }
         public void HasEndpoint(NServiceBus.Transport.QueueAddress queueAddress) { }
         public void HasEndpoint(string endpoint) { }
+        public void RegisterAddressParser(System.Func<string, string> parsingFunc) { }
     }
     public static class HostBuilderExtensions
     {

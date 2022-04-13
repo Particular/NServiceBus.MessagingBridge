@@ -1,5 +1,6 @@
 ﻿namespace NServiceBus
 {
+    using System;
     using System.Collections.Generic;
     using NServiceBus.Transport;
 
@@ -42,7 +43,7 @@
         public bool AutoCreateQueues { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int Concurrency { get; set; }
 
@@ -72,6 +73,15 @@
             Endpoints.Add(endpoint);
         }
 
+        /// <summary>
+        /// TBD
+        /// </summary>
+        public void RegisterAddressParser(Func<string, string> parsingFunc)
+        {
+            CustomAddressParser = new CustomAddressParser(parsingFunc);
+        }
+
         internal List<BridgeEndpoint> Endpoints { get; private set; }
+        internal ITransportAddressParser CustomAddressParser { get; private set; }
     }
 }

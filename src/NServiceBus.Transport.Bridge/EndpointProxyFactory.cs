@@ -29,6 +29,9 @@ class EndpointProxyFactory
         var translatedErrorQueue = transportDefinition.ToTransportAddress(new QueueAddress(transportConfiguration.ErrorQueue));
 #pragma warning restore CS0618 // Type or member is obsolete
 
+
+        var addressParser = DetermineAddressParser(transportConfiguration);
+
         var transportEndpointConfiguration = RawEndpointConfiguration.Create(
         endpointToProxy.Name,
         transportConfiguration.TransportDefinition,
@@ -39,7 +42,8 @@ class EndpointProxyFactory
                 endpointToProxy.Name,
                 endpointToProxy.QueueAddress,
                 messageContext,
-                shouldPassTransportTransaction);
+                shouldPassTransportTransaction,
+                addressParser);
 
             return serviceProvider.GetRequiredService<MessageShovel>()
                 .TransferMessage(transferContext, ct);
@@ -54,6 +58,21 @@ class EndpointProxyFactory
         transportEndpointConfiguration.LimitMessageProcessingConcurrencyTo(transportConfiguration.Concurrency);
 
         return RawEndpoint.Create(transportEndpointConfiguration, cancellationToken);
+    }
+
+    static ITransportAddressParser DetermineAddressParser(BridgeTransportConfiguration transportConfiguration)
+    {
+        if (transportConfiguration.CustomAddressParser != null)
+        {
+            return transportConfiguration.CustomAddressParser;
+        }
+
+        if (transportConfiguration.TransportDefinition.GetType().Name.ToLower().Contains("msmq"))
+        {
+            return new MsmqAddressParser();
+        }
+
+        return new NoOpAddressParser();
     }
 
     readonly IServiceProvider serviceProvider;

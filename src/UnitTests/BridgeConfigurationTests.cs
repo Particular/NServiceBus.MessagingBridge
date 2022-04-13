@@ -229,6 +229,16 @@ public class BridgeConfigurationTests
     {
     }
 
+    [Test]
+    public void Should_allow_custom_address_translation()
+    {
+        var someTransport = new BridgeTransportConfiguration(new SomeTransport());
+
+        someTransport.RegisterAddressParser(_ => "test");
+
+        Assert.AreEqual("test", someTransport.CustomAddressParser.ParseEndpointName("whatever"));
+    }
+
     FinalizedBridgeConfiguration FinalizeConfiguration(BridgeConfiguration bridgeConfiguration)
     {
         return bridgeConfiguration.FinalizeConfiguration(new NullLogger<BridgeConfiguration>());

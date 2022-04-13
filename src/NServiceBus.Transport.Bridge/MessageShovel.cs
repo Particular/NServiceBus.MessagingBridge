@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
@@ -31,8 +30,8 @@ class MessageShovel
 
         messageToSend.Headers[BridgeHeaders.Transfer] = $"{transferContext.SourceTransport}->{targetEndpointProxy.TransportName}";
 
-        TransformAddressHeader(messageToSend, rawEndpoint, Headers.ReplyToAddress);
-        TransformAddressHeader(messageToSend, rawEndpoint, FaultsHeaderKeys.FailedQ);
+        TransformAddressHeader(messageToSend, rawEndpoint, transferContext.AddressParser, Headers.ReplyToAddress);
+        TransformAddressHeader(messageToSend, rawEndpoint, transferContext.AddressParser, FaultsHeaderKeys.FailedQ);
 
         var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(targetEndpointAddress));
 
@@ -44,27 +43,22 @@ class MessageShovel
         logger.LogDebug("Moving message over target endpoint: [{0}]", targetEndpointAddress);
     }
 
-    void TransformAddressHeader(OutgoingMessage messageToSend, IRawEndpoint targetEndpointProxy, string headerKey)
+    void TransformAddressHeader(
+        OutgoingMessage messageToSend,
+        IRawEndpoint targetEndpointProxy,
+        ITransportAddressParser addressParser,
+        string headerKey)
     {
         if (!messageToSend.Headers.TryGetValue(headerKey, out var headerValue))
         {
             return;
         }
 
-        var replyToLogicalEndpointName = ParseEndpointAddress(headerValue);
+        var replyToLogicalEndpointName = addressParser.ParseEndpointName(headerValue);
         var targetSpecificReplyToAddress =
             targetEndpointProxy.ToTransportAddress(new QueueAddress(replyToLogicalEndpointName));
 
         messageToSend.Headers[headerKey] = targetSpecificReplyToAddress;
-    }
-
-    string ParseEndpointAddress(string replyToAddress)
-    {
-        return replyToAddress.Split('@').First();
-        // TODO: Sql contains schema-name and possibly more
-        // Sql format is like - Billing@[dbo]@[databaseName]
-        // TODO: Azure Service Bus can shorten the name
-        // ThisIsMyOfficialNameButItsWayTooLong -> ThisIsMyOff
     }
 
     readonly ILogger<MessageShovel> logger;

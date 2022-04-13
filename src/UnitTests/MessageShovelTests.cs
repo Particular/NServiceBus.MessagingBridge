@@ -15,7 +15,9 @@ public class MessageShovelTests
     [Test]
     public async Task Should_transform_reply_to_address()
     {
-        var transferDetails = await Transfer("SendingEndpointReplyAddress@MyMachine");
+        var transferDetails = await Transfer(
+            replyToAddress: "SendingEndpointReplyAddress@MyMachine",
+            addressParser: new MsmqAddressParser());
 
         Assert.AreEqual("SendingEndpointReplyAddress", transferDetails.OutgoingOperation.Message.Headers[Headers.ReplyToAddress]);
     }
@@ -23,7 +25,9 @@ public class MessageShovelTests
     [Test]
     public async Task Should_transform_failed_queue_header()
     {
-        var transferDetails = await Transfer(failedQueueAddress: "error@MyMachine");
+        var transferDetails = await Transfer(
+            failedQueueAddress: "error@MyMachine",
+            addressParser: new MsmqAddressParser());
 
         Assert.AreEqual("error", transferDetails.OutgoingOperation.Message.Headers[FaultsHeaderKeys.FailedQ]);
     }
@@ -68,7 +72,8 @@ public class MessageShovelTests
         string replyToAddress = null,
         string failedQueueAddress = null,
         TransportTransaction transportTransaction = null,
-        bool passTransportTransaction = false)
+        bool passTransportTransaction = false,
+        ITransportAddressParser addressParser = null)
     {
         var logger = new NullLogger<MessageShovel>();
         var targetEndpoint = new FakeRawEndpoint("TargetEndpoint");
@@ -86,6 +91,11 @@ public class MessageShovelTests
             headers.Add(FaultsHeaderKeys.FailedQ, failedQueueAddress);
         }
 
+        if (addressParser == null)
+        {
+            addressParser = new NoOpAddressParser();
+        }
+
         var shovel = new MessageShovel(logger, endpointProxyRegistry);
         var messageContext = new MessageContext(
             "some-id",
@@ -100,7 +110,8 @@ public class MessageShovelTests
             "SourceEndpoint",
             new QueueAddress("SourceEndpointAddress"),
             messageContext,
-            passTransportTransaction);
+            passTransportTransaction,
+            addressParser);
 
         await shovel.TransferMessage(transferContext, CancellationToken.None);
 
