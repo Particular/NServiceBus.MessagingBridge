@@ -41,14 +41,3 @@ namespace NServiceBus
         public static Microsoft.Extensions.Hosting.IHostBuilder UseNServiceBusBridge(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder, System.Action<Microsoft.Extensions.Hosting.HostBuilderContext, NServiceBus.BridgeConfiguration> bridgeConfigurationAction) { }
     }
 }
-namespace NServiceBus.Transport.Bridge
-{
-    public interface IStartableBridge
-    {
-        System.Threading.Tasks.Task<NServiceBus.Transport.Bridge.IStoppableBridge> Start(System.Threading.CancellationToken cancellationToken = default);
-    }
-    public interface IStoppableBridge
-    {
-        System.Threading.Tasks.Task Stop(System.Threading.CancellationToken cancellationToken = default);
-    }
-}

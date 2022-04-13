@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NServiceBus.Raw;
-using NServiceBus.Transport.Bridge;
 
 class StartableBridge : IStartableBridge
 {

@@ -18,7 +18,7 @@ public class Request_reply : BridgeAcceptanceTest
 
                             sendOptions.RouteReplyTo(Conventions.EndpointNamingConvention(typeof(SendingEndpoint)));
 
-                            return b.Send(new MyMessage(), sendOptions);
+                            return b.Send(new MyMessage());
                         }))
                     .WithEndpoint<ReplyingEndpoint>()
                     .WithBridge(bridgeConfiguration =>

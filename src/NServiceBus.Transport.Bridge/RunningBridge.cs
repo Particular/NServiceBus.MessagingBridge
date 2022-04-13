@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus.Raw;
-using NServiceBus.Transport.Bridge;
 
 class RunningBridge : IStoppableBridge
 {

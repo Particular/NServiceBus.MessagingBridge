@@ -5,7 +5,6 @@
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using NServiceBus.Logging;
-    using NServiceBus.Transport.Bridge;
 
     /// <summary>
     /// Extension methods to configure the bridge for the .NET Core generic host.
@@ -26,8 +25,8 @@
         /// Configures the host to start the bridge
         /// </summary>
         public static IHostBuilder UseNServiceBusBridge(
-        this IHostBuilder hostBuilder,
-        Action<HostBuilderContext, BridgeConfiguration> bridgeConfigurationAction)
+            this IHostBuilder hostBuilder,
+            Action<HostBuilderContext, BridgeConfiguration> bridgeConfigurationAction)
         {
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);

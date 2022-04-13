@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using NServiceBus.Logging;
-using NServiceBus.Transport.Bridge;
 using ILoggerFactory = Microsoft.Extensions.Logging.ILoggerFactory;
 
 class BridgeHostedService : IHostedService
