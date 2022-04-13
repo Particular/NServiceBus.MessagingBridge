@@ -9,6 +9,7 @@ public class TestableAzureServiceBusTransport : AzureServiceBusTransport
 {
     public TestableAzureServiceBusTransport(string connectionString) : base(connectionString)
     {
+        SubscriptionRuleNamingConvention = (evt) => evt.FullName.Replace("+", "");
     }
 
     public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings,
