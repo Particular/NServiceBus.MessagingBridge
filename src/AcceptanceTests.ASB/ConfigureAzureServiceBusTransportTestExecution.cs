@@ -21,7 +21,7 @@ public class ConfigureAzureServiceBusTransportTestExecution : IConfigureTranspor
 
         return new BridgeTransportDefinition()
         {
-            TransportDefinition = transportDefinition,
+            TransportConfiguration = new BridgeTransportConfiguration(transportDefinition),
             Cleanup = (ct) => Cleanup(transportDefinition, ct)
         };
     }

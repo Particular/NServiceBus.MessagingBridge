@@ -13,11 +13,13 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
 
     public BridgeTransportDefinition GetBridgeTransport()
     {
+        var transportDefinition = new TestableRabbitMQTransport(
+                new ConventionalRoutingTopology(true),
+                connectionString);
+
         return new BridgeTransportDefinition
         {
-            TransportDefinition = new TestableRabbitMQTransport(
-                new ConventionalRoutingTopology(true),
-                connectionString),
+            TransportConfiguration = new BridgeTransportConfiguration(transportDefinition),
             Cleanup = (ct) => Cleanup(ct)
         };
     }
