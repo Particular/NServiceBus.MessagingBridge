@@ -42,12 +42,18 @@ public class BridgeAcceptanceTest
         return bridgeTransportDefinition.Cleanup(CancellationToken.None);
     }
 
-    protected void AddTestEndpoint<T>(BridgeTransportConfiguration bridgeTransportConfiguration)
-        where T : EndpointConfigurationBuilder
+    protected void AddTestEndpoint<T>(BridgeTransportConfiguration bridgeTransportConfiguration) where T : EndpointConfigurationBuilder
     {
         var endpointName = NServiceBus.AcceptanceTesting.Customization.Conventions.EndpointNamingConvention(typeof(T));
-        var endpointAddress = bridgeTransportDefinition.GetEndpointAddress(endpointName);
+        var endpointAddress = GetTestEndpointAddress<T>();
+
         bridgeTransportConfiguration.HasEndpoint(endpointName, endpointAddress);
+    }
+
+    protected string GetTestEndpointAddress<T>() where T : EndpointConfigurationBuilder
+    {
+        var endpointName = NServiceBus.AcceptanceTesting.Customization.Conventions.EndpointNamingConvention(typeof(T));
+        return bridgeTransportDefinition.GetEndpointAddress(endpointName);
     }
 
     protected TransportDefinition TransportBeingTested => bridgeTransportDefinition.TransportDefinition;

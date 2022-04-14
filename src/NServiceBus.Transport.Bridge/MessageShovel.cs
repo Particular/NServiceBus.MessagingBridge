@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
@@ -10,15 +9,15 @@ class MessageShovel
 {
     public MessageShovel(
         ILogger<MessageShovel> logger,
-        ITargetEndpointRegistry targetEndpointDispatcherRegistry)
+        IEndpointRegistry targetEndpointRegistry)
     {
         this.logger = logger;
-        this.targetEndpointDispatcherRegistry = targetEndpointDispatcherRegistry;
+        this.targetEndpointRegistry = targetEndpointRegistry;
     }
 
     public async Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
     {
-        var targetEndpointDispatcher = targetEndpointDispatcherRegistry.GetTargetEndpointDispatcher(transferContext.SourceEndpointName);
+        var targetEndpointDispatcher = targetEndpointRegistry.GetTargetEndpointDispatcher(transferContext.SourceEndpointName);
 
         var messageContext = transferContext.MessageToTransfer;
 
@@ -27,8 +26,8 @@ class MessageShovel
         var transferDetails = $"{transferContext.SourceTransport}->{targetEndpointDispatcher.TransportName}";
         messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
 
-        TransformAddressHeader(messageToSend, targetEndpointDispatcher, Headers.ReplyToAddress);
-        TransformAddressHeader(messageToSend, targetEndpointDispatcher, FaultsHeaderKeys.FailedQ);
+        TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
+        TransformAddressHeader(messageToSend, targetEndpointRegistry, FaultsHeaderKeys.FailedQ);
 
         await targetEndpointDispatcher.Dispatch(
             messageToSend,
@@ -40,7 +39,7 @@ class MessageShovel
 
     void TransformAddressHeader(
         OutgoingMessage messageToSend,
-        TargetEndpointDispatcher targetEndpointDispatcher,
+        IEndpointRegistry targetEndpointRegistry,
         string headerKey)
     {
         if (!messageToSend.Headers.TryGetValue(headerKey, out var headerValue))
@@ -48,21 +47,11 @@ class MessageShovel
             return;
         }
 
-        var replyToLogicalEndpointName = ParseEndpointAddress(headerValue);
-        var targetSpecificReplyToAddress = targetEndpointDispatcher.ToTransportAddress(replyToLogicalEndpointName);
+        var targetSpecificReplyToAddress = targetEndpointRegistry.TranslateToTargetAddress(headerValue);
 
         messageToSend.Headers[headerKey] = targetSpecificReplyToAddress;
     }
 
-    string ParseEndpointAddress(string replyToAddress)
-    {
-        return replyToAddress.Split('@').First();
-        // TODO: Sql contains schema-name and possibly more
-        // Sql format is like - Billing@[dbo]@[databaseName]
-        // TODO: Azure Service Bus can shorten the name
-        // ThisIsMyOfficialNameButItsWayTooLong -> ThisIsMyOff
-    }
-
     readonly ILogger<MessageShovel> logger;
-    readonly ITargetEndpointRegistry targetEndpointDispatcherRegistry;
+    readonly IEndpointRegistry targetEndpointRegistry;
 }

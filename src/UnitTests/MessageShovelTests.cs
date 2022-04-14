@@ -151,7 +151,7 @@ public class MessageShovelTests
         public string ToTransportAddress(QueueAddress logicalAddress) => logicalAddress.ToString();
     }
 
-    class FakeTargetEndpointRegistry : ITargetEndpointRegistry
+    class FakeTargetEndpointRegistry : IEndpointRegistry
     {
         public FakeTargetEndpointRegistry(string targetTransport, BridgeEndpoint targetEndpoint)
         {
@@ -164,6 +164,8 @@ public class MessageShovelTests
         {
             return new TargetEndpointDispatcher(targetTransport, rawEndpoint, targetEndpoint.QueueAddress);
         }
+
+        public string TranslateToTargetAddress(string sourceAddress) => throw new NotImplementedException();
 
         readonly string targetTransport;
         readonly BridgeEndpoint targetEndpoint;
