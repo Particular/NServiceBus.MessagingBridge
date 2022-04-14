@@ -10,13 +10,13 @@ class StartableBridge : IStartableBridge
     public StartableBridge(
         FinalizedBridgeConfiguration configuration,
         EndpointProxyFactory endpointProxyFactory,
-        EndpointDispatcherRegistry endpointDispatcherRegistry,
+        TargetEndpointDispatcherRegistry targetEndpointDispatcherRegistry,
         SubscriptionManager subscriptionManager,
         ILogger<StartableBridge> logger)
     {
         this.configuration = configuration;
         this.endpointProxyFactory = endpointProxyFactory;
-        this.endpointDispatcherRegistry = endpointDispatcherRegistry;
+        this.targetEndpointDispatcherRegistry = targetEndpointDispatcherRegistry;
         this.subscriptionManager = subscriptionManager;
         this.logger = logger;
     }
@@ -50,11 +50,11 @@ class StartableBridge : IStartableBridge
 
                 startableEndpointProxies.Add(startableEndpointProxy);
 
-                endpointDispatcherRegistry.RegisterDispatcher(endpointToSimulate, transportConfiguration.Name, startableEndpointProxy);
+                targetEndpointDispatcherRegistry.RegisterDispatcher(endpointToSimulate, transportConfiguration.Name, startableEndpointProxy);
             }
         }
 
-        endpointDispatcherRegistry.DetermineTargetEndpointDispatchers(transports);
+        targetEndpointDispatcherRegistry.DetermineTargetEndpointDispatchers(transports);
 
         var stoppableEndpointProxies = new List<IStoppableRawEndpoint>();
 
@@ -75,7 +75,7 @@ class StartableBridge : IStartableBridge
 
     readonly FinalizedBridgeConfiguration configuration;
     readonly EndpointProxyFactory endpointProxyFactory;
-    readonly EndpointDispatcherRegistry endpointDispatcherRegistry;
+    readonly TargetEndpointDispatcherRegistry targetEndpointDispatcherRegistry;
     readonly SubscriptionManager subscriptionManager;
     readonly ILogger<StartableBridge> logger;
 }
