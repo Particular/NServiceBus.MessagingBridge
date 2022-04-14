@@ -25,20 +25,17 @@ public class TestableSQSTransport : SqsTransport
 
     public static IAmazonSQS CreateSqsClient()
     {
-        var credentials = new EnvironmentVariablesAWSCredentials();
-        return new AmazonSQSClient(credentials);
+        return new AmazonSQSClient();
     }
 
     public static IAmazonSimpleNotificationService CreateSnsClient()
     {
-        var credentials = new EnvironmentVariablesAWSCredentials();
-        return new AmazonSimpleNotificationServiceClient(credentials);
+        return new AmazonSimpleNotificationServiceClient();
     }
 
     public static IAmazonS3 CreateS3Client()
     {
-        var credentials = new EnvironmentVariablesAWSCredentials();
-        return new AmazonS3Client(credentials);
+        return new AmazonS3Client();
     }
 
     string S3BucketEnvironmentVariableName = "NSERVICEBUS_AMAZONSQS_S3BUCKET";

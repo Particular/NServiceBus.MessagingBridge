@@ -40,6 +40,5 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         {
             await SQSCleanup.DeleteAllResourcesWithPrefix(sqsClient, snsClient, s3Client, NamePrefixGenerator.GetNamePrefix()).ConfigureAwait(false);
         }
-
     }
 }

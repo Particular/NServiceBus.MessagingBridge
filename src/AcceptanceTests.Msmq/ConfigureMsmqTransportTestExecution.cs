@@ -19,6 +19,7 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
             Cleanup = (ct) => Cleanup(transportDefinition, ct)
         };
     }
+
     public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new TestableMsmqTransport();

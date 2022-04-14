@@ -9,10 +9,10 @@ namespace NServiceBus
     }
     public class BridgeEndpoint
     {
-        public BridgeEndpoint(NServiceBus.Transport.QueueAddress queueAddress) { }
         public BridgeEndpoint(string name) { }
+        public BridgeEndpoint(string name, string queueAddress) { }
         public string Name { get; }
-        public NServiceBus.Transport.QueueAddress QueueAddress { get; }
+        public string QueueAddress { get; }
         public void RegisterPublisher(string eventTypeFullName, string publisher) { }
         public void RegisterPublisher(System.Type eventType, string publisher) { }
         public void RegisterPublisher<T>(string publisher) { }
@@ -32,8 +32,8 @@ namespace NServiceBus
         public string Name { get; set; }
         public NServiceBus.Transport.TransportDefinition TransportDefinition { get; }
         public void HasEndpoint(NServiceBus.BridgeEndpoint endpoint) { }
-        public void HasEndpoint(NServiceBus.Transport.QueueAddress queueAddress) { }
-        public void HasEndpoint(string endpoint) { }
+        public void HasEndpoint(string endpointName) { }
+        public void HasEndpoint(string endpointName, string endpointAddress) { }
     }
     public static class HostBuilderExtensions
     {

@@ -3,7 +3,6 @@ using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
 using NUnit.Framework;
-using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
 public class Request_reply_custom_address : BridgeAcceptanceTest
 {
@@ -15,8 +14,9 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
                         .When(cc => cc.EndpointsStarted, (b, _) =>
                         {
                             var sendOptions = new SendOptions();
+                            var endpointAddress = GetTestEndpointAddress<ReplyReceivingEndpoint>();
 
-                            sendOptions.RouteReplyTo(Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint)));
+                            sendOptions.RouteReplyTo(endpointAddress);
 
                             return b.Send(new MyMessage(), sendOptions);
                         }))
