@@ -44,7 +44,12 @@ class EndpointRegistry : IEndpointRegistry
 
     public TargetEndpointDispatcher GetTargetEndpointDispatcher(string sourceEndpointName)
     {
-        return targetEndpointDispatchers[sourceEndpointName];
+        if (targetEndpointDispatchers.TryGetValue(sourceEndpointName, out var endpointDispatcher))
+        {
+            return endpointDispatcher;
+        }
+
+        throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}");
     }
 
     public string TranslateToTargetAddress(string sourceAddress)
@@ -54,7 +59,7 @@ class EndpointRegistry : IEndpointRegistry
             return targetAddress;
         }
 
-        throw new Exception($"No address mapping could be found for {sourceAddress}");
+        throw new Exception($"No address mapping could be found for: {sourceAddress}");
     }
 
     readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = new Dictionary<string, TargetEndpointDispatcher>();
