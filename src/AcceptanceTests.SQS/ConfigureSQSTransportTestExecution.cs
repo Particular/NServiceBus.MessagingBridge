@@ -7,7 +7,6 @@ using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
-using NServiceBus.Transport;
 
 public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecution
 {
@@ -18,7 +17,6 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         return new BridgeTransportDefinition()
         {
             TransportDefinition = transportDefinition,
-            //GetEndpointAddress = ApplyTransportAddress,
             Cleanup = (ct) => Cleanup(ct),
         };
     }
