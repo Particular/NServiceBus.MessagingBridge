@@ -10,16 +10,16 @@ class EndpointRegistry : IEndpointRegistry
     public void RegisterDispatcher(
         BridgeEndpoint endpoint,
         string targetTransportName,
-        IRawEndpoint proxy)
+        IStartableRawEndpoint startableRawEndpoint)
     {
         registrations.Add(new ProxyRegistration
         {
             Endpoint = endpoint,
             TranportName = targetTransportName,
-            RawEndpoint = proxy
+            RawEndpoint = startableRawEndpoint
         });
 
-        addressMappings[endpoint.QueueAddress] = proxy.ToTransportAddress(new QueueAddress(endpoint.Name));
+        addressMappings[endpoint.QueueAddress] = startableRawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
     }
 
     public void ApplyMappings(IReadOnlyCollection<BridgeTransportConfiguration> transportConfigurations)
@@ -62,14 +62,16 @@ class EndpointRegistry : IEndpointRegistry
         throw new Exception($"No address mapping could be found for: {sourceAddress}");
     }
 
+    public IEnumerable<ProxyRegistration> Registrations => registrations;
+
     readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = new Dictionary<string, TargetEndpointDispatcher>();
     readonly Dictionary<string, string> addressMappings = new Dictionary<string, string>();
     readonly List<ProxyRegistration> registrations = new List<ProxyRegistration>();
 
-    class ProxyRegistration
+    public class ProxyRegistration
     {
         public BridgeEndpoint Endpoint;
         public string TranportName;
-        public IRawEndpoint RawEndpoint;
+        public IStartableRawEndpoint RawEndpoint;
     }
 }
