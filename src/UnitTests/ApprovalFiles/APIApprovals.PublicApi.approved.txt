@@ -33,6 +33,7 @@ namespace NServiceBus
         public NServiceBus.Transport.TransportDefinition TransportDefinition { get; }
         public void HasEndpoint(NServiceBus.BridgeEndpoint endpoint) { }
         public void HasEndpoint(string endpointName) { }
+        public void HasEndpoint(string endpointName, string endpointAddress) { }
     }
     public static class HostBuilderExtensions
     {

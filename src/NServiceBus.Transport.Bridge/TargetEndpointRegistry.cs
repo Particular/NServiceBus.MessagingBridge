@@ -3,7 +3,7 @@ using System.Linq;
 using NServiceBus;
 using NServiceBus.Raw;
 
-class TargetEndpointDispatcherRegistry : ITargetEndpointDispatcherRegistry
+class TargetEndpointRegistry : ITargetEndpointRegistry
 {
     public void RegisterDispatcher(
         BridgeEndpoint endpoint,

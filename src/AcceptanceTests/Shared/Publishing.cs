@@ -14,7 +14,7 @@ class Publishing : BridgeAcceptanceTest
             {
                 var bridgeTransportConfiguration = new BridgeTransportConfiguration(TransportBeingTested);
 
-                bridgeTransportConfiguration.AddTestEndpoint<Publisher>();
+                AddTestEndpoint<Publisher>(bridgeTransportConfiguration);
                 bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
 
                 var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));

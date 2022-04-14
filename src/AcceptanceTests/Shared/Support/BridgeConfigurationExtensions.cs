@@ -4,12 +4,6 @@ using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
 public static class BridgeConfigurationExtensions
 {
-    public static void AddTestEndpoint<T>(this BridgeTransportConfiguration bridgeTransportConfiguration)
-        where T : EndpointConfigurationBuilder
-    {
-        bridgeTransportConfiguration.HasEndpoint(Conventions.EndpointNamingConvention(typeof(T)));
-    }
-
     public static void AddTestTransportEndpoint<T>(this BridgeConfiguration bridgeConfiguration)
          where T : EndpointConfigurationBuilder
     {

@@ -26,8 +26,8 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
                     {
                         var bridgeTransportConfiguration = new BridgeTransportConfiguration(TransportBeingTested);
 
-                        bridgeTransportConfiguration.AddTestEndpoint<SendingEndpoint>();
-                        bridgeTransportConfiguration.AddTestEndpoint<ReplyReceivingEndpoint>();
+                        AddTestEndpoint<SendingEndpoint>(bridgeTransportConfiguration);
+                        AddTestEndpoint<ReplyReceivingEndpoint>(bridgeTransportConfiguration);
 
                         bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
 

@@ -100,7 +100,7 @@ public class MessageShovelTests
         }
 
         var targetEndpoint = new BridgeEndpoint("TargetEndpoint", targetAddress);
-        var dispatcherRegistry = new FakeTargetEndpointDispatcherRegistry("TargetTransport", targetEndpoint);
+        var dispatcherRegistry = new FakeTargetEndpointRegistry("TargetTransport", targetEndpoint);
         var shovel = new MessageShovel(logger, dispatcherRegistry);
         var messageContext = new MessageContext(
             "some-id",
@@ -151,9 +151,9 @@ public class MessageShovelTests
         public string ToTransportAddress(QueueAddress logicalAddress) => logicalAddress.ToString();
     }
 
-    class FakeTargetEndpointDispatcherRegistry : ITargetEndpointDispatcherRegistry
+    class FakeTargetEndpointRegistry : ITargetEndpointRegistry
     {
-        public FakeTargetEndpointDispatcherRegistry(string targetTransport, BridgeEndpoint targetEndpoint)
+        public FakeTargetEndpointRegistry(string targetTransport, BridgeEndpoint targetEndpoint)
         {
             this.targetTransport = targetTransport;
             this.targetEndpoint = targetEndpoint;

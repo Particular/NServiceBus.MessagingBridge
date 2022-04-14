@@ -57,6 +57,14 @@
         /// <summary>
         /// TBD
         /// </summary>
+        public void HasEndpoint(string endpointName, string endpointAddress)
+        {
+            HasEndpoint(new BridgeEndpoint(endpointName, endpointAddress));
+        }
+
+        /// <summary>
+        /// TBD
+        /// </summary>
         public void HasEndpoint(BridgeEndpoint endpoint)
         {
             Endpoints.Add(endpoint);

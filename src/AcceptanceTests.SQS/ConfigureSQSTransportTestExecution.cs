@@ -7,6 +7,7 @@ using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
+using NServiceBus.Transport;
 
 public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecution
 {
@@ -17,6 +18,7 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         return new BridgeTransportDefinition()
         {
             TransportDefinition = transportDefinition,
+            GetEndpointAddress = ApplyTransportAddress,
             Cleanup = (ct) => Cleanup(ct),
         };
     }
@@ -29,17 +31,25 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         return ct => Cleanup(ct);
     }
 
-    async Task Cleanup(CancellationToken cancellationToken)
+    string ApplyTransportAddress(string endpointName)
     {
-        var accessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
-        var secretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
+        var transportDefinition = new TestableSQSTransport(NamePrefixGenerator.GetNamePrefix());
+#pragma warning disable CS0618 // Type or member is obsolete
+        return transportDefinition.ToTransportAddress(new QueueAddress(endpointName));
+#pragma warning restore CS0618 // Type or member is obsolete
+    }
 
-        using (var sqsClient = new AmazonSQSClient(accessKeyId, secretAccessKey))
-        using (var snsClient = new AmazonSimpleNotificationServiceClient(accessKeyId, secretAccessKey))
-        using (var s3Client = new AmazonS3Client(accessKeyId, secretAccessKey))
-        {
-            await SQSCleanup.DeleteAllResourcesWithPrefix(sqsClient, snsClient, s3Client, NamePrefixGenerator.GetNamePrefix()).ConfigureAwait(false);
-        }
+    Task Cleanup(CancellationToken cancellationToken)
+    {
+        //var accessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
+        //var secretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
 
+        //using (var sqsClient = new AmazonSQSClient(accessKeyId, secretAccessKey))
+        //using (var snsClient = new AmazonSimpleNotificationServiceClient(accessKeyId, secretAccessKey))
+        //using (var s3Client = new AmazonS3Client(accessKeyId, secretAccessKey))
+        //{
+        //    await SQSCleanup.DeleteAllResourcesWithPrefix(sqsClient, snsClient, s3Client, NamePrefixGenerator.GetNamePrefix()).ConfigureAwait(false);
+        //}
+        return Task.CompletedTask;
     }
 }

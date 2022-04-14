@@ -10,7 +10,7 @@ class MessageShovel
 {
     public MessageShovel(
         ILogger<MessageShovel> logger,
-        ITargetEndpointDispatcherRegistry targetEndpointDispatcherRegistry)
+        ITargetEndpointRegistry targetEndpointDispatcherRegistry)
     {
         this.logger = logger;
         this.targetEndpointDispatcherRegistry = targetEndpointDispatcherRegistry;
@@ -64,5 +64,5 @@ class MessageShovel
     }
 
     readonly ILogger<MessageShovel> logger;
-    readonly ITargetEndpointDispatcherRegistry targetEndpointDispatcherRegistry;
+    readonly ITargetEndpointRegistry targetEndpointDispatcherRegistry;
 }

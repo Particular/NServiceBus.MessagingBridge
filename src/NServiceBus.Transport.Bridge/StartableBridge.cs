@@ -10,7 +10,7 @@ class StartableBridge : IStartableBridge
     public StartableBridge(
         FinalizedBridgeConfiguration configuration,
         EndpointProxyFactory endpointProxyFactory,
-        TargetEndpointDispatcherRegistry targetEndpointDispatcherRegistry,
+        TargetEndpointRegistry targetEndpointDispatcherRegistry,
         SubscriptionManager subscriptionManager,
         ILogger<StartableBridge> logger)
     {
@@ -75,7 +75,7 @@ class StartableBridge : IStartableBridge
 
     readonly FinalizedBridgeConfiguration configuration;
     readonly EndpointProxyFactory endpointProxyFactory;
-    readonly TargetEndpointDispatcherRegistry targetEndpointDispatcherRegistry;
+    readonly TargetEndpointRegistry targetEndpointDispatcherRegistry;
     readonly SubscriptionManager subscriptionManager;
     readonly ILogger<StartableBridge> logger;
 }

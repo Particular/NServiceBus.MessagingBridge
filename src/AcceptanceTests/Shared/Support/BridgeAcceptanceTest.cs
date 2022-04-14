@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NServiceBus;
+using NServiceBus.AcceptanceTesting;
 using NServiceBus.Transport;
 using NUnit.Framework;
 
@@ -38,6 +40,14 @@ public class BridgeAcceptanceTest
     public Task TearDown()
     {
         return bridgeTransportDefinition.Cleanup(CancellationToken.None);
+    }
+
+    protected void AddTestEndpoint<T>(BridgeTransportConfiguration bridgeTransportConfiguration)
+        where T : EndpointConfigurationBuilder
+    {
+        var endpointName = NServiceBus.AcceptanceTesting.Customization.Conventions.EndpointNamingConvention(typeof(T));
+        var endpointAddress = bridgeTransportDefinition.GetEndpointAddress(endpointName);
+        bridgeTransportConfiguration.HasEndpoint(endpointName, endpointAddress);
     }
 
     protected TransportDefinition TransportBeingTested => bridgeTransportDefinition.TransportDefinition;
