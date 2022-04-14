@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-2019, ubuntu-20.04 ]
-        transport: [ Learning, RabbitMQ ]
+        transport: [ Learning, RabbitMQ, AzureServiceBus, SqlServer, AmazonSQS ]
         include:
           - os: windows-2019
             os-name: Windows
@@ -89,7 +89,7 @@ jobs:
           echo "NSERVICEBUS_AMAZONSQS_S3BUCKET=${{ secrets.NSERVICEBUS_AMAZONSQS_S3BUCKET }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
       - name: Setup RabbitMQ
         if: matrix.transport == 'RabbitMQ'
-        uses: Particular/setup-rabbitmq-action@main
+        uses: Particular/setup-rabbitmq-action@config-setup
         with:
           connection-string-name: RabbitMQTransport_ConnectionString
           tag: RabbitMQTransportBridge
