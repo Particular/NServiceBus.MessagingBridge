@@ -43,9 +43,6 @@ class StartableBridge : IStartableBridge
                    cancellationToken)
                    .ConfigureAwait(false);
 
-                await subscriptionManager.SubscribeToEvents(startableEndpointProxy, endpointToSimulate.Subscriptions, cancellationToken)
-                    .ConfigureAwait(false);
-
                 logger.LogInformation("Proxy for endpoint {endpoint} created on {transport}", endpointToSimulate.Name, transportConfiguration.Name);
 
                 startableEndpointProxies.Add(startableEndpointProxy);
@@ -58,14 +55,20 @@ class StartableBridge : IStartableBridge
 
         var stoppableEndpointProxies = new List<IStoppableRawEndpoint>();
 
-        // now that all proxies are created and subscriptions are setup we can
+        // now that all proxies are created we can
         // start them up to make messages start flowing across the transports
-        foreach (var endpointProxy in startableEndpointProxies)
+        foreach (var endpointRegistration in endpointRegistry.Registrations)
         {
-            var stoppableRawEndpoint = await endpointProxy.Start(cancellationToken)
+            var stoppableRawEndpoint = await endpointRegistration.RawEndpoint.Start(cancellationToken)
                 .ConfigureAwait(false);
 
             stoppableEndpointProxies.Add(stoppableRawEndpoint);
+        }
+
+        foreach (var endpointRegistration in endpointRegistry.Registrations)
+        {
+            await subscriptionManager.SubscribeToEvents(endpointRegistration.RawEndpoint, endpointRegistration.Endpoint.Subscriptions, cancellationToken)
+               .ConfigureAwait(false);
         }
 
         logger.LogInformation("Bridge startup complete");
