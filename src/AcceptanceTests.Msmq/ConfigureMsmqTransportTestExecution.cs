@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
-using NServiceBus.Transport;
 
 class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
 {
@@ -17,17 +16,8 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
         return new BridgeTransportDefinition
         {
             TransportDefinition = transportDefinition,
-            GetEndpointAddress = ApplyTransportAddress,
             Cleanup = (ct) => Cleanup(transportDefinition, ct)
         };
-    }
-
-    string ApplyTransportAddress(string endpointName)
-    {
-        var transportDefinition = new TestableMsmqTransport();
-#pragma warning disable CS0618 // Type or member is obsolete
-        return transportDefinition.ToTransportAddress(new QueueAddress(endpointName));
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)

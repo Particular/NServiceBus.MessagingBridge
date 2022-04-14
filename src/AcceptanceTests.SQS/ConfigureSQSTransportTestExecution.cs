@@ -18,7 +18,7 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         return new BridgeTransportDefinition()
         {
             TransportDefinition = transportDefinition,
-            GetEndpointAddress = ApplyTransportAddress,
+            //GetEndpointAddress = ApplyTransportAddress,
             Cleanup = (ct) => Cleanup(ct),
         };
     }
@@ -29,14 +29,6 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         endpointConfiguration.UseTransport(transportDefinition);
 
         return ct => Cleanup(ct);
-    }
-
-    string ApplyTransportAddress(string endpointName)
-    {
-        var transportDefinition = new TestableSQSTransport(NamePrefixGenerator.GetNamePrefix());
-#pragma warning disable CS0618 // Type or member is obsolete
-        return transportDefinition.ToTransportAddress(new QueueAddress(endpointName));
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     async Task Cleanup(CancellationToken cancellationToken)
