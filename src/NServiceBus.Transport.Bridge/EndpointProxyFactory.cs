@@ -37,7 +37,6 @@ class EndpointProxyFactory
             var transferContext = new TransferContext(
                 transportConfiguration.Name,
                 endpointToProxy.Name,
-                endpointToProxy.QueueAddress,
                 messageContext,
                 shouldPassTransportTransaction);
 

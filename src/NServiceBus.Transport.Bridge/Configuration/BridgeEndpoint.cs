@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using NServiceBus.Transport;
 
     /// <summary>
     /// TBD
@@ -12,17 +11,17 @@
         /// <summary>
         /// TBD
         /// </summary>
-        public BridgeEndpoint(string name) : this(new QueueAddress(name))
+        public BridgeEndpoint(string name) : this(name, name)
         {
         }
 
         /// <summary>
         /// TBD
         /// </summary>
-        public BridgeEndpoint(QueueAddress queueAddress)
+        public BridgeEndpoint(string name, string queueAddress)
         {
+            Name = name;
             QueueAddress = queueAddress;
-            Name = queueAddress.BaseAddress;
 
             Subscriptions = new List<BridgeEndpointSubscription>();
         }
@@ -54,7 +53,7 @@
         /// <summary>
         /// TBD
         /// </summary>
-        public QueueAddress QueueAddress { get; private set; }
+        public string QueueAddress { get; private set; }
 
         /// <summary>
         /// TBD

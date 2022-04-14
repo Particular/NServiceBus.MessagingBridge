@@ -49,19 +49,20 @@
         /// <summary>
         /// TBD
         /// </summary>
-        public void HasEndpoint(string endpoint)
+        public void HasEndpoint(string endpointName)
         {
-            HasEndpoint(new QueueAddress(endpoint));
+#pragma warning disable CS0618 // Type or member is obsolete
+            var endpointAddress = TransportDefinition.ToTransportAddress(new QueueAddress(endpointName));
+#pragma warning restore CS0618 // Type or member is obsolete
+            HasEndpoint(new BridgeEndpoint(endpointName, endpointAddress));
         }
 
         /// <summary>
         /// TBD
         /// </summary>
-        public void HasEndpoint(QueueAddress queueAddress)
+        public void HasEndpoint(string endpointName, string endpointAddress)
         {
-            var endpoint = new BridgeEndpoint(queueAddress);
-
-            HasEndpoint(endpoint);
+            HasEndpoint(new BridgeEndpoint(endpointName, endpointAddress));
         }
 
         /// <summary>

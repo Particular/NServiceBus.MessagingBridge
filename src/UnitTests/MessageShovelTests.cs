@@ -15,7 +15,7 @@ public class MessageShovelTests
     [Test]
     public async Task Should_transform_reply_to_address()
     {
-        var transferDetails = await Transfer("SendingEndpointReplyAddress@MyMachine");
+        var transferDetails = await Transfer(replyToAddress: "SendingEndpointReplyAddress@MyMachine");
 
         Assert.AreEqual("SendingEndpointReplyAddress", transferDetails.OutgoingOperation.Message.Headers[Headers.ReplyToAddress]);
     }
@@ -32,7 +32,7 @@ public class MessageShovelTests
     public async Task Should_handle_send_only_endpoints()
     {
         //send only endpoints doesn't attach a reply to address
-        var transferDetails = await Transfer();
+        var transferDetails = await Transfer(replyToAddress: null);
 
         Assert.NotNull(transferDetails.OutgoingOperation);
     }
@@ -64,17 +64,30 @@ public class MessageShovelTests
         Assert.AreSame(transportTransaction, transferWithTransaction.TransportTransaction);
     }
 
+    [Test]
+    public async Task Should_dispatch_message_to_configured_address()
+    {
+        var targetEndpointAddress = "target@some-machine";
+
+        var transferDetails = await Transfer(targetAddress: targetEndpointAddress);
+
+        Assert.AreEqual(targetEndpointAddress, transferDetails.OutgoingOperation.Destination);
+    }
+
     static async Task<TransferDetails> Transfer(
+        string targetAddress = null,
         string replyToAddress = null,
         string failedQueueAddress = null,
         TransportTransaction transportTransaction = null,
         bool passTransportTransaction = false)
     {
         var logger = new NullLogger<MessageShovel>();
-        var targetEndpoint = new FakeRawEndpoint("TargetEndpoint");
-        var endpointProxyRegistry = new FakeTargetEndpointProxyRegistry("TargetTransport", targetEndpoint);
-
         var headers = new Dictionary<string, string>();
+
+        if (string.IsNullOrEmpty(targetAddress))
+        {
+            targetAddress = "TargetAddress";
+        }
 
         if (!string.IsNullOrEmpty(replyToAddress))
         {
@@ -86,7 +99,9 @@ public class MessageShovelTests
             headers.Add(FaultsHeaderKeys.FailedQ, failedQueueAddress);
         }
 
-        var shovel = new MessageShovel(logger, endpointProxyRegistry);
+        var targetEndpoint = new BridgeEndpoint("TargetEndpoint", targetAddress);
+        var dispatcherRegistry = new FakeTargetEndpointRegistry("TargetTransport", targetEndpoint);
+        var shovel = new MessageShovel(logger, dispatcherRegistry);
         var messageContext = new MessageContext(
             "some-id",
             headers,
@@ -98,13 +113,12 @@ public class MessageShovelTests
         var transferContext = new TransferContext(
             "SourceTransport",
             "SourceEndpoint",
-            new QueueAddress("SourceEndpointAddress"),
             messageContext,
             passTransportTransaction);
 
         await shovel.TransferMessage(transferContext, CancellationToken.None);
 
-        return targetEndpoint.TransferDetails;
+        return dispatcherRegistry.TransferDetails;
     }
 
     class FakeRawEndpoint : IStoppableRawEndpoint, IRawEndpoint
@@ -137,26 +151,35 @@ public class MessageShovelTests
         public string ToTransportAddress(QueueAddress logicalAddress) => logicalAddress.ToString();
     }
 
-    class FakeTargetEndpointProxyRegistry : ITargetEndpointProxyRegistry
+    class FakeTargetEndpointRegistry : IEndpointRegistry
     {
-        public FakeTargetEndpointProxyRegistry(string targetTransport, FakeRawEndpoint targetEndpoint)
+        public FakeTargetEndpointRegistry(string targetTransport, BridgeEndpoint targetEndpoint)
         {
             this.targetTransport = targetTransport;
             this.targetEndpoint = targetEndpoint;
+            rawEndpoint = new FakeRawEndpoint(targetEndpoint.Name);
         }
 
-        public TargetEndpointProxy GetTargetEndpointProxy(string sourceEndpointName)
+        public TargetEndpointDispatcher GetTargetEndpointDispatcher(string sourceEndpointName)
         {
-            return new TargetEndpointProxy(targetTransport, targetEndpoint);
+            return new TargetEndpointDispatcher(targetTransport, rawEndpoint, targetEndpoint.QueueAddress);
+        }
+
+        public string TranslateToTargetAddress(string sourceAddress)
+        {
+            return sourceAddress.Split('@').First();
         }
 
         readonly string targetTransport;
-        readonly FakeRawEndpoint targetEndpoint;
-    }
-}
+        readonly BridgeEndpoint targetEndpoint;
+        readonly FakeRawEndpoint rawEndpoint;
 
-public class TransferDetails
-{
-    public UnicastTransportOperation OutgoingOperation { get; set; }
-    public TransportTransaction TransportTransaction { get; set; }
+        public TransferDetails TransferDetails => rawEndpoint.TransferDetails;
+    }
+
+    public class TransferDetails
+    {
+        public UnicastTransportOperation OutgoingOperation { get; set; }
+        public TransportTransaction TransportTransaction { get; set; }
+    }
 }
