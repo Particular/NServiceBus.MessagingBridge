@@ -49,19 +49,9 @@
         /// <summary>
         /// TBD
         /// </summary>
-        public void HasEndpoint(string endpoint)
+        public void HasEndpoint(string endpointName)
         {
-            HasEndpoint(new QueueAddress(endpoint));
-        }
-
-        /// <summary>
-        /// TBD
-        /// </summary>
-        public void HasEndpoint(QueueAddress queueAddress)
-        {
-            var endpoint = new BridgeEndpoint(queueAddress);
-
-            HasEndpoint(endpoint);
+            HasEndpoint(new BridgeEndpoint(endpointName));
         }
 
         /// <summary>

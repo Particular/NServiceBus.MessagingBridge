@@ -47,8 +47,8 @@
                 serviceCollection.AddSingleton<IStartableBridge, StartableBridge>();
                 serviceCollection.AddSingleton<EndpointProxyFactory>();
                 serviceCollection.AddSingleton<SubscriptionManager>();
-                serviceCollection.AddSingleton<EndpointProxyRegistry>();
-                serviceCollection.AddSingleton<ITargetEndpointProxyRegistry>(sp => sp.GetRequiredService<EndpointProxyRegistry>());
+                serviceCollection.AddSingleton<EndpointDispatcherRegistry>();
+                serviceCollection.AddSingleton<ITargetEndpointDispatcherRegistry>(sp => sp.GetRequiredService<EndpointDispatcherRegistry>());
                 serviceCollection.AddTransient<MessageShovel>();
             });
 

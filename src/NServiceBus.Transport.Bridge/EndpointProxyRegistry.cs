@@ -3,27 +3,27 @@ using System.Linq;
 using NServiceBus;
 using NServiceBus.Raw;
 
-class EndpointProxyRegistry : ITargetEndpointProxyRegistry
+class EndpointDispatcherRegistry : ITargetEndpointDispatcherRegistry
 {
-    public void RegisterProxy(
-        string endpointName,
+    public void RegisterDispatcher(
+        BridgeEndpoint endpoint,
         string targetTransportName,
         IRawEndpoint proxy)
     {
         registrations.Add(new ProxyRegistration
         {
-            EndpointName = endpointName,
+            Endpoint = endpoint,
             TranportName = targetTransportName,
             RawEndpoint = proxy
         });
     }
 
-    public void DetermineTargetEndpointProxies(IReadOnlyCollection<BridgeTransportConfiguration> transportConfigurations)
+    public void DetermineTargetEndpointDispatchers(IReadOnlyCollection<BridgeTransportConfiguration> transportConfigurations)
     {
         foreach (var registration in registrations)
         {
             // target transport is the transport where this endpoint is actually running
-            var targetTransportName = transportConfigurations.Single(t => t.Endpoints.Any(e => e.Name == registration.EndpointName))
+            var targetTransportName = transportConfigurations.Single(t => t.Endpoints.Any(e => e.Name == registration.Endpoint.Name))
                 .Name;
 
             // just pick the first proxy that is running on the target transport since
@@ -32,21 +32,24 @@ class EndpointProxyRegistry : ITargetEndpointProxyRegistry
                 .First(r => r.TranportName == targetTransportName)
                 .RawEndpoint;
 
-            targetEndpointProxies[registration.EndpointName] = new TargetEndpointProxy(targetTransportName, proxyEndpoint);
+            targetEndpointProxies[registration.Endpoint.Name] = new TargetEndpointDispatcher(
+                targetTransportName,
+                proxyEndpoint,
+                registration.Endpoint.QueueAddress);
         }
     }
 
-    public TargetEndpointProxy GetTargetEndpointProxy(string sourceEndpointName)
+    public TargetEndpointDispatcher GetTargetEndpointDispatcher(string sourceEndpointName)
     {
         return targetEndpointProxies[sourceEndpointName];
     }
 
-    readonly Dictionary<string, TargetEndpointProxy> targetEndpointProxies = new Dictionary<string, TargetEndpointProxy>();
+    readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointProxies = new Dictionary<string, TargetEndpointDispatcher>();
     readonly List<ProxyRegistration> registrations = new List<ProxyRegistration>();
 
     class ProxyRegistration
     {
-        public string EndpointName;
+        public BridgeEndpoint Endpoint;
         public string TranportName;
         public IRawEndpoint RawEndpoint;
     }

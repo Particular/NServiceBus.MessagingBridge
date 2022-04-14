@@ -4,47 +4,44 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Faults;
-using NServiceBus.Raw;
-using NServiceBus.Routing;
 using NServiceBus.Transport;
 
 class MessageShovel
 {
     public MessageShovel(
         ILogger<MessageShovel> logger,
-        ITargetEndpointProxyRegistry targetEndpointProxyRegistry)
+        ITargetEndpointDispatcherRegistry targetEndpointDispatcherRegistry)
     {
         this.logger = logger;
-        this.targetEndpointProxyRegistry = targetEndpointProxyRegistry;
+        this.targetEndpointDispatcherRegistry = targetEndpointDispatcherRegistry;
     }
 
     public async Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
     {
-        var targetEndpointProxy = targetEndpointProxyRegistry.GetTargetEndpointProxy(transferContext.ProxyEndpointName);
-        var rawEndpoint = targetEndpointProxy.RawEndpoint;
+        var targetEndpointDispatcher = targetEndpointDispatcherRegistry.GetTargetEndpointDispatcher(transferContext.SourceEndpointName);
 
         var messageContext = transferContext.MessageToTransfer;
 
         var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
 
-        var targetEndpointAddress = rawEndpoint.ToTransportAddress(transferContext.ProxyQueueAddress);
+        var transferDetails = $"{transferContext.SourceTransport}->{targetEndpointDispatcher.TransportName}";
+        messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
 
-        messageToSend.Headers[BridgeHeaders.Transfer] = $"{transferContext.SourceTransport}->{targetEndpointProxy.TransportName}";
+        TransformAddressHeader(messageToSend, targetEndpointDispatcher, Headers.ReplyToAddress);
+        TransformAddressHeader(messageToSend, targetEndpointDispatcher, FaultsHeaderKeys.FailedQ);
 
-        TransformAddressHeader(messageToSend, rawEndpoint, Headers.ReplyToAddress);
-        TransformAddressHeader(messageToSend, rawEndpoint, FaultsHeaderKeys.FailedQ);
-
-        var transportOperation = new TransportOperation(messageToSend, new UnicastAddressTag(targetEndpointAddress));
-
-        await rawEndpoint.Dispatch(
-            new TransportOperations(transportOperation),
+        await targetEndpointDispatcher.Dispatch(
+            messageToSend,
             transferContext.PassTransportTransaction ? messageContext.TransportTransaction : new TransportTransaction(),
             cancellationToken).ConfigureAwait(false);
 
-        logger.LogDebug("Moving message over target endpoint: [{0}]", targetEndpointAddress);
+        logger.LogDebug($"{transferDetails}: Transfered message {messageToSend.MessageId}");
     }
 
-    void TransformAddressHeader(OutgoingMessage messageToSend, IRawEndpoint targetEndpointProxy, string headerKey)
+    void TransformAddressHeader(
+        OutgoingMessage messageToSend,
+        TargetEndpointDispatcher targetEndpointDispatcher,
+        string headerKey)
     {
         if (!messageToSend.Headers.TryGetValue(headerKey, out var headerValue))
         {
@@ -52,8 +49,7 @@ class MessageShovel
         }
 
         var replyToLogicalEndpointName = ParseEndpointAddress(headerValue);
-        var targetSpecificReplyToAddress =
-            targetEndpointProxy.ToTransportAddress(new QueueAddress(replyToLogicalEndpointName));
+        var targetSpecificReplyToAddress = targetEndpointDispatcher.ToTransportAddress(replyToLogicalEndpointName);
 
         messageToSend.Headers[headerKey] = targetSpecificReplyToAddress;
     }
@@ -68,5 +64,5 @@ class MessageShovel
     }
 
     readonly ILogger<MessageShovel> logger;
-    readonly ITargetEndpointProxyRegistry targetEndpointProxyRegistry;
+    readonly ITargetEndpointDispatcherRegistry targetEndpointDispatcherRegistry;
 }
