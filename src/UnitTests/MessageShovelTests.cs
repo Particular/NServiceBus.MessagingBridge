@@ -165,7 +165,10 @@ public class MessageShovelTests
             return new TargetEndpointDispatcher(targetTransport, rawEndpoint, targetEndpoint.QueueAddress);
         }
 
-        public string TranslateToTargetAddress(string sourceAddress) => throw new NotImplementedException();
+        public string TranslateToTargetAddress(string sourceAddress)
+        {
+            return sourceAddress.Split('@').First();
+        }
 
         readonly string targetTransport;
         readonly BridgeEndpoint targetEndpoint;
