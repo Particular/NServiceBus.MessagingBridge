@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
 using NServiceBus;
+using NServiceBus.Transport;
 using NUnit.Framework;
 
 public class BridgeConfigurationTests
@@ -34,6 +35,20 @@ public class BridgeConfigurationTests
         StringAssert.Contains("some, someother", ex.Message);
     }
 
+
+    [Test]
+    public void Should_default_the_endpoint_address_to_the_transport_default()
+    {
+        var transportAddress = "SomeEndpointAddress";
+        var transport = new BridgeTransportConfiguration(new SomeTransport
+        {
+            AddresTranslation = _ => transportAddress
+        });
+
+        transport.HasEndpoint("SomeEndpoint");
+
+        Assert.AreEqual(transportAddress, transport.Endpoints.Single().QueueAddress);
+    }
     [Test]
     public void It_shouldnt_be_allowed_to_shovel_the_error_queue_of_the_bridge()
     {
@@ -244,7 +259,16 @@ public class BridgeConfigurationTests
         public SomeOtherScopeSupportingTransport() : base(TransportTransactionMode.TransactionScope) { }
     }
 
-    class SomeTransport : FakeTransport { }
+    class SomeTransport : FakeTransport
+    {
+        public Func<string, string> AddresTranslation;
+#pragma warning disable CS0672 // Member overrides obsolete member
+        public override string ToTransportAddress(QueueAddress address)
+#pragma warning restore CS0672 // Member overrides obsolete member
+        {
+            return AddresTranslation(address.BaseAddress);
+        }
+    }
     class SomeOtherTransport : FakeTransport { }
 
     class MyEvent
