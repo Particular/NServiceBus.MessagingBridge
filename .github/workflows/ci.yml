@@ -89,7 +89,7 @@ jobs:
           echo "NSERVICEBUS_AMAZONSQS_S3BUCKET=${{ secrets.NSERVICEBUS_AMAZONSQS_S3BUCKET }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
       - name: Setup RabbitMQ
         if: matrix.transport == 'RabbitMQ'
-        uses: Particular/setup-rabbitmq-action@config-setup
+        uses: Particular/setup-rabbitmq-action@main
         with:
           connection-string-name: RabbitMQTransport_ConnectionString
           tag: RabbitMQTransportBridge
