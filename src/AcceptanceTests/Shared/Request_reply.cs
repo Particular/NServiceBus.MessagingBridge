@@ -19,8 +19,8 @@ public class Request_reply : BridgeAcceptanceTest
                     .WithBridge(bridgeConfiguration =>
                     {
                         var bridgeTransport = new BridgeTransport(TransportBeingTested);
-                        bridgeTransportConfiguration.AddTestEndpoint<SendingEndpoint>();
-                        bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
+                        bridgeTransport.AddTestEndpoint<SendingEndpoint>();
+                        bridgeConfiguration.AddTransport(bridgeTransport);
 
                         bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
                     })

@@ -23,8 +23,8 @@ public static class BridgeConfigurationExtensions
             Name = "DefaultTestingTransport"
         };
 
-        bridgeTransportConfiguration.HasEndpoint(bridgeEndpoint);
+        bridgeTransport.HasEndpoint(bridgeEndpoint);
 
-        bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
+        bridgeConfiguration.AddTransport(bridgeTransport);
     }
 }

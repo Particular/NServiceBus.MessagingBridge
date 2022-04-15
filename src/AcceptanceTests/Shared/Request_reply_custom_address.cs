@@ -26,10 +26,10 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
                     {
                         var bridgeTransport = new BridgeTransport(TransportBeingTested);
 
-                        bridgeTransportConfiguration.AddTestEndpoint<SendingEndpoint>();
-                        bridgeTransportConfiguration.AddTestEndpoint<ReplyReceivingEndpoint>();
+                        bridgeTransport.AddTestEndpoint<SendingEndpoint>();
+                        bridgeTransport.AddTestEndpoint<ReplyReceivingEndpoint>();
 
-                        bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
+                        bridgeConfiguration.AddTransport(bridgeTransport);
 
                         bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
                     })

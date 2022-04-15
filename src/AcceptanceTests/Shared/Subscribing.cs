@@ -28,8 +28,8 @@ class Subscribing : BridgeAcceptanceTest
             {
                 var bridgeTransport = new BridgeTransport(TransportBeingTested);
 
-                bridgeTransportConfiguration.AddTestEndpoint<Subscriber>();
-                bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
+                bridgeTransport.AddTestEndpoint<Subscriber>();
+                bridgeConfiguration.AddTransport(bridgeTransport);
 
                 bridgeConfiguration.AddTestTransportEndpoint<Publisher>();
             })
