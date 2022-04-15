@@ -24,7 +24,7 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
                     .WithEndpoint<ReplyReceivingEndpoint>()
                     .WithBridge(bridgeConfiguration =>
                     {
-                        var bridgeTransportConfiguration = new BridgeTransportConfiguration(TransportBeingTested);
+                        var bridgeTransportConfiguration = new BridgeTransport(TransportBeingTested);
 
                         bridgeTransportConfiguration.AddTestEndpoint<SendingEndpoint>();
                         bridgeTransportConfiguration.AddTestEndpoint<ReplyReceivingEndpoint>();

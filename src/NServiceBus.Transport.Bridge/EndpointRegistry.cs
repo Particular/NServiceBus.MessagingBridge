@@ -22,7 +22,7 @@ class EndpointRegistry : IEndpointRegistry
         addressMappings[endpoint.QueueAddress] = startableRawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
     }
 
-    public void ApplyMappings(IReadOnlyCollection<BridgeTransportConfiguration> transportConfigurations)
+    public void ApplyMappings(IReadOnlyCollection<BridgeTransport> transportConfigurations)
     {
         foreach (var registration in registrations)
         {

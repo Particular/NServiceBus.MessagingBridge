@@ -20,7 +20,7 @@ class Program
                 // demo use of IConfiguration
                 var settings = ctx.Configuration.GetSection("Bridge").Get<MyBridgeSettings>();
 
-                var msmqTransport = new BridgeTransportConfiguration(new MsmqTransport())
+                var msmqTransport = new BridgeTransport(new MsmqTransport())
                 {
                     Concurrency = settings.Concurrency,
                     ErrorQueue = settings.ErrorQueue
@@ -36,7 +36,7 @@ class Program
 
                 rc.AddTransport(msmqTransport);
 
-                var learningTransport = new BridgeTransportConfiguration(new LearningTransport())
+                var learningTransport = new BridgeTransport(new LearningTransport())
                 {
                     Concurrency = settings.Concurrency,
                     ErrorQueue = settings.ErrorQueue

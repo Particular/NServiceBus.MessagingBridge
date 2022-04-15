@@ -14,7 +14,7 @@ public class BridgeConfigurationTests
 
         Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
-        configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport()));
+        configuration.AddTransport(new BridgeTransport(new SomeTransport()));
 
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
@@ -26,8 +26,8 @@ public class BridgeConfigurationTests
     {
         var configuration = new BridgeConfiguration();
 
-        configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport()));
-        configuration.AddTransport(new BridgeTransportConfiguration(new SomeOtherTransport()));
+        configuration.AddTransport(new BridgeTransport(new SomeTransport()));
+        configuration.AddTransport(new BridgeTransport(new SomeOtherTransport()));
 
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
@@ -40,7 +40,7 @@ public class BridgeConfigurationTests
     public void Should_default_the_endpoint_address_to_the_transport_default()
     {
         var transportAddress = "SomeEndpointAddress";
-        var transport = new BridgeTransportConfiguration(new SomeTransport
+        var transport = new BridgeTransport(new SomeTransport
         {
             AddresTranslation = _ => transportAddress
         });
@@ -54,7 +54,7 @@ public class BridgeConfigurationTests
     {
         var configuration = new BridgeConfiguration();
         var bridgeErrorQueue = "my-error";
-        var transport = new BridgeTransportConfiguration(new SomeTransport())
+        var transport = new BridgeTransport(new SomeTransport())
         {
             ErrorQueue = bridgeErrorQueue
         };
@@ -63,7 +63,7 @@ public class BridgeConfigurationTests
         transport.HasEndpoint(bridgeErrorQueue);
         configuration.AddTransport(transport);
 
-        var someOtherTransport = new BridgeTransportConfiguration(new SomeOtherTransport());
+        var someOtherTransport = new BridgeTransport(new SomeOtherTransport());
 
         someOtherTransport.HasEndpoint("SomeOtherEndpoint");
         configuration.AddTransport(someOtherTransport);
@@ -80,12 +80,12 @@ public class BridgeConfigurationTests
         var duplicatedEndpointName = "DuplicatedEndpoint";
         var configuration = new BridgeConfiguration();
 
-        var someTransport = new BridgeTransportConfiguration(new SomeTransport());
+        var someTransport = new BridgeTransport(new SomeTransport());
 
         someTransport.HasEndpoint(duplicatedEndpointName);
         configuration.AddTransport(someTransport);
 
-        var someOtherTransport = new BridgeTransportConfiguration(new SomeOtherTransport());
+        var someOtherTransport = new BridgeTransport(new SomeOtherTransport());
 
         someOtherTransport.HasEndpoint(duplicatedEndpointName);
         configuration.AddTransport(someOtherTransport);
@@ -101,12 +101,12 @@ public class BridgeConfigurationTests
     {
         var configuration = new BridgeConfiguration();
 
-        var someTransport = new BridgeTransportConfiguration(new SomeTransport());
+        var someTransport = new BridgeTransport(new SomeTransport());
 
         someTransport.HasEndpoint("Publisher");
         configuration.AddTransport(someTransport);
 
-        var someOtherTransport = new BridgeTransportConfiguration(new SomeOtherTransport());
+        var someOtherTransport = new BridgeTransport(new SomeOtherTransport());
 
         var subscriber = new BridgeEndpoint("Subscriber");
 
@@ -126,13 +126,13 @@ public class BridgeConfigurationTests
     {
         var configuration = new BridgeConfiguration();
 
-        var someTransport = new BridgeTransportConfiguration(new SomeTransport());
+        var someTransport = new BridgeTransport(new SomeTransport());
 
         someTransport.HasEndpoint("Publisher");
         someTransport.HasEndpoint("OtherEndpoint");
         configuration.AddTransport(someTransport);
 
-        var someOtherTransport = new BridgeTransportConfiguration(new SomeOtherTransport());
+        var someOtherTransport = new BridgeTransport(new SomeOtherTransport());
 
         var subscriber1 = new BridgeEndpoint("Subscriber1");
 
@@ -158,17 +158,17 @@ public class BridgeConfigurationTests
     {
         var configuration = new BridgeConfiguration();
 
-        configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport())
+        configuration.AddTransport(new BridgeTransport(new SomeTransport())
         {
             Name = "some1"
         });
-        configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport())
+        configuration.AddTransport(new BridgeTransport(new SomeTransport())
         {
             Name = "some2"
         });
-        configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport()));
+        configuration.AddTransport(new BridgeTransport(new SomeTransport()));
 
-        Assert.Throws<InvalidOperationException>(() => configuration.AddTransport(new BridgeTransportConfiguration(new SomeTransport())));
+        Assert.Throws<InvalidOperationException>(() => configuration.AddTransport(new BridgeTransport(new SomeTransport())));
     }
 
     [Test]
@@ -176,13 +176,13 @@ public class BridgeConfigurationTests
     {
         var configuration = new BridgeConfiguration();
 
-        var someScopeTransport = new BridgeTransportConfiguration(new SomeScopeSupportingTransport());
+        var someScopeTransport = new BridgeTransport(new SomeScopeSupportingTransport());
 
         someScopeTransport.HasEndpoint("Sales");
         configuration.AddTransport(someScopeTransport);
 
 
-        var someOtherScopeTransport = new BridgeTransportConfiguration(new SomeOtherScopeSupportingTransport());
+        var someOtherScopeTransport = new BridgeTransport(new SomeOtherScopeSupportingTransport());
 
         someOtherScopeTransport.HasEndpoint("Billing");
         configuration.AddTransport(someOtherScopeTransport);
@@ -198,13 +198,13 @@ public class BridgeConfigurationTests
     {
         var configuration = new BridgeConfiguration();
 
-        var someScopeTransport = new BridgeTransportConfiguration(new SomeScopeSupportingTransport());
+        var someScopeTransport = new BridgeTransport(new SomeScopeSupportingTransport());
 
         someScopeTransport.HasEndpoint("Sales");
         configuration.AddTransport(someScopeTransport);
 
 
-        var someOtherScopeTransport = new BridgeTransportConfiguration(new SomeOtherTransport());
+        var someOtherScopeTransport = new BridgeTransport(new SomeOtherTransport());
 
         someOtherScopeTransport.HasEndpoint("Billing");
         configuration.AddTransport(someOtherScopeTransport);
@@ -220,13 +220,13 @@ public class BridgeConfigurationTests
     {
         var configuration = new BridgeConfiguration();
 
-        var someScopeTransport = new BridgeTransportConfiguration(new SomeScopeSupportingTransport());
+        var someScopeTransport = new BridgeTransport(new SomeScopeSupportingTransport());
 
         someScopeTransport.HasEndpoint("Sales");
         configuration.AddTransport(someScopeTransport);
 
 
-        var someOtherScopeTransport = new BridgeTransportConfiguration(new SomeOtherScopeSupportingTransport());
+        var someOtherScopeTransport = new BridgeTransport(new SomeOtherScopeSupportingTransport());
 
         someOtherScopeTransport.HasEndpoint("Billing");
         configuration.AddTransport(someOtherScopeTransport);

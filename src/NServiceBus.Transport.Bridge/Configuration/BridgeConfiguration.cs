@@ -15,7 +15,7 @@
         /// <summary>
         /// TBD
         /// </summary>
-        public void AddTransport(BridgeTransportConfiguration transportConfiguration)
+        public void AddTransport(BridgeTransport transportConfiguration)
         {
             if (transportConfigurations.Any(t => t.Name == transportConfiguration.Name))
             {
@@ -155,6 +155,6 @@
 
         bool runInReceiveOnlyTransactionMode;
 
-        readonly List<BridgeTransportConfiguration> transportConfigurations = new List<BridgeTransportConfiguration>();
+        readonly List<BridgeTransport> transportConfigurations = new List<BridgeTransport>();
     }
 }
