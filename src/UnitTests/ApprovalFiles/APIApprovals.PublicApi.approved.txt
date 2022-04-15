@@ -17,12 +17,6 @@ namespace NServiceBus
         public void RegisterPublisher(System.Type eventType, string publisher) { }
         public void RegisterPublisher<T>(string publisher) { }
     }
-    public class BridgeEndpointSubscription
-    {
-        public BridgeEndpointSubscription(string eventTypeFullName, string publisher) { }
-        public string EventTypeFullName { get; }
-        public string Publisher { get; }
-    }
     public class BridgeTransportConfiguration
     {
         public BridgeTransportConfiguration(NServiceBus.Transport.TransportDefinition transportDefinition) { }

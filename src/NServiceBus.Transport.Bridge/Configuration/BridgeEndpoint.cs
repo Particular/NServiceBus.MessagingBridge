@@ -23,7 +23,7 @@
             Name = name;
             QueueAddress = queueAddress;
 
-            Subscriptions = new List<BridgeEndpointSubscription>();
+            Subscriptions = new List<Subscription>();
         }
 
         /// <summary>
@@ -47,7 +47,7 @@
         /// </summary>
         public void RegisterPublisher(string eventTypeFullName, string publisher)
         {
-            Subscriptions.Add(new BridgeEndpointSubscription(eventTypeFullName, publisher));
+            Subscriptions.Add(new Subscription(eventTypeFullName, publisher));
         }
 
         /// <summary>
@@ -60,6 +60,19 @@
         /// </summary>
         public string Name { get; private set; }
 
-        internal List<BridgeEndpointSubscription> Subscriptions { get; set; }
+        internal List<Subscription> Subscriptions { get; set; }
+
+        internal class Subscription
+        {
+            public Subscription(string eventTypeFullName, string publisher)
+            {
+                EventTypeFullName = eventTypeFullName;
+                Publisher = publisher;
+            }
+
+            public string EventTypeFullName { get; private set; }
+
+            public string Publisher { get; private set; }
+        }
     }
 }
