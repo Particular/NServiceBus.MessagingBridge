@@ -18,7 +18,7 @@ public static class BridgeConfigurationExtensions
 
     public static void AddTestTransportEndpoint(this BridgeConfiguration bridgeConfiguration, BridgeEndpoint bridgeEndpoint)
     {
-        var bridgeTransportConfiguration = new BridgeTransport(DefaultTestServer.GetTestTransportDefinition())
+        var bridgeTransport = new BridgeTransport(DefaultTestServer.GetTestTransportDefinition())
         {
             Name = "DefaultTestingTransport"
         };
