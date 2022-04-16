@@ -4,7 +4,7 @@ using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
 public static class BridgeConfigurationExtensions
 {
-    public static void AddTestEndpoint<T>(this BridgeTransportConfiguration bridgeTransportConfiguration)
+    public static void AddTestEndpoint<T>(this BridgeTransport bridgeTransportConfiguration)
         where T : EndpointConfigurationBuilder
     {
         bridgeTransportConfiguration.HasEndpoint(Conventions.EndpointNamingConvention(typeof(T)));
@@ -18,13 +18,13 @@ public static class BridgeConfigurationExtensions
 
     public static void AddTestTransportEndpoint(this BridgeConfiguration bridgeConfiguration, BridgeEndpoint bridgeEndpoint)
     {
-        var bridgeTransportConfiguration = new BridgeTransportConfiguration(DefaultTestServer.GetTestTransportDefinition())
+        var bridgeTransport = new BridgeTransport(DefaultTestServer.GetTestTransportDefinition())
         {
             Name = "DefaultTestingTransport"
         };
 
-        bridgeTransportConfiguration.HasEndpoint(bridgeEndpoint);
+        bridgeTransport.HasEndpoint(bridgeEndpoint);
 
-        bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
+        bridgeConfiguration.AddTransport(bridgeTransport);
     }
 }

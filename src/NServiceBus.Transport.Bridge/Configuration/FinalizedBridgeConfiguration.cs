@@ -3,8 +3,8 @@ using NServiceBus;
 
 class FinalizedBridgeConfiguration
 {
-    public FinalizedBridgeConfiguration(IReadOnlyCollection<BridgeTransportConfiguration> transportConfigurations)
+    public FinalizedBridgeConfiguration(IReadOnlyCollection<BridgeTransport> transportConfigurations)
         => TransportConfigurations = transportConfigurations;
 
-    public IReadOnlyCollection<BridgeTransportConfiguration> TransportConfigurations { get; }
+    public IReadOnlyCollection<BridgeTransport> TransportConfigurations { get; }
 }

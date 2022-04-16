@@ -12,10 +12,10 @@ class Publishing : BridgeAcceptanceTest
         var context = await Scenario.Define<Context>()
             .WithBridge(bridgeConfiguration =>
             {
-                var bridgeTransportConfiguration = new BridgeTransportConfiguration(TransportBeingTested);
+                var bridgeTransport = new BridgeTransport(TransportBeingTested);
 
-                bridgeTransportConfiguration.AddTestEndpoint<Publisher>();
-                bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
+                bridgeTransport.AddTestEndpoint<Publisher>();
+                bridgeConfiguration.AddTransport(bridgeTransport);
 
                 var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
 
