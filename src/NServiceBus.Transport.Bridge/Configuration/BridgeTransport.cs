@@ -6,12 +6,12 @@
     /// <summary>
     /// TBD
     /// </summary>
-    public class BridgeTransportConfiguration
+    public class BridgeTransport
     {
         /// <summary>
         /// TBD
         /// </summary>
-        public BridgeTransportConfiguration(TransportDefinition transportDefinition)
+        public BridgeTransport(TransportDefinition transportDefinition)
         {
             Endpoints = new List<BridgeEndpoint>();
             TransportDefinition = transportDefinition;

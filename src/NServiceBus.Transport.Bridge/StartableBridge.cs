@@ -67,7 +67,7 @@ class StartableBridge : IStartableBridge
 
         foreach (var endpointRegistration in endpointRegistry.Registrations)
         {
-            await subscriptionManager.SubscribeToEvents(endpointRegistration.RawEndpoint, endpointRegistration.Endpoint.Subscriptions, cancellationToken)
+            await subscriptionManager.SubscribeToEvents(endpointRegistration.RawEndpoint, endpointRegistration.Endpoint, cancellationToken)
                .ConfigureAwait(false);
         }
 

@@ -15,7 +15,7 @@ class EndpointProxyFactory
 
     public Task<IStartableRawEndpoint> CreateProxy(
         BridgeEndpoint endpointToProxy,
-        BridgeTransportConfiguration transportConfiguration,
+        BridgeTransport transportConfiguration,
         CancellationToken cancellationToken = default)
     {
         var transportDefinition = transportConfiguration.TransportDefinition;

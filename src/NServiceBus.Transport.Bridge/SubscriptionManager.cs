@@ -21,9 +21,11 @@ class SubscriptionManager
     }
 
     public async Task SubscribeToEvents(IRawEndpoint endpointProxy,
-            IList<BridgeEndpointSubscription> subscriptions,
+            BridgeEndpoint endpoint,
             CancellationToken cancellationToken = default)
     {
+        var subscriptions = endpoint.Subscriptions;
+
         if (!subscriptions.Any())
         {
             return;
@@ -51,7 +53,7 @@ class SubscriptionManager
     }
 
     async Task SendSubscriptionMessage(IRawEndpoint endpointProxy,
-            BridgeEndpointSubscription subscription,
+            BridgeEndpoint.Subscription subscription,
             CancellationToken cancellationToken)
     {
         var localAddress = endpointProxy.TransportAddress;

@@ -26,10 +26,10 @@ class Subscribing : BridgeAcceptanceTest
                 }))
             .WithBridge(bridgeConfiguration =>
             {
-                var bridgeTransportConfiguration = new BridgeTransportConfiguration(TransportBeingTested);
+                var bridgeTransport = new BridgeTransport(TransportBeingTested);
 
-                bridgeTransportConfiguration.AddTestEndpoint<Subscriber>();
-                bridgeConfiguration.AddTransport(bridgeTransportConfiguration);
+                bridgeTransport.AddTestEndpoint<Subscriber>();
+                bridgeConfiguration.AddTransport(bridgeTransport);
 
                 bridgeConfiguration.AddTestTransportEndpoint<Publisher>();
             })

@@ -4,7 +4,7 @@ namespace NServiceBus
     public class BridgeConfiguration
     {
         public BridgeConfiguration() { }
-        public void AddTransport(NServiceBus.BridgeTransportConfiguration transportConfiguration) { }
+        public void AddTransport(NServiceBus.BridgeTransport transportConfiguration) { }
         public void RunInReceiveOnlyTransactionMode() { }
     }
     public class BridgeEndpoint
@@ -17,15 +17,9 @@ namespace NServiceBus
         public void RegisterPublisher(System.Type eventType, string publisher) { }
         public void RegisterPublisher<T>(string publisher) { }
     }
-    public class BridgeEndpointSubscription
+    public class BridgeTransport
     {
-        public BridgeEndpointSubscription(string eventTypeFullName, string publisher) { }
-        public string EventTypeFullName { get; }
-        public string Publisher { get; }
-    }
-    public class BridgeTransportConfiguration
-    {
-        public BridgeTransportConfiguration(NServiceBus.Transport.TransportDefinition transportDefinition) { }
+        public BridgeTransport(NServiceBus.Transport.TransportDefinition transportDefinition) { }
         public bool AutoCreateQueues { get; set; }
         public int Concurrency { get; set; }
         public string ErrorQueue { get; set; }
