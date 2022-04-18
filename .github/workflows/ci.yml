@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-2019, ubuntu-20.04 ]
-        transport: [ Learning, RabbitMQ, AzureServiceBus, SqlServer, AmazonSQS ]
+        transport: [ Learning, RabbitMQ, AzureServiceBus, SqlServer, AmazonSQS, MSMQ ]
         include:
           - os: windows-2019
             os-name: Windows
@@ -78,6 +78,16 @@ jobs:
         with:
           connection-string-name: AzureServiceBus_ConnectionString
           tag: ASBTransportBridge
+      - name: Setup learning transport
+        if: matrix.transport == 'Learning'
+        shell: pwsh
+        run: |
+          echo "LearningTransport=true" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+      - name: Setup MSMQ transport
+        if: matrix.transport == 'MSMQ'
+        shell: pwsh
+        run: |
+          echo "MSMQTransport=true" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
       - name: Setup AWS SDK environment
         if: matrix.transport == 'AmazonSQS'
         shell: pwsh
