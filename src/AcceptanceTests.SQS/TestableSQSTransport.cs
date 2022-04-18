@@ -1,5 +1,4 @@
 ﻿using System;
-using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.SimpleNotificationService;
 using Amazon.SQS;

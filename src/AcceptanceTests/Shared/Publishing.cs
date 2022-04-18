@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
+using NServiceBus.Features;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
@@ -58,7 +59,10 @@ class Publishing : BridgeAcceptanceTest
     {
         public Subscriber()
         {
-            EndpointSetup<DefaultTestServer>(publisherMetadata: p => p.RegisterPublisherFor<MyEvent>(typeof(Publisher)));
+            EndpointSetup<DefaultTestServer>(c =>
+            {
+                c.DisableFeature<AutoSubscribe>();
+            }, publisherMetadata: p => p.RegisterPublisherFor<MyEvent>(typeof(Publisher)));
         }
 
         public class MessageHandler : IHandleMessages<MyEvent>
