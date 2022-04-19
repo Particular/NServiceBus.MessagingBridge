@@ -26,6 +26,9 @@ jobs:
             os-name: Windows
           - os: ubuntu-20.04
             os-name: Linux
+        exclude:
+          - os: ubuntu-20.04
+            transport: MSMQ
       fail-fast: false
     steps:
       - name: Check for secrets
