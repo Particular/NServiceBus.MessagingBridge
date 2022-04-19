@@ -14,13 +14,7 @@ public class ConfigureAzureStorageQueuesTransportTestExecution : IConfigureTrans
             throw new InvalidOperationException("No connectionstring for found in environment variable 'AzureStorageQueueTransport_ConnectionString'");
         }
 
-        var transportDefinition = new TestableAzureStorageQueuesTransport(connectionString)
-        {
-            MessageWrapperSerializationDefinition = new XmlSerializer(),
-            QueueNameSanitizer = BackwardsCompatibleQueueNameSanitizerForTests.Sanitize,
-            Subscriptions = { DisableCaching = true }
-        };
-        transportDefinition.DelayedDelivery.DelayedDeliveryPoisonQueue = "error";
+        var transportDefinition = new TestableAzureStorageQueuesTransport(connectionString);
 
         return new BridgeTransportDefinition()
         {
@@ -31,16 +25,9 @@ public class ConfigureAzureStorageQueuesTransportTestExecution : IConfigureTrans
 
     public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
-        var transportDefinition = new TestableAzureStorageQueuesTransport(connectionString)
-        {
-            MessageWrapperSerializationDefinition = new XmlSerializer(),
-            QueueNameSanitizer = BackwardsCompatibleQueueNameSanitizerForTests.Sanitize,
-            Subscriptions = { DisableCaching = true }
-        };
-        transportDefinition.DelayedDelivery.DelayedDeliveryPoisonQueue = "error";
+        var transportDefinition = new TestableAzureStorageQueuesTransport(connectionString);
 
         endpointConfiguration.UseTransport(transportDefinition);
-        endpointConfiguration.UseSerialization<XmlSerializer>();
 
         return ct => Cleanup(ct);
     }

@@ -22,7 +22,9 @@ public static class EndpointCustomizationConfigurationExtensions
         var types = assembliesToScan
             .SelectMany(a => a.GetTypes());
 
-        types = types.Union(GetNestedTypeRecursive(endpointConfiguration.BuilderType.DeclaringType, endpointConfiguration.BuilderType));
+        var testTypes = GetNestedTypeRecursive(endpointConfiguration.BuilderType.DeclaringType, endpointConfiguration.BuilderType);
+
+        types = types.Union(testTypes);
 
         types = types.Union(endpointConfiguration.TypesToInclude);
 
