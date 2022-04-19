@@ -54,7 +54,7 @@ class Subscribing : BridgeAcceptanceTest
     {
         public Subscriber()
         {
-            EndpointSetup<DefaultServer>(publisherMetadata: p => p.RegisterPublisherFor<MyEvent>(typeof(Publisher)));
+            EndpointSetup<DefaultServer>();
         }
 
         public class MessageHandler : IHandleMessages<MyEvent>
