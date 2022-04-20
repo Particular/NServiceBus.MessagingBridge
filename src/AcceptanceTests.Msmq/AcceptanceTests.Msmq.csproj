@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../AcceptanceTests/Shared/**/*.cs" />
+    <Compile Include="..\AcceptanceTests\Shared\**\*.cs" Link="Shared\%(RecursiveDir)\%(Filename).%(Extension)"/>
   </ItemGroup>
 
   <ItemGroup>
