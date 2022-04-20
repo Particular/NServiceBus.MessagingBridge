@@ -88,7 +88,7 @@
             {
                 var sb = new StringBuilder();
 
-                sb.AppendLine("Publisher not registered for events:");
+                sb.AppendLine("The following events have a publisher configured that is unknown:");
                 sb.AppendLine();
                 foreach (var eventType in eventsWithNoRegisteredPublisher)
                 {
