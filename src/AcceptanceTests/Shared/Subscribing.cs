@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
-using NServiceBus.Features;
 using NUnit.Framework;
+using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
 class Subscribing : BridgeAcceptanceTest
 {
@@ -10,25 +10,22 @@ class Subscribing : BridgeAcceptanceTest
     public async Task Should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<Subscriber>(b => b.When(async (session, ctx) =>
-            {
-                await session.Subscribe<MyEvent>().ConfigureAwait(false);
-
-                // The test transport have native pubsub so we can set the flag here
-                ctx.SubscriberSubscribed = true;
-            }))
+            .WithEndpoint<Subscriber>()
             .WithEndpoint<Publisher>(b => b
-                .When(c => c.SubscriberSubscribed, (session, c) =>
+                .When((session, _) =>
                 {
-                    var options = new PublishOptions();
-
-                    return session.Publish(new MyEvent(), options);
+                    return session.Publish(new MyEvent());
                 }))
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new BridgeTransport(TransportBeingTested);
 
-                bridgeTransport.AddTestEndpoint<Subscriber>();
+                var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
+
+                subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
+
+                bridgeTransport.HasEndpoint(subscriberEndpoint);
+
                 bridgeConfiguration.AddTransport(bridgeTransport);
 
                 bridgeConfiguration.AddTestTransportEndpoint<Publisher>();
@@ -57,10 +54,7 @@ class Subscribing : BridgeAcceptanceTest
     {
         public Subscriber()
         {
-            EndpointSetup<DefaultServer>(c =>
-            {
-                c.DisableFeature<AutoSubscribe>();
-            }, p => p.RegisterPublisherFor<MyEvent>(typeof(Publisher)));
+            EndpointSetup<DefaultServer>();
         }
 
         public class MessageHandler : IHandleMessages<MyEvent>

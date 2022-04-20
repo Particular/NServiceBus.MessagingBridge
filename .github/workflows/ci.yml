@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-2019, ubuntu-20.04 ]
-        transport: [ Learning, RabbitMQ, AzureServiceBus, SqlServer, AmazonSQS, MSMQ ]
+        transport: [ Learning, RabbitMQ, AzureServiceBus, AzureStorageQueue, SqlServer, AmazonSQS, MSMQ ]
         include:
           - os: windows-2019
             os-name: Windows
@@ -106,5 +106,11 @@ jobs:
         with:
           connection-string-name: RabbitMQTransport_ConnectionString
           tag: RabbitMQTransportBridge
+      - name: Setup Azure Storage Account
+        if: matrix.transport == 'AzureStorageQueue'
+        uses: Particular/setup-azurestorage-action@v1.0.0
+        with:
+          connection-string-name: AzureStorageQueueTransport_ConnectionString
+          tag: ASQTransport
       - name: Run tests
         uses: Particular/run-tests-action@v1.3.0
