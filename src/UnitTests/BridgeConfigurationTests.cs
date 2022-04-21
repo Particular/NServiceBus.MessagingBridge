@@ -116,7 +116,7 @@ public class BridgeConfigurationTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
-        StringAssert.Contains("Publisher not registered for", ex.Message);
+        StringAssert.Contains("The following events have a publisher configured that is unknown", ex.Message);
         StringAssert.Contains(typeof(MyEvent).FullName, ex.Message);
         StringAssert.Contains("NotThePublisher", ex.Message);
     }
