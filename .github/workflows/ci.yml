@@ -74,7 +74,6 @@ jobs:
         with:
           connection-string-env-var: SqlServerTransportConnectionString
           catalog: nservicebus
-      - name: Create schemas
         shell: pwsh
         run: |
           echo "Create additional schemas"
