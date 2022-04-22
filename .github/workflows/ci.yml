@@ -74,6 +74,8 @@ jobs:
         with:
           connection-string-env-var: SqlServerTransportConnectionString
           catalog: nservicebus
+      - name: Create schemas
+        if: matrix.transport == 'SqlServer'
         shell: pwsh
         run: |
           echo "Create additional schemas"
