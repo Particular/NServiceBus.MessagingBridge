@@ -1,5 +1,6 @@
 ﻿namespace AcceptanceTests.SqlServer.MultiSchema
 {
+    using System;
     using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
@@ -8,34 +9,45 @@
     using NUnit.Framework;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-    public class When_custom_schema_configured_for_endpoint : BridgeAcceptanceTest
+    public class When_custom_schema_configured_for_one_endpoint : BridgeAcceptanceTest
     {
         public const string PublisherSchema = "publisher";
+        //public const string SubscriberSchema = "dbo";
+        readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString");
 
         [Test]
         public async Task Subscriber_should_get_the_event()
         {
             var context = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
-            {
-                var endpointAddress = GetTestEndpointAddress<Publisher>();
-                var bridgeTransport = new BridgeTransport(TransportBeingTested);
-                var endpointName = Conventions.EndpointNamingConvention(typeof(Publisher));
-                bridgeTransport.AddTestEndpoint<Publisher>();
-                //bridgeTransport.HasEndpoint(endpointName, "WhenCustomSchemaConfiguredForEndpoint.Publisher@[publisher]@[NServiceBus]");
-                bridgeConfiguration.AddTransport(bridgeTransport);
-
-                var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
-
-                subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
-                bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
-            })
             .WithEndpoint<Publisher>(b => b
                 .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, c) =>
                 {
                     return session.Publish(new MyEvent());
                 }))
             .WithEndpoint<Subscriber>()
+            .WithBridge(bridgeConfiguration =>
+            {
+                var testableSqlServerTransport = new TestableSqlServerTransport(connectionString);
+                var publisherBridgeTransport = new BridgeTransport(testableSqlServerTransport)
+                {
+                    Name = "publisherBridgeTransport"
+                };
+                publisherBridgeTransport.AddTestEndpoint<Publisher>();
+                bridgeConfiguration.AddTransport(publisherBridgeTransport);
+
+                var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
+                var subscriberBridgeTransport = new BridgeTransport(testableSqlServerTransport)
+                {
+                    Name = "subscriberBridgeTransport"
+                };
+                subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
+                subscriberBridgeTransport.HasEndpoint(subscriberEndpoint);
+
+                bridgeConfiguration.AddTransport(subscriberBridgeTransport);
+                //bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
+                //bridgeConfiguration.AddTestTransportEndpoint<Subscriber>();
+                //bridgeConfiguration.RunInReceiveOnlyTransactionMode();
+            })
             .Done(c => c.SubscriberGotEvent)
             .Run();
 
@@ -54,13 +66,10 @@
             {
                 EndpointSetup<DefaultPublisher>(c =>
                 {
-                    //var endpointName = Conventions.EndpointNamingConvention(typeof(Publisher));
                     var transport = c.ConfigureSqlServerTransport();
                     transport.DefaultSchema = PublisherSchema;
                     transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", "dbo");
                     transport.Subscriptions.DisableCaching = true;
-
-                    //transport.SchemaAndCatalog.UseSchemaForQueue(endpointName, PublisherSchema);
 
                     c.OnEndpointSubscribed<Context>((_, ctx) =>
                     {
@@ -74,8 +83,13 @@
         {
             public Subscriber()
             {
-                EndpointSetup<DefaultTestServer>(c =>
+                EndpointSetup<DefaultServer>(c =>
                 {
+                    var transport = c.ConfigureSqlServerTransport();
+                    //transport.DefaultSchema = SubscriberSchema;
+                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", "dbo");
+                    transport.Subscriptions.DisableCaching = true;
+
                     c.DisableFeature<AutoSubscribe>();
                 });
             }
