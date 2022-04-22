@@ -52,18 +52,14 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
             using (var command = conn.CreateCommand())
             {
                 var commandTextBuilder = new StringBuilder();
-                var schema = "";
-                var catalog = "";
-                foreach (var queue in transport.QueuesToCleanup)
+                foreach (var queue in TestableSqlServerTransport.QueuesToCleanup)
                 {
                     var queueAddress = QueueAddress.Parse(queue);
-                    schema = queueAddress.Schema;
-                    catalog = queueAddress.Catalog;
+                    var schema = queueAddress.Schema;
+                    var catalog = queueAddress.Catalog;
                     TryDeleteTable(conn, queueAddress);
                     TryDeleteTable(conn, new QueueAddress(queueAddress.Table + ".Delayed", schema, catalog));
                 }
-                TryDeleteTable(conn, new QueueAddress("SubscriptionRouting", schema, catalog));
-                TryDeleteTable(conn, new QueueAddress("bridge.error", schema, catalog));
             }
         };
 
