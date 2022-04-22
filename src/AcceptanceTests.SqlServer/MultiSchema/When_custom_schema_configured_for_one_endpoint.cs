@@ -4,14 +4,14 @@
     using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
-    using NServiceBus.Features;
-    using NServiceBus.Transport.SqlServer;
     using NUnit.Framework;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
     public class When_custom_schema_configured_for_one_endpoint : BridgeAcceptanceTest
     {
-        public const string PublisherSchema = "publisher";
+        const string PublisherSchema = "publisher";
+        const string SubscriberSchema = "subscriber";
+
         //public const string SubscriberSchema = "dbo";
         readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString");
 
@@ -19,37 +19,48 @@
         public async Task Subscriber_should_get_the_event()
         {
             var context = await Scenario.Define<Context>()
-            .WithEndpoint<Publisher>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, c) =>
+                .WithEndpoint<Publisher>(b => b
+                    .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, c) =>
+                    {
+                        return session.Publish(new MyEvent());
+                    }))
+                .WithEndpoint<Subscriber>()
+                .WithBridge(bridgeConfiguration =>
                 {
-                    return session.Publish(new MyEvent());
-                }))
-            .WithEndpoint<Subscriber>()
-            .WithBridge(bridgeConfiguration =>
-            {
-                var testableSqlServerTransport = new TestableSqlServerTransport(connectionString);
-                var publisherBridgeTransport = new BridgeTransport(testableSqlServerTransport)
-                {
-                    Name = "publisherBridgeTransport"
-                };
-                publisherBridgeTransport.AddTestEndpoint<Publisher>();
-                bridgeConfiguration.AddTransport(publisherBridgeTransport);
+                    // Publisher SQL Transport
+                    var publisherSqlTransport = new TestableSqlServerTransport(connectionString)
+                    {
+                        DefaultSchema = PublisherSchema
+                    };
+                    // Publisher Bridge Transport
+                    var publisherBridgeTransport = new BridgeTransport(publisherSqlTransport)
+                    {
+                        Name = "publisherBridgeTransport"
+                    };
+                    // Add endpoints
+                    publisherBridgeTransport.AddTestEndpoint<Publisher>();
 
-                var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
-                var subscriberBridgeTransport = new BridgeTransport(testableSqlServerTransport)
-                {
-                    Name = "subscriberBridgeTransport"
-                };
-                subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
-                subscriberBridgeTransport.HasEndpoint(subscriberEndpoint);
+                    // Subscriber Sql Transport
+                    var subscriberSqlTransport = new TestableSqlServerTransport(connectionString)
+                    {
+                        DefaultSchema = SubscriberSchema
+                    };
+                    // Subscriber Bridge Transport
+                    var subscriberBridgeTransport = new BridgeTransport(subscriberSqlTransport)
+                    {
+                        Name = "subscriberBridgeTransport"
+                    };
+                    // Add endpoints
+                    var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
+                    subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
+                    subscriberBridgeTransport.HasEndpoint(subscriberEndpoint);
 
-                bridgeConfiguration.AddTransport(subscriberBridgeTransport);
-                //bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
-                //bridgeConfiguration.AddTestTransportEndpoint<Subscriber>();
-                //bridgeConfiguration.RunInReceiveOnlyTransactionMode();
-            })
-            .Done(c => c.SubscriberGotEvent)
-            .Run();
+                    bridgeConfiguration.AddTransport(publisherBridgeTransport);
+                    bridgeConfiguration.AddTransport(subscriberBridgeTransport);
+                    //bridgeConfiguration.RunInReceiveOnlyTransactionMode();
+                })
+                .Done(c => c.SubscriberGotEvent)
+                .Run();
 
             Assert.IsTrue(context.SubscriberGotEvent);
         }
@@ -68,8 +79,7 @@
                 {
                     var transport = c.ConfigureSqlServerTransport();
                     transport.DefaultSchema = PublisherSchema;
-                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", "dbo");
-                    transport.Subscriptions.DisableCaching = true;
+                    // transport.Subscriptions.DisableCaching = true;
 
                     c.OnEndpointSubscribed<Context>((_, ctx) =>
                     {
@@ -86,11 +96,12 @@
                 EndpointSetup<DefaultServer>(c =>
                 {
                     var transport = c.ConfigureSqlServerTransport();
-                    //transport.DefaultSchema = SubscriberSchema;
-                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", "dbo");
-                    transport.Subscriptions.DisableCaching = true;
+                    transport.DefaultSchema = SubscriberSchema;
+                    // transport.Subscriptions.SubscriptionTableName =
+                    //     new SubscriptionTableName("SubscriptionRouting", "dbo");
+                    // transport.Subscriptions.DisableCaching = true;
 
-                    c.DisableFeature<AutoSubscribe>();
+                    // c.DisableFeature<AutoSubscribe>();
                 });
             }
 
@@ -113,4 +124,3 @@
         }
     }
 }
-
