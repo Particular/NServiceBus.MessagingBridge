@@ -74,6 +74,12 @@ jobs:
         with:
           connection-string-env-var: SqlServerTransportConnectionString
           catalog: nservicebus
+      - name: Create schemas
+        shell: pwsh
+        run: |
+          echo "Create additional schemas"
+          sqlcmd -Q "CREATE SCHEMA publisher AUTHORIZATION db_owner" -d "nservicebus"
+          sqlcmd -Q "CREATE SCHEMA subscriber AUTHORIZATION db_owner" -d "nservicebus"
       - name: Setup Azure Service Bus
         if: matrix.transport == 'AzureServiceBus'
         uses: Particular/setup-azureservicebus-action@v1.0.0
