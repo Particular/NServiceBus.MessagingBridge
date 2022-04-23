@@ -17,7 +17,7 @@
             TransportDefinition = transportDefinition;
             Name = transportDefinition.GetType().Name.ToLower().Replace("transport", "");
             ErrorQueue = "bridge.error";
-            AutoCreateQueues = true;
+            AutoCreateQueues = false;
             Concurrency = 1;
         }
 

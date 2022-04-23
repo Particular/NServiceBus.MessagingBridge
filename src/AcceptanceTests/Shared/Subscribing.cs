@@ -18,7 +18,7 @@ class Subscribing : BridgeAcceptanceTest
                 }))
             .WithBridge(bridgeConfiguration =>
             {
-                var bridgeTransport = new BridgeTransport(TransportBeingTested);
+                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
 
                 var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
 
