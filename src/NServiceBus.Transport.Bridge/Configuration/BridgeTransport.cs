@@ -1,5 +1,6 @@
 ﻿namespace NServiceBus
 {
+    using System;
     using System.Collections.Generic;
     using NServiceBus.Transport;
 
@@ -18,7 +19,7 @@
             Name = transportDefinition.GetType().Name.ToLower().Replace("transport", "");
             ErrorQueue = "bridge.error";
             AutoCreateQueues = true;
-            Concurrency = 1;
+            Concurrency = Math.Max(2, Environment.ProcessorCount);
         }
 
         /// <summary>
