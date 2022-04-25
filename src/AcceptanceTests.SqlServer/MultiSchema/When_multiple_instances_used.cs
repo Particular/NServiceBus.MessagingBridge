@@ -15,7 +15,7 @@
         [Test]
         public async Task Subscriber_should_get_the_event()
         {
-            if (connectionString.IndexOf("nservicebus", StringComparison.OrdinalIgnoreCase) == -1)
+            if (connectionString.IndexOf("nservicebus", StringComparison.Ordinal) == -1)
             {
                 throw new InvalidOperationException(
                     "Can't find database 'nservicebus' in connectionstring. Can't run the test this way.");
