@@ -35,7 +35,6 @@ public class BridgeConfigurationTests
         StringAssert.Contains("some, someother", ex.Message);
     }
 
-
     [Test]
     public void Should_default_the_endpoint_address_to_the_transport_default()
     {
@@ -49,6 +48,17 @@ public class BridgeConfigurationTests
 
         Assert.AreEqual(transportAddress, transport.Endpoints.Single().QueueAddress);
     }
+
+    [Test]
+    public void Should_default_auto_queue_creation_to_off()
+    {
+        var transport = new BridgeTransport(new SomeTransport());
+
+        transport.HasEndpoint("SomeEndpoint");
+
+        Assert.False(transport.AutoCreateQueues);
+    }
+
     [Test]
     public void It_shouldnt_be_allowed_to_shovel_the_error_queue_of_the_bridge()
     {
