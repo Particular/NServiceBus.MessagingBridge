@@ -74,10 +74,13 @@ jobs:
         with:
           connection-string-env-var: SqlServerTransportConnectionString
           catalog: nservicebus
-      - name: Create schemas
+      - name: Prepare SQL Server
         if: matrix.transport == 'SqlServer'
         shell: pwsh
         run: |
+          echo "Create extra databases"
+          sqlcmd -Q "CREATE DATABASE nservicebus2"
+          
           echo "Create additional schemas"
           sqlcmd -Q "CREATE SCHEMA publisher AUTHORIZATION db_owner" -d "nservicebus"
           sqlcmd -Q "CREATE SCHEMA subscriber AUTHORIZATION db_owner" -d "nservicebus"
