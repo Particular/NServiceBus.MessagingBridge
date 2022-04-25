@@ -85,6 +85,14 @@ public class BridgeConfigurationTests
     }
 
     [Test]
+    public void Should_default_concurrency_in_the_same_way_as_nservicebus()
+    {
+        var transport = new BridgeTransport(new SomeTransport());
+
+        Assert.AreEqual(Math.Max(2, Environment.ProcessorCount), transport.Concurrency);
+    }
+
+    [Test]
     public void Endpoints_should_only_be_added_to_one_transport()
     {
         var duplicatedEndpointName = "DuplicatedEndpoint";
