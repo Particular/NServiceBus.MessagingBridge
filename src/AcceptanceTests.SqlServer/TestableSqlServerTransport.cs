@@ -16,8 +16,6 @@ class TestableSqlServerTransport : SqlServerTransport
     {
         var infrastructure = await base.Initialize(hostSettings, receivers, sendingAddresses, cancellationToken).ConfigureAwait(false);
         var queueNames = infrastructure.Receivers.Select(x => x.Value.ReceiveAddress).Distinct();
-        QueuesToCleanup.AddRange(queueNames);
-
         foreach (var queueName in queueNames)
         {
             var queueAddress = AcceptanceTests.SqlServer.QueueAddress.Parse(queueName);
@@ -25,19 +23,16 @@ class TestableSqlServerTransport : SqlServerTransport
             {
                 if (sendingAddress == "error")
                 {
-                    var catalog = queueAddress.Catalog ?? "NServiceBus";
-                    var schema = queueAddress.Schema ?? "dbo";
-                    var errorName = sendingAddress + "@[" + schema + "]@[" + catalog + "]";
-                    var bridgeError = "bridge.error" + "@[" + schema + "]@[" + catalog + "]";
-                    var subscriptionRouting = "SubscriptionRouting" + "@[" + schema + "]@[" + catalog + "]";
+                    var errorName = sendingAddress + "@[" + queueAddress.Schema + "]@[" + queueAddress.Catalog + "]";
                     QueuesToCleanup.Add(errorName);
-                    QueuesToCleanup.Add(bridgeError);
-                    QueuesToCleanup.Add(subscriptionRouting);
                 }
             }
         }
+        QueuesToCleanup.AddRange(queueNames.Concat(sendingAddresses).Distinct());
+
+        //QueuesToCleanup.AddRange(infrastructure.Receivers.Select(x => x.Value.ReceiveAddress).Concat(sendingAddresses).Distinct());
         return infrastructure;
     }
 
-    public static List<string> QueuesToCleanup { get; } = new List<string>();
+    public List<string> QueuesToCleanup { get; } = new List<string>();
 }
