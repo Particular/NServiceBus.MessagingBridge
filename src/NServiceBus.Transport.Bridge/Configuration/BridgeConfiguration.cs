@@ -8,12 +8,12 @@
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// TBD
+    /// Configuration options for bridging multiple transports
     /// </summary>
     public class BridgeConfiguration
     {
         /// <summary>
-        /// TBD
+        /// Configures the bridge with the given transport
         /// </summary>
         public void AddTransport(BridgeTransport transportConfiguration)
         {
@@ -26,7 +26,7 @@
         }
 
         /// <summary>
-        /// TBD
+        /// Runs the bridge in receive-only transaction mode regardless of whether the bridged transports support distributed transactions
         /// </summary>
         public void RunInReceiveOnlyTransactionMode()
         {

@@ -11,8 +11,6 @@ namespace NServiceBus
     {
         public BridgeEndpoint(string name) { }
         public BridgeEndpoint(string name, string queueAddress) { }
-        public string Name { get; }
-        public string QueueAddress { get; }
         public void RegisterPublisher(string eventTypeFullName, string publisher) { }
         public void RegisterPublisher(System.Type eventType, string publisher) { }
         public void RegisterPublisher<T>(string publisher) { }
@@ -24,7 +22,6 @@ namespace NServiceBus
         public int Concurrency { get; set; }
         public string ErrorQueue { get; set; }
         public string Name { get; set; }
-        public NServiceBus.Transport.TransportDefinition TransportDefinition { get; }
         public void HasEndpoint(NServiceBus.BridgeEndpoint endpoint) { }
         public void HasEndpoint(string endpointName) { }
         public void HasEndpoint(string endpointName, string endpointAddress) { }
