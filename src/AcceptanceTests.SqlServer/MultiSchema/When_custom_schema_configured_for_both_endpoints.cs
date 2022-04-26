@@ -8,9 +8,12 @@
     using NUnit.Framework;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-    public class When_custom_schema_configured_for_one_endpoint : BridgeAcceptanceTest
+    public class When_custom_schema_configured_for_both_endpoints : BridgeAcceptanceTest
     {
         const string PublisherSchema = "publisher";
+        const string SubscriberSchema = "subscriber";
+
+        //public const string SubscriberSchema = "dbo";
         readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString");
 
         [Test]
@@ -39,7 +42,10 @@
                     publisherBridgeTransport.AddTestEndpoint<Publisher>();
 
                     // Subscriber Sql Transport
-                    var subscriberSqlTransport = new TestableSqlServerTransport(connectionString);
+                    var subscriberSqlTransport = new TestableSqlServerTransport(connectionString)
+                    {
+                        DefaultSchema = SubscriberSchema
+                    };
                     // Subscriber Bridge Transport
                     var subscriberBridgeTransport = new BridgeTransport(subscriberSqlTransport)
                     {
@@ -75,7 +81,8 @@
                 {
                     var transport = c.ConfigureSqlServerTransport();
                     transport.DefaultSchema = PublisherSchema;
-                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", "dbo");
+                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", SubscriberSchema);
+                    // transport.Subscriptions.DisableCaching = true;
 
                     c.OnEndpointSubscribed<Context>((_, ctx) =>
                     {
@@ -92,7 +99,13 @@
                 EndpointSetup<DefaultServer>(c =>
                 {
                     var transport = c.ConfigureSqlServerTransport();
-                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", "dbo");
+                    transport.DefaultSchema = SubscriberSchema;
+                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", SubscriberSchema);
+                    // transport.Subscriptions.SubscriptionTableName =
+                    //     new SubscriptionTableName("SubscriptionRouting", "dbo");
+                    // transport.Subscriptions.DisableCaching = true;
+
+                    // c.DisableFeature<AutoSubscribe>();
                 });
             }
 
