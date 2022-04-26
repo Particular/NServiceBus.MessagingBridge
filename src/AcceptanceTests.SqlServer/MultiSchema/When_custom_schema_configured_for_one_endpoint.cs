@@ -8,12 +8,9 @@
     using NUnit.Framework;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-    public class When_custom_schema_configured_for_both_endpoints : BridgeAcceptanceTest
+    public class When_custom_schema_configured_for_one_endpoint : BridgeAcceptanceTest
     {
         const string PublisherSchema = "publisher";
-        const string SubscriberSchema = "subscriber";
-
-        //public const string SubscriberSchema = "dbo";
         readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString");
 
         [Test]
@@ -28,31 +25,18 @@
                 .WithEndpoint<Subscriber>()
                 .WithBridge(bridgeConfiguration =>
                 {
-                    // Publisher SQL Transport
-                    var publisherSqlTransport = new TestableSqlServerTransport(connectionString)
-                    {
-                        DefaultSchema = PublisherSchema
-                    };
-                    // Publisher Bridge Transport
-                    var publisherBridgeTransport = new BridgeTransport(publisherSqlTransport)
+                    var testableSqlServerTransport = new TestableSqlServerTransport(connectionString);
+                    var publisherBridgeTransport = new BridgeTransport(testableSqlServerTransport)
                     {
                         Name = "publisherBridgeTransport"
                     };
-                    // Add endpoints
                     publisherBridgeTransport.AddTestEndpoint<Publisher>();
 
-                    // Subscriber Sql Transport
-                    var subscriberSqlTransport = new TestableSqlServerTransport(connectionString)
-                    {
-                        DefaultSchema = SubscriberSchema
-                    };
-                    // Subscriber Bridge Transport
-                    var subscriberBridgeTransport = new BridgeTransport(subscriberSqlTransport)
+                    var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
+                    var subscriberBridgeTransport = new BridgeTransport(testableSqlServerTransport)
                     {
                         Name = "subscriberBridgeTransport"
                     };
-                    // Add endpoints
-                    var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
                     subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
                     subscriberBridgeTransport.HasEndpoint(subscriberEndpoint);
 
@@ -80,8 +64,7 @@
                 {
                     var transport = c.ConfigureSqlServerTransport();
                     transport.DefaultSchema = PublisherSchema;
-                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", SubscriberSchema);
-                    // transport.Subscriptions.DisableCaching = true;
+                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", "dbo");
 
                     c.OnEndpointSubscribed<Context>((_, ctx) =>
                     {
@@ -98,13 +81,7 @@
                 EndpointSetup<DefaultServer>(c =>
                 {
                     var transport = c.ConfigureSqlServerTransport();
-                    transport.DefaultSchema = SubscriberSchema;
-                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", SubscriberSchema);
-                    // transport.Subscriptions.SubscriptionTableName =
-                    //     new SubscriptionTableName("SubscriptionRouting", "dbo");
-                    // transport.Subscriptions.DisableCaching = true;
-
-                    // c.DisableFeature<AutoSubscribe>();
+                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", "dbo");
                 });
             }
 
