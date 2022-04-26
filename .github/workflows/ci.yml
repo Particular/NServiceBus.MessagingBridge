@@ -74,6 +74,12 @@ jobs:
         with:
           connection-string-env-var: SqlServerTransportConnectionString
           catalog: nservicebus
+      - name: Prepare SQL Server
+        if: matrix.transport == 'SqlServer'
+        shell: pwsh
+        run: |
+          echo "Create extra databases"
+          sqlcmd -Q "CREATE DATABASE nservicebus2"          
       - name: Setup Azure Service Bus
         if: matrix.transport == 'AzureServiceBus'
         uses: Particular/setup-azureservicebus-action@v1.0.0
