@@ -4,7 +4,6 @@
     using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
-    using NServiceBus.Transport.SqlServer;
     using NUnit.Framework;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
@@ -80,8 +79,8 @@
                 EndpointSetup<DefaultPublisher>(c =>
                 {
                     var transport = c.ConfigureSqlServerTransport();
-                    transport.DefaultSchema = PublisherSchema;
-                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", SubscriberSchema);
+                    //transport.DefaultSchema = PublisherSchema;
+                    //transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", SubscriberSchema);
                     // transport.Subscriptions.DisableCaching = true;
 
                     c.OnEndpointSubscribed<Context>((_, ctx) =>
@@ -99,8 +98,8 @@
                 EndpointSetup<DefaultServer>(c =>
                 {
                     var transport = c.ConfigureSqlServerTransport();
-                    transport.DefaultSchema = SubscriberSchema;
-                    transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", SubscriberSchema);
+                    //transport.DefaultSchema = SubscriberSchema;
+                    //transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", SubscriberSchema);
                     // transport.Subscriptions.SubscriptionTableName =
                     //     new SubscriptionTableName("SubscriptionRouting", "dbo");
                     // transport.Subscriptions.DisableCaching = true;
