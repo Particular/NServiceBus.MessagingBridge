@@ -12,7 +12,6 @@
         const string PublisherSchema = "publisher";
         const string SubscriberSchema = "subscriber";
 
-        //public const string SubscriberSchema = "dbo";
         readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString");
 
         [Test]
@@ -79,7 +78,7 @@
                 EndpointSetup<DefaultPublisher>(c =>
                 {
                     var transport = c.ConfigureSqlServerTransport();
-                    //transport.DefaultSchema = PublisherSchema;
+                    transport.DefaultSchema = PublisherSchema;
                     //transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", SubscriberSchema);
                     // transport.Subscriptions.DisableCaching = true;
 
@@ -98,7 +97,7 @@
                 EndpointSetup<DefaultServer>(c =>
                 {
                     var transport = c.ConfigureSqlServerTransport();
-                    //transport.DefaultSchema = SubscriberSchema;
+                    transport.DefaultSchema = SubscriberSchema;
                     //transport.Subscriptions.SubscriptionTableName = new SubscriptionTableName("SubscriptionRouting", SubscriberSchema);
                     // transport.Subscriptions.SubscriptionTableName =
                     //     new SubscriptionTableName("SubscriptionRouting", "dbo");
