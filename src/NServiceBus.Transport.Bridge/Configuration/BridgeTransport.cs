@@ -5,12 +5,12 @@
     using NServiceBus.Transport;
 
     /// <summary>
-    /// TBD
+    /// Configuration for a specific bridge transport.
     /// </summary>
     public class BridgeTransport
     {
         /// <summary>
-        /// TBD
+        /// Initializes an transport with the given transport definition.
         /// </summary>
         public BridgeTransport(TransportDefinition transportDefinition)
         {
@@ -23,32 +23,27 @@
         }
 
         /// <summary>
-        /// TBD
-        /// </summary>
-        public TransportDefinition TransportDefinition { get; private set; }
-
-        /// <summary>
-        /// TBD
+        /// Overrides the default name. Used when multiple transports of the same type is used.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// TBD
+        /// Configures a custom error queue.
         /// </summary>
         public string ErrorQueue { get; set; }
 
         /// <summary>
-        /// TBD
+        /// Configures automatic queue creation.
         /// </summary>
         public bool AutoCreateQueues { get; set; }
 
         /// <summary>
-        /// 
+        /// Configures the concurrency used to move messages from this transport across to other transports.
         /// </summary>
         public int Concurrency { get; set; }
 
         /// <summary>
-        /// TBD
+        /// Registers the endpoint with the given name as connected to this transport.
         /// </summary>
         public void HasEndpoint(string endpointName)
         {
@@ -59,7 +54,7 @@
         }
 
         /// <summary>
-        /// TBD
+        /// Registers the endpoint with the given name and transport address as connected to this transport.
         /// </summary>
         public void HasEndpoint(string endpointName, string endpointAddress)
         {
@@ -67,12 +62,14 @@
         }
 
         /// <summary>
-        /// TBD
+        ///  Registers the given endpoint with its transport address as connected to this transport.
         /// </summary>
         public void HasEndpoint(BridgeEndpoint endpoint)
         {
             Endpoints.Add(endpoint);
         }
+
+        internal TransportDefinition TransportDefinition { get; private set; }
 
         internal List<BridgeEndpoint> Endpoints { get; private set; }
     }

@@ -4,19 +4,20 @@
     using System.Collections.Generic;
 
     /// <summary>
-    /// TBD
+    /// Configuration for a specific bridge endpoint.
     /// </summary>
     public class BridgeEndpoint
     {
         /// <summary>
-        /// TBD
+        /// Initializes an endpoint with the given name.
         /// </summary>
         public BridgeEndpoint(string name) : this(name, name)
         {
         }
 
         /// <summary>
-        /// TBD
+        /// Intializes an endpoint with the given name and specific transport address.
+        /// This overload is needed when using MSMQ and the bridge is running on a separate server.
         /// </summary>
         public BridgeEndpoint(string name, string queueAddress)
         {
@@ -27,7 +28,7 @@
         }
 
         /// <summary>
-        /// TBD
+        /// Registers the publisher of the event type `T`.
         /// </summary>
         public void RegisterPublisher<T>(string publisher)
         {
@@ -35,7 +36,7 @@
         }
 
         /// <summary>
-        /// TBD
+        /// Registers the publisher of the given event type.
         /// </summary>
         public void RegisterPublisher(Type eventType, string publisher)
         {
@@ -43,22 +44,16 @@
         }
 
         /// <summary>
-        /// TBD
+        /// Registers the publisher of the given event type fullname.
         /// </summary>
         public void RegisterPublisher(string eventTypeFullName, string publisher)
         {
             Subscriptions.Add(new Subscription(eventTypeFullName, publisher));
         }
 
-        /// <summary>
-        /// TBD
-        /// </summary>
-        public string QueueAddress { get; private set; }
+        internal string Name { get; private set; }
 
-        /// <summary>
-        /// TBD
-        /// </summary>
-        public string Name { get; private set; }
+        internal string QueueAddress { get; private set; }
 
         internal List<Subscription> Subscriptions { get; set; }
 
