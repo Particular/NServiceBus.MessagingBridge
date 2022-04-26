@@ -5,12 +5,12 @@
     using NServiceBus.Transport;
 
     /// <summary>
-    /// Configuration for a specific bridge transport.
+    /// Configuration options for a specific transport in the transport bridge
     /// </summary>
     public class BridgeTransport
     {
         /// <summary>
-        /// Initializes an transport with the given transport definition.
+        /// Initializes a transport in the bridge with the given transport definition
         /// </summary>
         public BridgeTransport(TransportDefinition transportDefinition)
         {
@@ -23,27 +23,27 @@
         }
 
         /// <summary>
-        /// Overrides the default name. Used when multiple transports of the same type is used.
+        /// Overrides the default name of the transport. Used when multiple transports of the same type are used
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// Configures a custom error queue.
+        /// Specifies the name of a custom error queue
         /// </summary>
         public string ErrorQueue { get; set; }
 
         /// <summary>
-        /// Configures automatic queue creation.
+        /// Set to true to automatically create the queues necessary for transport bridge operation
         /// </summary>
         public bool AutoCreateQueues { get; set; }
 
         /// <summary>
-        /// Configures the concurrency used to move messages from this transport across to other transports.
+        /// Configures the concurrency used to move messages from the current transport to bridged transports
         /// </summary>
         public int Concurrency { get; set; }
 
         /// <summary>
-        /// Registers the endpoint with the given name as connected to this transport.
+        /// Registers an endpoint with the given name with the current transport
         /// </summary>
         public void HasEndpoint(string endpointName)
         {
@@ -54,7 +54,7 @@
         }
 
         /// <summary>
-        /// Registers the endpoint with the given name and transport address as connected to this transport.
+        /// Registers an endpoint with the given name and transport address with the current transport
         /// </summary>
         public void HasEndpoint(string endpointName, string endpointAddress)
         {
@@ -62,7 +62,7 @@
         }
 
         /// <summary>
-        ///  Registers the given endpoint with its transport address as connected to this transport.
+        ///  Registers the given endpoint with the current transport
         /// </summary>
         public void HasEndpoint(BridgeEndpoint endpoint)
         {
