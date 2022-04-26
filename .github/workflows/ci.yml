@@ -79,11 +79,7 @@ jobs:
         shell: pwsh
         run: |
           echo "Create extra databases"
-          sqlcmd -Q "CREATE DATABASE nservicebus2"
-          
-          echo "Create additional schemas"
-          sqlcmd -Q "CREATE SCHEMA publisher AUTHORIZATION db_owner" -d "nservicebus"
-          sqlcmd -Q "CREATE SCHEMA subscriber AUTHORIZATION db_owner" -d "nservicebus"
+          sqlcmd -Q "CREATE DATABASE nservicebus2"          
       - name: Setup Azure Service Bus
         if: matrix.transport == 'AzureServiceBus'
         uses: Particular/setup-azureservicebus-action@v1.0.0
