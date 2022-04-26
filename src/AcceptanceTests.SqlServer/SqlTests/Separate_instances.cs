@@ -32,7 +32,7 @@ public class Separate_instances : BridgeAcceptanceTest
             {
                 // Publisher SQL Transport
                 var publisherSqlTransport = new TestableSqlServerTransport(connectionString);
-                var publisherBridgeTransport = new BridgeTransport(publisherSqlTransport)
+                var publisherBridgeTransport = new TestableBridgeTransport(publisherSqlTransport)
                 {
                     Name = "publisherBridgeTransport"
                 };
@@ -41,7 +41,7 @@ public class Separate_instances : BridgeAcceptanceTest
 
                 // Subscriber Sql Transport
                 var subscriberSqlTransport = new TestableSqlServerTransport(connectionString2);
-                var subscriberBridgeTransport = new BridgeTransport(subscriberSqlTransport)
+                var subscriberBridgeTransport = new TestableBridgeTransport(subscriberSqlTransport)
                 {
                     Name = "subscriberBridgeTransport"
                 };
