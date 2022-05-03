@@ -14,15 +14,20 @@ class Publishing_custom_address : BridgeAcceptanceTest
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
 
-                bridgeTransport.HasEndpoint("LogicalPublisher", Conventions.EndpointNamingConvention(typeof(Publisher)));
+                bridgeTransport.AddTestEndpoint<Publisher>();
+
+                // setup the logical publisher to have the address of the publisher to make sure
+                // that the bridge does proper address lookups when subscribing
+                bridgeTransport.HasEndpoint(Conventions.EndpointNamingConvention(typeof(LogicalPublisher)), Conventions.EndpointNamingConvention(typeof(Publisher)));
 
                 bridgeConfiguration.AddTransport(bridgeTransport);
 
                 var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
 
-                subscriberEndpoint.RegisterPublisher<MyEvent>("LogicalPublisher");
+                subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(LogicalPublisher)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
+            .WithEndpoint<LogicalPublisher>()
             .WithEndpoint<Publisher>(b => b
                 .When(c => c.SubscriberSubscribed, (session, c) =>
                 {
@@ -52,6 +57,14 @@ class Publishing_custom_address : BridgeAcceptanceTest
                     ctx.SubscriberSubscribed = true;
                 });
             });
+        }
+    }
+
+    class LogicalPublisher : EndpointConfigurationBuilder
+    {
+        public LogicalPublisher()
+        {
+            EndpointSetup<DefaultServer>();
         }
     }
 

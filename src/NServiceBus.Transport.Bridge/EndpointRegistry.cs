@@ -19,7 +19,8 @@ class EndpointRegistry : IEndpointRegistry
             RawEndpoint = startableRawEndpoint
         });
 
-        addressMappings[endpoint.QueueAddress] = startableRawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
+        endpointAddressMappings[endpoint.Name] = endpoint.QueueAddress;
+        targetEndpointAddressMappings[endpoint.QueueAddress] = startableRawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
     }
 
     public void ApplyMappings(IReadOnlyCollection<BridgeTransport> transportConfigurations)
@@ -54,18 +55,29 @@ class EndpointRegistry : IEndpointRegistry
 
     public string TranslateToTargetAddress(string sourceAddress)
     {
-        if (addressMappings.TryGetValue(sourceAddress, out var targetAddress))
+        if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out var targetAddress))
         {
             return targetAddress;
         }
 
-        throw new Exception($"No address mapping could be found for: {sourceAddress}");
+        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}");
+    }
+
+    public string GetEndpointAddress(string endpointName)
+    {
+        if (endpointAddressMappings.TryGetValue(endpointName, out var address))
+        {
+            return address;
+        }
+
+        throw new Exception($"No address mapping could be found for endpoint: {endpointName}");
     }
 
     public IEnumerable<ProxyRegistration> Registrations => registrations;
 
     readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = new Dictionary<string, TargetEndpointDispatcher>();
-    readonly Dictionary<string, string> addressMappings = new Dictionary<string, string>();
+    readonly Dictionary<string, string> targetEndpointAddressMappings = new Dictionary<string, string>();
+    readonly Dictionary<string, string> endpointAddressMappings = new Dictionary<string, string>();
     readonly List<ProxyRegistration> registrations = new List<ProxyRegistration>();
 
     public class ProxyRegistration

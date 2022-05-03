@@ -15,12 +15,16 @@ using NServiceBus.Unicast.Transport;
 
 class SubscriptionManager
 {
-    public SubscriptionManager(ILogger<SubscriptionManager> logger)
+    public SubscriptionManager(
+        ILogger<SubscriptionManager> logger,
+        IEndpointRegistry endpointRegistry)
     {
         this.logger = logger;
+        this.endpointRegistry = endpointRegistry;
     }
 
-    public async Task SubscribeToEvents(IRawEndpoint endpointProxy,
+    public async Task SubscribeToEvents(
+            IRawEndpoint endpointProxy,
             BridgeEndpoint endpoint,
             CancellationToken cancellationToken = default)
     {
@@ -67,7 +71,8 @@ class SubscriptionManager
         subscriptionMessage.Headers[Headers.TimeSent] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
         subscriptionMessage.Headers[Headers.NServiceBusVersion] = "7.0.0";
 
-        var transportOperation = new TransportOperation(subscriptionMessage, new UnicastAddressTag(subscription.Publisher));
+        var publisherAddress = endpointRegistry.GetEndpointAddress(subscription.Publisher);
+        var transportOperation = new TransportOperation(subscriptionMessage, new UnicastAddressTag(publisherAddress));
         var transportOperations = new TransportOperations(transportOperation);
 
         try
@@ -80,7 +85,6 @@ class SubscriptionManager
             throw new QueueNotFoundException(subscription.Publisher, message, ex);
         }
     }
-
 
     async Task DispatchWithRetries(IRawEndpoint endpointProxy,
             TransportOperations transportOperations,
@@ -102,4 +106,5 @@ class SubscriptionManager
 
     static readonly RuntimeTypeGenerator TypeGenerator = new RuntimeTypeGenerator();
     readonly ILogger<SubscriptionManager> logger;
+    readonly IEndpointRegistry endpointRegistry;
 }
