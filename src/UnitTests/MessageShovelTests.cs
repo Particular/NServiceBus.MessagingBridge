@@ -170,6 +170,8 @@ public class MessageShovelTests
             return sourceAddress.Split('@').First();
         }
 
+        public string GetEndpointAddress(string endpointName) => throw new NotImplementedException();
+
         readonly string targetTransport;
         readonly BridgeEndpoint targetEndpoint;
         readonly FakeRawEndpoint rawEndpoint;
