@@ -47,10 +47,7 @@
         /// </summary>
         public void HasEndpoint(string endpointName)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            var endpointAddress = TransportDefinition.ToTransportAddress(new QueueAddress(endpointName));
-#pragma warning restore CS0618 // Type or member is obsolete
-            HasEndpoint(new BridgeEndpoint(endpointName, endpointAddress));
+            HasEndpoint(new BridgeEndpoint(endpointName));
         }
 
         /// <summary>

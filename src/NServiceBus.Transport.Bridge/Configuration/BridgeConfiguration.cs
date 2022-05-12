@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Text;
     using Microsoft.Extensions.Logging;
+    using NServiceBus.Transport;
 
     /// <summary>
     /// Configuration options for bridging multiple transports
@@ -148,6 +149,17 @@
             foreach (var transportConfiguration in transportConfigurations)
             {
                 transportConfiguration.TransportDefinition.TransportTransactionMode = transportTransactionMode;
+
+                foreach (var endpoint in transportConfiguration.Endpoints)
+                {
+                    if (string.IsNullOrEmpty(endpoint.QueueAddress))
+                    {
+#pragma warning disable CS0618 // Type or member is obsolete
+                        endpoint.QueueAddress = transportConfiguration.TransportDefinition
+                            .ToTransportAddress(new QueueAddress(endpoint.Name));
+#pragma warning restore CS0618 // Type or member is obsolete
+                    }
+                }
             }
 
             return new FinalizedBridgeConfiguration(transportConfigurations);

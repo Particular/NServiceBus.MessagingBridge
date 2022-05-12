@@ -36,20 +36,6 @@ public class BridgeConfigurationTests
     }
 
     [Test]
-    public void Should_default_the_endpoint_address_to_the_transport_default()
-    {
-        var transportAddress = "SomeEndpointAddress";
-        var transport = new BridgeTransport(new SomeTransport
-        {
-            AddresTranslation = _ => transportAddress
-        });
-
-        transport.HasEndpoint("SomeEndpoint");
-
-        Assert.AreEqual(transportAddress, transport.Endpoints.Single().QueueAddress);
-    }
-
-    [Test]
     public void Should_default_auto_queue_creation_to_off()
     {
         var transport = new BridgeTransport(new SomeTransport());
@@ -190,6 +176,36 @@ public class BridgeConfigurationTests
     }
 
     [Test]
+    public void Should_translate_endpoint_addresses_if_not_set()
+    {
+        var configuration = new BridgeConfiguration();
+
+        var defaultAddress = "TheDefaultAddress";
+        var transportWithDefaultAddress = new BridgeTransport(new SomeTransport
+        {
+            AddressTranslation = _ => defaultAddress
+        });
+
+        transportWithDefaultAddress.HasEndpoint("EndpointWithDefaultAddress");
+
+        var transportWithCustomAddress = new BridgeTransport(new SomeOtherTransport());
+
+        var customAddress = "CustomAddress";
+        transportWithCustomAddress.HasEndpoint("EndpointWithCustomAddress", customAddress);
+
+        configuration.AddTransport(transportWithDefaultAddress);
+        configuration.AddTransport(transportWithCustomAddress);
+
+        var finalizedConfiguration = FinalizeConfiguration(configuration);
+
+        Assert.AreEqual(defaultAddress, finalizedConfiguration.TransportConfigurations
+            .Single(t => t.Name == transportWithDefaultAddress.Name).Endpoints.Single().QueueAddress);
+
+        Assert.AreEqual(customAddress, finalizedConfiguration.TransportConfigurations
+            .Single(t => t.Name == transportWithCustomAddress.Name).Endpoints.Single().QueueAddress);
+    }
+
+    [Test]
     public void Should_default_to_transaction_scope_mode_if_all_transports_supports_it()
     {
         var configuration = new BridgeConfiguration();
@@ -279,12 +295,12 @@ public class BridgeConfigurationTests
 
     class SomeTransport : FakeTransport
     {
-        public Func<string, string> AddresTranslation = name => name;
+        public Func<string, string> AddressTranslation = name => name;
 #pragma warning disable CS0672 // Member overrides obsolete member
         public override string ToTransportAddress(QueueAddress address)
 #pragma warning restore CS0672 // Member overrides obsolete member
         {
-            return AddresTranslation(address.BaseAddress);
+            return AddressTranslation(address.BaseAddress);
         }
     }
     class SomeOtherTransport : FakeTransport { }

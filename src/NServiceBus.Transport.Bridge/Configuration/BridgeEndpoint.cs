@@ -11,7 +11,7 @@
         /// <summary>
         /// Initializes an endpoint in the transport bridge with the given name
         /// </summary>
-        public BridgeEndpoint(string name) : this(name, name)
+        public BridgeEndpoint(string name) : this(name, null)
         {
         }
 
@@ -53,7 +53,7 @@
 
         internal string Name { get; private set; }
 
-        internal string QueueAddress { get; private set; }
+        internal string QueueAddress { get; set; }
 
         internal List<Subscription> Subscriptions { get; set; }
 
