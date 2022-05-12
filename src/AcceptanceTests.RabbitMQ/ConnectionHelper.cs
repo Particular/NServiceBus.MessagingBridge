@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Authentication;
 using RabbitMQ.Client;
 
 public class ConnectionHelper
@@ -18,12 +17,11 @@ public class ConnectionHelper
         var factory = new ConnectionFactory
         {
             AutomaticRecoveryEnabled = true,
-            UseBackgroundThreadsForIO = true
+            UseBackgroundThreadsForIO = true,
+            HostName = connectionStringParser.HostName,
+            UserName = connectionStringParser.UserName ?? "guest",
+            Password = connectionStringParser.Password ?? "guest",
         };
-
-        factory.HostName = connectionStringParser.HostName;
-        factory.UserName = connectionStringParser.UserName ?? "guest";
-        factory.Password = connectionStringParser.Password ?? "guest";
 
         if (!string.IsNullOrEmpty(connectionStringParser.VirtualHost))
         {
@@ -34,11 +32,6 @@ public class ConnectionHelper
         {
             factory.Port = connectionStringParser.Port.Value;
         }
-
-        factory.Ssl.ServerName = factory.HostName;
-        factory.Ssl.Certs = null;
-        factory.Ssl.Version = SslProtocols.Tls12;
-        factory.Ssl.Enabled = connectionStringParser.IsTls;
 
         return factory;
     });
