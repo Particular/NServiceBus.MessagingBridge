@@ -14,6 +14,8 @@
         /// </summary>
         public BridgeTransport(TransportDefinition transportDefinition)
         {
+            Guard.AgainstNull(nameof(transportDefinition), transportDefinition);
+
             Endpoints = new List<BridgeEndpoint>();
             TransportDefinition = transportDefinition;
             Name = transportDefinition.GetType().Name.ToLower().Replace("transport", "");
@@ -47,6 +49,8 @@
         /// </summary>
         public void HasEndpoint(string endpointName)
         {
+            Guard.AgainstNullAndEmpty(nameof(endpointName), endpointName);
+
             HasEndpoint(new BridgeEndpoint(endpointName));
         }
 
@@ -55,6 +59,9 @@
         /// </summary>
         public void HasEndpoint(string endpointName, string endpointAddress)
         {
+            Guard.AgainstNullAndEmpty(nameof(endpointName), endpointName);
+            Guard.AgainstNullAndEmpty(nameof(endpointAddress), endpointAddress);
+
             HasEndpoint(new BridgeEndpoint(endpointName, endpointAddress));
         }
 
@@ -63,6 +70,8 @@
         /// </summary>
         public void HasEndpoint(BridgeEndpoint endpoint)
         {
+            Guard.AgainstNull(nameof(endpoint), endpoint);
+
             Endpoints.Add(endpoint);
         }
 

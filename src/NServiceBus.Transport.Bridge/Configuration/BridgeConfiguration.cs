@@ -18,6 +18,8 @@
         /// </summary>
         public void AddTransport(BridgeTransport transportConfiguration)
         {
+            Guard.AgainstNull(nameof(transportConfiguration), transportConfiguration);
+
             if (transportConfigurations.Any(t => t.Name == transportConfiguration.Name))
             {
                 throw new InvalidOperationException($"A transport with the name {transportConfiguration.Name} has already been configured. Use a different transport type or specify a custom name");

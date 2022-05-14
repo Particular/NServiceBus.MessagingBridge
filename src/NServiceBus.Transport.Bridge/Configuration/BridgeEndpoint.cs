@@ -11,8 +11,11 @@
         /// <summary>
         /// Initializes an endpoint in the transport bridge with the given name
         /// </summary>
-        public BridgeEndpoint(string name) : this(name, null)
+        public BridgeEndpoint(string name)
         {
+            Guard.AgainstNullAndEmpty(nameof(name), name);
+
+            Name = name;
         }
 
         /// <summary>
@@ -21,10 +24,11 @@
         /// </summary>
         public BridgeEndpoint(string name, string queueAddress)
         {
+            Guard.AgainstNullAndEmpty(nameof(name), name);
+            Guard.AgainstNullAndEmpty(nameof(queueAddress), queueAddress);
+
             Name = name;
             QueueAddress = queueAddress;
-
-            Subscriptions = new List<Subscription>();
         }
 
         /// <summary>
@@ -32,6 +36,8 @@
         /// </summary>
         public void RegisterPublisher<T>(string publisher)
         {
+            Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
+
             RegisterPublisher(typeof(T), publisher);
         }
 
@@ -40,6 +46,9 @@
         /// </summary>
         public void RegisterPublisher(Type eventType, string publisher)
         {
+            Guard.AgainstNull(nameof(eventType), eventType);
+            Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
+
             RegisterPublisher(eventType.FullName, publisher);
         }
 
@@ -48,6 +57,9 @@
         /// </summary>
         public void RegisterPublisher(string eventTypeFullName, string publisher)
         {
+            Guard.AgainstNullAndEmpty(nameof(eventTypeFullName), eventTypeFullName);
+            Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
+
             Subscriptions.Add(new Subscription(eventTypeFullName, publisher));
         }
 
@@ -55,7 +67,7 @@
 
         internal string QueueAddress { get; set; }
 
-        internal List<Subscription> Subscriptions { get; set; }
+        internal IList<Subscription> Subscriptions { get; } = new List<Subscription>();
 
         internal class Subscription
         {

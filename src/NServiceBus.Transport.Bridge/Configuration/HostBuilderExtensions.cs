@@ -18,6 +18,9 @@
             this IHostBuilder hostBuilder,
             Action<BridgeConfiguration> bridgeConfigurationAction)
         {
+            Guard.AgainstNull(nameof(hostBuilder), hostBuilder);
+            Guard.AgainstNull(nameof(bridgeConfigurationAction), bridgeConfigurationAction);
+
             return hostBuilder.UseNServiceBusBridge((_, rc) => bridgeConfigurationAction(rc));
         }
 
@@ -28,6 +31,9 @@
             this IHostBuilder hostBuilder,
             Action<HostBuilderContext, BridgeConfiguration> bridgeConfigurationAction)
         {
+            Guard.AgainstNull(nameof(hostBuilder), hostBuilder);
+            Guard.AgainstNull(nameof(bridgeConfigurationAction), bridgeConfigurationAction);
+
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);
 
