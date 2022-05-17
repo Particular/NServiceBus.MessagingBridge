@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
@@ -51,6 +52,10 @@ class EndpointProxyFactory
         }
 
         transportEndpointConfiguration.LimitMessageProcessingConcurrencyTo(transportConfiguration.Concurrency);
+
+        transportEndpointConfiguration.CustomErrorHandlingPolicy(new MessageShovelErrorHandlingPolicy(
+            serviceProvider.GetRequiredService<ILogger<MessageShovelErrorHandlingPolicy>>(),
+            translatedErrorQueue));
 
         return RawEndpoint.Create(transportEndpointConfiguration, cancellationToken);
     }

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
@@ -17,24 +18,36 @@ class MessageShovel
 
     public async Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
     {
-        var targetEndpointDispatcher = targetEndpointRegistry.GetTargetEndpointDispatcher(transferContext.SourceEndpointName);
+        TargetEndpointDispatcher targetEndpointDispatcher = null;
+        try
+        {
+            targetEndpointDispatcher = targetEndpointRegistry.GetTargetEndpointDispatcher(transferContext.SourceEndpointName);
 
-        var messageContext = transferContext.MessageToTransfer;
+            var messageContext = transferContext.MessageToTransfer;
 
-        var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
+            var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
 
-        var transferDetails = $"{transferContext.SourceTransport}->{targetEndpointDispatcher.TransportName}";
-        messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
+            var transferDetails = $"{transferContext.SourceTransport}->{targetEndpointDispatcher.TransportName}";
+            messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
 
-        TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
-        TransformAddressHeader(messageToSend, targetEndpointRegistry, FaultsHeaderKeys.FailedQ);
+            TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
+            TransformAddressHeader(messageToSend, targetEndpointRegistry, FaultsHeaderKeys.FailedQ);
 
-        await targetEndpointDispatcher.Dispatch(
-            messageToSend,
-            transferContext.PassTransportTransaction ? messageContext.TransportTransaction : new TransportTransaction(),
-            cancellationToken).ConfigureAwait(false);
+            await targetEndpointDispatcher.Dispatch(
+                messageToSend,
+                transferContext.PassTransportTransaction ? messageContext.TransportTransaction : new TransportTransaction(),
+                cancellationToken).ConfigureAwait(false);
 
-        logger.LogDebug($"{transferDetails}: Transfered message {messageToSend.MessageId}");
+            logger.LogDebug($"{transferDetails}: Transfered message {messageToSend.MessageId}");
+        }
+        catch (Exception ex) when (ex.IsCausedBy(cancellationToken))
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to shovel message for endpoint {transferContext.SourceEndpointName} with id {transferContext.MessageToTransfer.NativeMessageId} from {transferContext.SourceTransport} to {targetEndpointDispatcher?.TransportName}", ex);
+        }
     }
 
     void TransformAddressHeader(
