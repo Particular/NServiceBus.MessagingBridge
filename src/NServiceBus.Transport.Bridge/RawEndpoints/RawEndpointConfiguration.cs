@@ -24,7 +24,7 @@ namespace NServiceBus.Raw
         public static RawEndpointConfiguration Create(
             string endpointName,
             TransportDefinition transportDefinition,
-            Func<MessageContext, IMessageDispatcher, CancellationToken, Task> onMessage, //TODO: add cancellation token
+            Func<MessageContext, IMessageDispatcher, CancellationToken, Task> onMessage,
             string poisonMessageQueue)
         {
             return new RawEndpointConfiguration(endpointName, transportDefinition, onMessage, poisonMessageQueue);
