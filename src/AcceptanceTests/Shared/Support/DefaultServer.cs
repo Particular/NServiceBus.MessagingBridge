@@ -7,7 +7,9 @@ using NServiceBus.AcceptanceTesting.Support;
 
 public class DefaultServer : IEndpointSetupTemplate
 {
-    public virtual Task<EndpointConfiguration> GetConfiguration(RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointConfiguration, Action<EndpointConfiguration> configurationBuilderCustomization)
+#pragma warning disable PS0013 // Add a CancellationToken parameter type argument
+    public virtual async Task<EndpointConfiguration> GetConfiguration(RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointConfiguration, Func<EndpointConfiguration, Task> configurationBuilderCustomization)
+#pragma warning restore PS0013 // Add a CancellationToken parameter type argument
     {
         var configuration = new EndpointConfiguration(endpointConfiguration.EndpointName);
 
@@ -27,8 +29,8 @@ public class DefaultServer : IEndpointSetupTemplate
 
         runDescriptor.OnTestCompleted(_ => transportCleanup(CancellationToken.None));
 
-        configurationBuilderCustomization(configuration);
+        await configurationBuilderCustomization(configuration);
 
-        return Task.FromResult(configuration);
+        return configuration;
     }
 }

@@ -8,9 +8,9 @@ using NUnit.Framework;
 
 public class DefaultTestServer : IEndpointSetupTemplate
 {
-#pragma warning disable PS0018 // A task-returning method should have a CancellationToken parameter unless it has a parameter implementing ICancellableContext
-    public virtual Task<EndpointConfiguration> GetConfiguration(RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointConfiguration, Action<EndpointConfiguration> configurationBuilderCustomization)
-#pragma warning restore PS0018 // A task-returning method should have a CancellationToken parameter unless it has a parameter implementing ICancellableContext
+#pragma warning disable PS0013 // Add a CancellationToken parameter type argument
+    public virtual async Task<EndpointConfiguration> GetConfiguration(RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointConfiguration, Func<EndpointConfiguration, Task> configurationBuilderCustomization)
+#pragma warning restore PS0013 // Add a CancellationToken parameter type argument
     {
         var configuration = new EndpointConfiguration(endpointConfiguration.EndpointName);
 
@@ -37,9 +37,9 @@ public class DefaultTestServer : IEndpointSetupTemplate
             return Task.CompletedTask;
         });
 
-        configurationBuilderCustomization(configuration);
+        await configurationBuilderCustomization(configuration);
 
-        return Task.FromResult(configuration);
+        return configuration;
     }
 
     public static AcceptanceTestingTransport GetTestTransportDefinition()
