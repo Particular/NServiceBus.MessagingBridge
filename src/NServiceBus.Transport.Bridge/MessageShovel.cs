@@ -38,7 +38,7 @@ class MessageShovel
                 transferContext.PassTransportTransaction ? messageContext.TransportTransaction : new TransportTransaction(),
                 cancellationToken).ConfigureAwait(false);
 
-            logger.LogDebug($"{transferDetails}: Transfered message {messageToSend.MessageId}");
+            logger.LogDebug("{TransferDetails}: Transfered message {MessageId}", transferDetails, messageToSend.MessageId);
         }
         catch (Exception ex) when (ex.IsCausedBy(cancellationToken))
         {
