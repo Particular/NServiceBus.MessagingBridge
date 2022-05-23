@@ -23,7 +23,7 @@ class MessageShovelErrorHandlingPolicy : IErrorHandlingPolicy
             return Task.FromResult(ErrorHandleResult.RetryRequired);
         }
 
-        logger.LogError($"Message shovel operation failed, message will be moved to {errorQueue}", handlingContext.Error.Exception);
+        logger.LogError(handlingContext.Error.Exception, "Message shovel operation failed, message will be moved to {ErrorQueue}", errorQueue);
 
         return handlingContext.MoveToErrorQueue(errorQueue, cancellationToken: cancellationToken);
     }
