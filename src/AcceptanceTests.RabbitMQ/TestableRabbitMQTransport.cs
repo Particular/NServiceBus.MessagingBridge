@@ -4,11 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Transport;
-using NServiceBus.Transport.RabbitMQ;
 
 class TestableRabbitMQTransport : RabbitMQTransport
 {
-    public TestableRabbitMQTransport(IRoutingTopology topology, string connectionString)
+    public TestableRabbitMQTransport(RoutingTopology topology, string connectionString)
         : base(topology, connectionString)
     {
     }

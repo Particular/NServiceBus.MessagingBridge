@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
-using NServiceBus.Transport.RabbitMQ;
 
 class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
 {
@@ -16,7 +15,7 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
         return new BridgeTransportDefinition
         {
             TransportDefinition = new TestableRabbitMQTransport(
-                new ConventionalRoutingTopology(true),
+                RoutingTopology.Conventional(QueueType.Quorum),
                 connectionString),
             Cleanup = (ct) => Cleanup(ct)
         };
@@ -25,7 +24,7 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
     public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         transport = new TestableRabbitMQTransport(
-            new ConventionalRoutingTopology(true),
+            RoutingTopology.Conventional(QueueType.Quorum),
             connectionString);
         endpointConfiguration.UseTransport(transport);
 
