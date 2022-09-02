@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.0.0-beta.3" />
-    <PackageReference Include="NServiceBus.Transport.Msmq" Version="2.0.0-beta.2" />
+    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.0.0-rc.1" />
+    <PackageReference Include="NServiceBus.Transport.Msmq" Version="2.0.0-rc.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\AcceptanceTests\Shared\**\*.cs" Link="Shared\%(RecursiveDir)\%(Filename).%(Extension)"/>
+    <Compile Include="..\AcceptanceTests\Shared\**\*.cs" Link="Shared\%(RecursiveDir)\%(Filename).%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
