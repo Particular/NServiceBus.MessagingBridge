@@ -28,17 +28,22 @@ class MessageShovel
             var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
 
             var transferDetails = $"{transferContext.SourceTransport}->{targetEndpointDispatcher.TransportName}";
-            messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
 
-            TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
-            TransformAddressHeader(messageToSend, targetEndpointRegistry, FaultsHeaderKeys.FailedQ);
+            // Audit messages contain all the original fields. Transforming them would destroy this.  
+            if (!IsAuditMessage(messageToSend))
+            {
+                messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
+
+                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
+                TransformAddressHeader(messageToSend, targetEndpointRegistry, FaultsHeaderKeys.FailedQ);
+            }
 
             await targetEndpointDispatcher.Dispatch(
                 messageToSend,
                 transferContext.PassTransportTransaction ? messageContext.TransportTransaction : new TransportTransaction(),
                 cancellationToken).ConfigureAwait(false);
 
-            logger.LogDebug("{TransferDetails}: Transfered message {MessageId}", transferDetails, messageToSend.MessageId);
+            logger.LogDebug("{TransferDetails}: Transferred message {MessageId}", transferDetails, messageToSend.MessageId);
         }
         catch (Exception ex) when (ex.IsCausedBy(cancellationToken))
         {
@@ -49,6 +54,9 @@ class MessageShovel
             throw new Exception($"Failed to shovel message for endpoint {transferContext.SourceEndpointName} with id {transferContext.MessageToTransfer.NativeMessageId} from {transferContext.SourceTransport} to {targetEndpointDispatcher?.TransportName}", ex);
         }
     }
+
+    // Assuming that a message is an audit message if a ProcessingMachine is known
+    static bool IsAuditMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey(Headers.ProcessingMachine);
 
     void TransformAddressHeader(
         OutgoingMessage messageToSend,
