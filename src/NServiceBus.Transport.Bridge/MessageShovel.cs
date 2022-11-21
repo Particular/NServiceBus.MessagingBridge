@@ -56,7 +56,7 @@ class MessageShovel
     }
 
     // Assuming that a message is an audit message if a ProcessingMachine is known
-    static bool IsAuditMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey(Headers.ProcessingMachine);
+    static bool IsAuditMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey(Headers.ProcessingEnded);
 
     void TransformAddressHeader(
         OutgoingMessage messageToSend,
