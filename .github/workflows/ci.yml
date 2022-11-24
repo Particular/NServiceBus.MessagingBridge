@@ -78,7 +78,7 @@ jobs:
           sqlcmd -Q "CREATE DATABASE nservicebus2"          
       - name: Setup Azure Service Bus
         if: matrix.transport == 'AzureServiceBus'
-        uses: Particular/setup-azureservicebus-action@v1.0.0
+        uses: Particular/setup-azureservicebus-action@v1.1.0
         with:
           connection-string-name: AzureServiceBus_ConnectionString
           tag: ASBTransportBridge
