@@ -16,7 +16,7 @@ public class Retry : BridgeAcceptanceTest
     {
         var ctx = await Scenario.Define<Context>()
             .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, c) =>
+                .When(c => c.EndpointsStarted, (session, c) =>
                 {
                     return session.Publish(new FaultyMessage());
                 }))
@@ -24,7 +24,10 @@ public class Retry : BridgeAcceptanceTest
             .WithEndpoint<ErrorSpy>()
             .WithBridge(bridgeConfiguration =>
             {
-                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
+                var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
+                {
+                    Name = "DefaultTestingTransport"
+                };
                 bridgeTransport.AddTestEndpoint<PublishingEndpoint>();
                 bridgeTransport.AddTestEndpoint<ErrorSpy>();
                 bridgeConfiguration.AddTransport(bridgeTransport);
@@ -33,8 +36,10 @@ public class Retry : BridgeAcceptanceTest
                     new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(ProcessingEndpoint)));
                 subscriberEndpoint.RegisterPublisher<FaultyMessage>(
                     Conventions.EndpointNamingConvention(typeof(PublishingEndpoint)));
-                bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
 
+                var theOtherTransport = new TestableBridgeTransport(TransportBeingTested);
+                theOtherTransport.HasEndpoint(subscriberEndpoint);
+                bridgeConfiguration.AddTransport(theOtherTransport);
             })
             .Done(c => c.RetryDelivered)
             .Run();
@@ -55,7 +60,7 @@ public class Retry : BridgeAcceptanceTest
     public class PublishingEndpoint : EndpointConfigurationBuilder
     {
         public PublishingEndpoint() =>
-            EndpointSetup<DefaultServer>(c =>
+            EndpointSetup<DefaultTestPublisher>(c =>
             {
                 c.OnEndpointSubscribed<Context>((_, ctx) =>
                 {
@@ -67,7 +72,7 @@ public class Retry : BridgeAcceptanceTest
 
     public class ProcessingEndpoint : EndpointConfigurationBuilder
     {
-        public ProcessingEndpoint() => EndpointSetup<DefaultTestServer>(
+        public ProcessingEndpoint() => EndpointSetup<DefaultServer>(
             c => c.SendFailedMessagesTo("Retry.ErrorSpy"));
 
         public class MessageHandler : IHandleMessages<FaultyMessage>
@@ -106,7 +111,7 @@ public class Retry : BridgeAcceptanceTest
     {
         public ErrorSpy()
         {
-            var endpoint = EndpointSetup<DefaultServer>(c => c.AutoSubscribe().DisableFor<FaultyMessage>());
+            var endpoint = EndpointSetup<DefaultTestServer>(c => c.AutoSubscribe().DisableFor<FaultyMessage>());
         }
 
         class FailedMessageHander : IHandleMessages<FaultyMessage>
@@ -121,7 +126,8 @@ public class Retry : BridgeAcceptanceTest
                 var sendOptions = new SendOptions();
 
                 //Send the message to the FailedQ address
-                sendOptions.SetDestination(context.MessageHeaders[FaultsHeaderKeys.FailedQ]);
+                string destination = context.MessageHeaders[FaultsHeaderKeys.FailedQ];
+                sendOptions.SetDestination(destination);
 
                 //ServiceControl adds this header when retrying
                 sendOptions.SetHeader("ServiceControl.Retry.UniqueMessageId", "XYZ");
