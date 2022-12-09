@@ -29,13 +29,28 @@ class MessageShovel
 
             var transferDetails = $"{transferContext.SourceTransport}->{targetEndpointDispatcher.TransportName}";
 
-            // Audit messages contain all the original fields. Transforming them would destroy this.  
-            if (!IsAuditMessage(messageToSend))
+            if (IsErrorMessage(messageToSend))
             {
-                messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
+                //This is a failed message forwarded to ServiceControl. We need to transform the FailedQ header so that ServiceControl returns the message
+                //to the correct queue/transport on the other side
 
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
+                //We _do not_ transform the ReplyToAddress header
                 TransformAddressHeader(messageToSend, targetEndpointRegistry, FaultsHeaderKeys.FailedQ);
+            }
+            else if (IsRetryMessage(messageToSend))
+            {
+                //This is a message retried from ServiceControl. Its ReplyToAddress header has been preserved (as stated above) so we don't need to transform it back
+            }
+            else if (IsAuditMessage(messageToSend))
+            {
+                //This is a message sent to the audit queue. We _do not_ transform its ReplyToAddress header
+            }
+            else
+            {
+                // This is a regular message sent between the endpoints on different sides of the bridge.
+                // The ReplyToAddress is transformed to allow for replies to be delivered
+                messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
+                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
             }
 
             await targetEndpointDispatcher.Dispatch(
@@ -57,6 +72,10 @@ class MessageShovel
 
     // Assuming that a message is an audit message if a ProcessingMachine is known
     static bool IsAuditMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey(Headers.ProcessingEnded);
+
+    static bool IsErrorMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey(FaultsHeaderKeys.FailedQ);
+
+    static bool IsRetryMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.Retry.UniqueMessageId");
 
     void TransformAddressHeader(
         OutgoingMessage messageToSend,
