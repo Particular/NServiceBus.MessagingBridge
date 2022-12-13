@@ -44,7 +44,7 @@ jobs:
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages
-        if: matrix.name == 'Windows'
+        if: matrix.name == 'Windows' && matrix.transport == 'Learning'
         uses: actions/upload-artifact@v3.1.1
         with:
           name: NuGet packages
