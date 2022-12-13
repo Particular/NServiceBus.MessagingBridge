@@ -44,14 +44,14 @@ jobs:
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages
-        if: matrix.name == 'Windows' && matrix.transport == 'Learning'
+        if: matrix.os-name == 'Windows' && matrix.transport == 'Learning'
         uses: actions/upload-artifact@v3.1.1
         with:
           name: NuGet packages
           path: nugets/
           retention-days: 7
       - name: Azure login
-        uses: azure/login@v1.4.6
+        uses: azure/login@v1.4.7
         with:
           creds: ${{ secrets.AZURE_ACI_CREDENTIALS }}
           enable-AzPSSession: true
