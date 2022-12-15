@@ -8,18 +8,18 @@
     {
         public static void SetExceptionHeaders(Dictionary<string, string> headers, Exception e)
         {
-            headers["NServiceBus.ExceptionInfo.ExceptionType"] = e.GetType().FullName;
+            headers["NServiceBus.Transport.Bridge.ExceptionInfo.ExceptionType"] = e.GetType().FullName;
 
             if (e.InnerException != null)
             {
                 headers["NServiceBus.ExceptionInfo.InnerExceptionType"] = e.InnerException.GetType().FullName;
             }
 
-            headers["NServiceBus.ExceptionInfo.HelpLink"] = e.HelpLink;
-            headers["NServiceBus.ExceptionInfo.Message"] = e.GetMessage().Truncate(16384);
-            headers["NServiceBus.ExceptionInfo.Source"] = e.Source;
-            headers["NServiceBus.ExceptionInfo.StackTrace"] = e.ToString();
-            headers["NServiceBus.TimeOfFailure"] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
+            headers["NServiceBus.Transport.Bridge.ExceptionInfo.HelpLink"] = e.HelpLink;
+            headers["NServiceBus.Transport.Bridge.ExceptionInfo.Message"] = e.GetMessage().Truncate(16384);
+            headers["NServiceBus.Transport.Bridge.ExceptionInfo.Source"] = e.Source;
+            headers["NServiceBus.Transport.Bridge.ExceptionInfo.StackTrace"] = e.ToString();
+            headers["NServiceBus.Transport.Bridge.TimeOfFailure"] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (e.Data == null)
@@ -35,7 +35,7 @@
                 {
                     continue;
                 }
-                headers["NServiceBus.ExceptionInfo.Data." + entry.Key] = entry.Value.ToString();
+                headers["NServiceBus.Transport.Bridge.ExceptionInfo.Data." + entry.Key] = entry.Value.ToString();
             }
         }
 
