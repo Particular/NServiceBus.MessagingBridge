@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,11 @@ class EndpointProxyFactory
         transportConfiguration.TransportDefinition,
         (messageContext, _, ct) =>
         {
+            if (IsSubscriptionMessage(messageContext.Headers))
+            {
+                return Task.CompletedTask;
+            }
+
             var transferContext = new TransferContext(
                 transportConfiguration.Name,
                 endpointToProxy.Name,
@@ -58,6 +64,19 @@ class EndpointProxyFactory
             translatedErrorQueue));
 
         return RawEndpoint.Create(transportEndpointConfiguration, cancellationToken);
+    }
+
+    static bool IsSubscriptionMessage(IReadOnlyDictionary<string, string> messageContextHeaders)
+    {
+        var messageIntent = default(MessageIntent);
+        if (messageContextHeaders.TryGetValue(Headers.MessageIntent, out var messageIntentString))
+        {
+            Enum.TryParse(messageIntentString, true, out messageIntent);
+        }
+
+#pragma warning disable IDE0078
+        return messageIntent == MessageIntent.Subscribe || messageIntent == MessageIntent.Unsubscribe;
+#pragma warning restore IDE0078
     }
 
     readonly IServiceProvider serviceProvider;
