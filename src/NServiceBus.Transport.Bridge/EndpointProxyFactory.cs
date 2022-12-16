@@ -75,7 +75,7 @@ class EndpointProxyFactory
         }
 
 #pragma warning disable IDE0078
-        return messageIntent != MessageIntent.Subscribe && messageIntent != MessageIntent.Unsubscribe;
+        return messageIntent == MessageIntent.Subscribe || messageIntent == MessageIntent.Unsubscribe;
 #pragma warning restore IDE0078
     }
 
