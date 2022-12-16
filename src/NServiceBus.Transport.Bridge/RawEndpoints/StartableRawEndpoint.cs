@@ -92,7 +92,7 @@ namespace NServiceBus.Raw
                 dispatcher,
                 rawEndpointConfiguration.OnMessage,
                 rawEndpointConfiguration.PushRuntimeSettings,
-                new RawEndpointErrorHandlingPolicy(endpointName, endpointName, dispatcher, rawEndpointConfiguration.ErrorHandlingPolicy));
+                new RawEndpointErrorHandlingPolicy(endpointName, dispatcher, rawEndpointConfiguration.ErrorHandlingPolicy));
             return receiver;
         }
 
