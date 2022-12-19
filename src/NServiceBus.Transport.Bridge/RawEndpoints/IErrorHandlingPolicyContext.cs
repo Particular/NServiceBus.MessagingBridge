@@ -12,7 +12,7 @@ namespace NServiceBus.Raw
         /// <summary>
         /// Moves a given message to the error queue.
         /// </summary>
-        Task<ErrorHandleResult> MoveToErrorQueue(string errorQueue, bool attachStandardFailureHeaders = true, CancellationToken cancellationToken = default);
+        Task<ErrorHandleResult> MoveToErrorQueue(string errorQueue, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the error information.
