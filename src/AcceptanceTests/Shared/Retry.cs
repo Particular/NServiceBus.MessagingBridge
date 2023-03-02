@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
+using NServiceBus.AcceptanceTesting.Support;
 using NServiceBus.Faults;
+using NServiceBus.Pipeline;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
@@ -41,7 +44,7 @@ public class Retry : BridgeAcceptanceTest
                 theOtherTransport.HasEndpoint(subscriberEndpoint);
                 bridgeConfiguration.AddTransport(theOtherTransport);
             })
-            .Done(c => c.RetryDelivered)
+            .Done(c => c.GetRetrySuccessfullAck)
             .Run();
 
         Assert.IsTrue(ctx.RetryDelivered);
@@ -111,7 +114,11 @@ public class Retry : BridgeAcceptanceTest
     {
         public ErrorSpy()
         {
-            var endpoint = EndpointSetup<DefaultTestServer>(c => c.AutoSubscribe().DisableFor<FaultyMessage>());
+            var endpoint = EndpointSetup<DefaultTestServer>((c, runDescriptor) =>
+            {
+                c.AutoSubscribe().DisableFor<FaultyMessage>();
+                c.Pipeline.Register(new ControlMessageBehavior(runDescriptor.ScenarioContext as Context), "Checks that the retry confirmation arrived");
+            });
         }
 
         class FailedMessageHander : IHandleMessages<FaultyMessage>
@@ -129,12 +136,31 @@ public class Retry : BridgeAcceptanceTest
                 string destination = context.MessageHeaders[FaultsHeaderKeys.FailedQ];
                 sendOptions.SetDestination(destination);
 
-                //ServiceControl adds this header when retrying
+                //ServiceControl adds these headers when retrying
                 sendOptions.SetHeader("ServiceControl.Retry.UniqueMessageId", "XYZ");
+                sendOptions.SetHeader("ServiceControl.Retry.AcknowledgementQueue", "Retry.ErrorSpy");
                 return context.Send(new RetryMessage(), sendOptions);
             }
 
             readonly Context testContext;
+        }
+
+        class ControlMessageBehavior : Behavior<IIncomingPhysicalMessageContext>
+        {
+            public ControlMessageBehavior(Context testContext) => this.testContext = testContext;
+
+            public override async Task Invoke(IIncomingPhysicalMessageContext context, Func<Task> next)
+            {
+                if (context.MessageHeaders.ContainsKey("ServiceControl.Retry.Successful"))
+                {
+                    testContext.GetRetrySuccessfullAck = true;
+                    return;
+                }
+                await next();
+
+            }
+
+            Context testContext;
         }
     }
 
@@ -145,6 +171,7 @@ public class Retry : BridgeAcceptanceTest
         public IReadOnlyDictionary<string, string> ReceivedMessageHeaders { get; set; }
         public IReadOnlyDictionary<string, string> FailedMessageHeaders { get; set; }
         public bool RetryDelivered { get; set; }
+        public bool GetRetrySuccessfullAck { get; internal set; }
     }
 
     public class FaultyMessage : IEvent
