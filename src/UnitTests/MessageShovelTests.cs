@@ -29,6 +29,14 @@ public class MessageShovelTests
     }
 
     [Test]
+    public async Task Should_transform_retry_ack_queue_header()
+    {
+        var transferDetails = await Transfer(retryAckQueueAddress: "error@MyMachine");
+
+        Assert.AreEqual("error", transferDetails.OutgoingOperation.Message.Headers["ServiceControl.Retry.AcknowledgementQueue"]);
+    }
+
+    [Test]
     public async Task Should_handle_send_only_endpoints()
     {
         //send only endpoints doesn't attach a reply to address
@@ -78,6 +86,7 @@ public class MessageShovelTests
         string targetAddress = null,
         string replyToAddress = null,
         string failedQueueAddress = null,
+        string retryAckQueueAddress = null,
         TransportTransaction transportTransaction = null,
         bool passTransportTransaction = false)
     {
@@ -97,6 +106,12 @@ public class MessageShovelTests
         if (!string.IsNullOrEmpty(failedQueueAddress))
         {
             headers.Add(FaultsHeaderKeys.FailedQ, failedQueueAddress);
+        }
+
+        if (!string.IsNullOrEmpty(retryAckQueueAddress))
+        {
+            headers.Add("ServiceControl.Retry.UniqueMessageId", "some-id");
+            headers.Add("ServiceControl.Retry.AcknowledgementQueue", retryAckQueueAddress);
         }
 
         var targetEndpoint = new BridgeEndpoint("TargetEndpoint", targetAddress);

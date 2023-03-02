@@ -40,6 +40,9 @@ class MessageShovel
             else if (IsRetryMessage(messageToSend))
             {
                 //This is a message retried from ServiceControl. Its ReplyToAddress header has been preserved (as stated above) so we don't need to transform it back
+
+                //Transport for the retry ack queue address
+                TransformAddressHeader(messageToSend, targetEndpointRegistry, "ServiceControl.Retry.AcknowledgementQueue");
             }
             else if (IsAuditMessage(messageToSend))
             {
