@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using Microsoft.VisualBasic;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
-using NServiceBus.AcceptanceTesting.Support;
 using NServiceBus.Faults;
 using NServiceBus.Pipeline;
 using NUnit.Framework;
