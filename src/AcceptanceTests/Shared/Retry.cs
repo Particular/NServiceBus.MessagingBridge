@@ -13,68 +13,58 @@ using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 public class Retry : BridgeAcceptanceTest
 {
     [Test]
-    public async Task Should_forward_retry_messages()
+    public async Task Should_work()
     {
         var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => c.EndpointsStarted, (session, c) =>
-                {
-                    return session.Publish(new FaultyMessage());
-                }))
-            .WithEndpoint<ProcessingEndpoint>(builder => builder.DoNotFailOnErrorMessages())
-            .WithEndpoint<ErrorSpy>()
+            .WithEndpoint<ProcessingEndpoint>(builder =>
+            {
+                builder.DoNotFailOnErrorMessages();
+                builder.When(c => c.EndpointsStarted, (session, _) => session.SendLocal(new FaultyMessage()));
+            })
+            .WithEndpoint<FakeSCError>()
+            .WithEndpoint<FakeSCAudit>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
                 {
                     Name = "DefaultTestingTransport"
                 };
-                bridgeTransport.AddTestEndpoint<PublishingEndpoint>();
-                bridgeTransport.AddTestEndpoint<ErrorSpy>();
+                bridgeTransport.AddTestEndpoint<FakeSCError>();
+                bridgeTransport.AddTestEndpoint<FakeSCAudit>();
                 bridgeConfiguration.AddTransport(bridgeTransport);
 
-                var subscriberEndpoint =
+                var processingEndpoint =
                     new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(ProcessingEndpoint)));
-                subscriberEndpoint.RegisterPublisher<FaultyMessage>(
-                    Conventions.EndpointNamingConvention(typeof(PublishingEndpoint)));
 
                 var theOtherTransport = new TestableBridgeTransport(TransportBeingTested);
-                theOtherTransport.HasEndpoint(subscriberEndpoint);
+                theOtherTransport.HasEndpoint(processingEndpoint);
                 bridgeConfiguration.AddTransport(theOtherTransport);
             })
-            .Done(c => c.GetRetrySuccessfullAck)
+            .Done(c => c.MessageAudited)
             .Run();
 
-        Assert.IsTrue(ctx.RetryDelivered);
         Assert.IsTrue(ctx.MessageFailed);
+        Assert.IsTrue(ctx.RetryDelivered);
+        Assert.IsTrue(ctx.GotRetrySuccessfullAck);
+        Assert.IsTrue(ctx.MessageAudited);
 
         foreach (var header in ctx.FailedMessageHeaders)
         {
             if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
             {
                 Assert.AreEqual(header.Value, receivedHeaderValue,
-                    $"{header.Key} is not the same on processed message and audit message.");
+                    $"{header.Key} is not the same on processed message and message sent to the error queue");
             }
         }
     }
 
-    public class PublishingEndpoint : EndpointConfigurationBuilder
-    {
-        public PublishingEndpoint() =>
-            EndpointSetup<DefaultTestPublisher>(c =>
-            {
-                c.OnEndpointSubscribed<Context>((_, ctx) =>
-                {
-                    ctx.SubscriberSubscribed = true;
-                });
-                c.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), typeof(ProcessingEndpoint));
-            });
-    }
-
     public class ProcessingEndpoint : EndpointConfigurationBuilder
     {
-        public ProcessingEndpoint() => EndpointSetup<DefaultServer>(
-            c => c.SendFailedMessagesTo("Retry.ErrorSpy"));
+        public ProcessingEndpoint() => EndpointSetup<DefaultServer>(c =>
+        {
+            c.SendFailedMessagesTo(Conventions.EndpointNamingConvention(typeof(FakeSCError)));
+            c.AuditProcessedMessagesTo(Conventions.EndpointNamingConvention(typeof(FakeSCAudit)));
+        });
 
         public class MessageHandler : IHandleMessages<FaultyMessage>
         {
@@ -84,40 +74,24 @@ public class Retry : BridgeAcceptanceTest
 
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
-                testContext.ReceivedMessageHeaders =
-                    new ReadOnlyDictionary<string, string>((IDictionary<string, string>)context.MessageHeaders);
+                if (testContext.MessageFailed)
+                {
+                    testContext.RetryDelivered = true;
+                    return Task.CompletedTask;
+                }
 
-                testContext.MessageFailed = true;
+                testContext.ReceivedMessageHeaders =
+                new ReadOnlyDictionary<string, string>((IDictionary<string, string>)context.MessageHeaders);
 
                 throw new Exception("Simulated");
             }
         }
-
-        public class RetryMessageHandler : IHandleMessages<RetryMessage>
-        {
-            readonly Context testContext;
-
-            public RetryMessageHandler(Context context) => testContext = context;
-
-            public Task Handle(RetryMessage message, IMessageHandlerContext context)
-            {
-                testContext.RetryDelivered = true;
-
-                return Task.CompletedTask;
-            }
-        }
     }
 
-    public class ErrorSpy : EndpointConfigurationBuilder
+    public class FakeSCError : EndpointConfigurationBuilder
     {
-        public ErrorSpy()
-        {
-            var endpoint = EndpointSetup<DefaultTestServer>((c, runDescriptor) =>
-            {
-                c.AutoSubscribe().DisableFor<FaultyMessage>();
-                c.Pipeline.Register(new ControlMessageBehavior(runDescriptor.ScenarioContext as Context), "Checks that the retry confirmation arrived");
-            });
-        }
+        public FakeSCError() => EndpointSetup<DefaultTestServer>((c, runDescriptor) =>
+                c.Pipeline.Register(new ControlMessageBehavior(runDescriptor.ScenarioContext as Context), "Checks that the retry confirmation arrived"));
 
         class FailedMessageHander : IHandleMessages<FaultyMessage>
         {
@@ -128,6 +102,8 @@ public class Retry : BridgeAcceptanceTest
                 testContext.FailedMessageHeaders =
                     new ReadOnlyDictionary<string, string>((IDictionary<string, string>)context.MessageHeaders);
 
+                testContext.MessageFailed = true;
+
                 var sendOptions = new SendOptions();
 
                 //Send the message to the FailedQ address
@@ -135,9 +111,9 @@ public class Retry : BridgeAcceptanceTest
                 sendOptions.SetDestination(destination);
 
                 //ServiceControl adds these headers when retrying
-                sendOptions.SetHeader("ServiceControl.Retry.UniqueMessageId", "XYZ");
-                sendOptions.SetHeader("ServiceControl.Retry.AcknowledgementQueue", "Retry.ErrorSpy");
-                return context.Send(new RetryMessage(), sendOptions);
+                sendOptions.SetHeader("ServiceControl.Retry.UniqueMessageId", "some-id");
+                sendOptions.SetHeader("ServiceControl.Retry.AcknowledgementQueue", Conventions.EndpointNamingConvention(typeof(FakeSCError)));
+                return context.Send(new FaultyMessage(), sendOptions);
             }
 
             readonly Context testContext;
@@ -151,7 +127,7 @@ public class Retry : BridgeAcceptanceTest
             {
                 if (context.MessageHeaders.ContainsKey("ServiceControl.Retry.Successful"))
                 {
-                    testContext.GetRetrySuccessfullAck = true;
+                    testContext.GotRetrySuccessfullAck = true;
                     return;
                 }
                 await next();
@@ -162,21 +138,38 @@ public class Retry : BridgeAcceptanceTest
         }
     }
 
+    public class FakeSCAudit : EndpointConfigurationBuilder
+    {
+        public FakeSCAudit() => EndpointSetup<DefaultTestServer>();
+
+        class FailedMessageHander : IHandleMessages<FaultyMessage>
+        {
+            public FailedMessageHander(Context context) => testContext = context;
+
+            public Task Handle(FaultyMessage message, IMessageHandlerContext context)
+            {
+                testContext.MessageAudited = true;
+
+                return Task.CompletedTask;
+            }
+
+            readonly Context testContext;
+        }
+    }
+
     public class Context : ScenarioContext
     {
         public bool SubscriberSubscribed { get; set; }
         public bool MessageFailed { get; set; }
         public IReadOnlyDictionary<string, string> ReceivedMessageHeaders { get; set; }
         public IReadOnlyDictionary<string, string> FailedMessageHeaders { get; set; }
+        public IReadOnlyDictionary<string, string> AuditMessageHeaders { get; set; }
         public bool RetryDelivered { get; set; }
-        public bool GetRetrySuccessfullAck { get; internal set; }
+        public bool GotRetrySuccessfullAck { get; set; }
+        public bool MessageAudited { get; set; }
     }
 
-    public class FaultyMessage : IEvent
-    {
-    }
-
-    public class RetryMessage : IMessage
+    public class FaultyMessage : IMessage
     {
     }
 }
