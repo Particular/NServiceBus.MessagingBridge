@@ -37,16 +37,16 @@ class MessageShovel
                 //We _do not_ transform the ReplyToAddress header
                 TransformAddressHeader(messageToSend, targetEndpointRegistry, FaultsHeaderKeys.FailedQ);
             }
+            else if (IsAuditMessage(messageToSend))
+            {
+                //This is a message sent to the audit queue. We _do not_ transform any headers
+            }
             else if (IsRetryMessage(messageToSend))
             {
                 //This is a message retried from ServiceControl. Its ReplyToAddress header has been preserved (as stated above) so we don't need to transform it back
 
                 //Transform the retry ack queue address
                 TransformAddressHeader(messageToSend, targetEndpointRegistry, "ServiceControl.Retry.AcknowledgementQueue");
-            }
-            else if (IsAuditMessage(messageToSend))
-            {
-                //This is a message sent to the audit queue. We _do not_ transform its ReplyToAddress header
             }
             else
             {

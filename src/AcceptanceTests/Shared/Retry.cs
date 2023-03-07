@@ -40,7 +40,7 @@ public class Retry : BridgeAcceptanceTest
                 theOtherTransport.HasEndpoint(processingEndpoint);
                 bridgeConfiguration.AddTransport(theOtherTransport);
             })
-            .Done(c => c.MessageAudited)
+            .Done(c => c.GotRetrySuccessfullAck && c.MessageAudited)
             .Run();
 
         Assert.IsTrue(ctx.MessageFailed);
@@ -63,7 +63,7 @@ public class Retry : BridgeAcceptanceTest
         public ProcessingEndpoint() => EndpointSetup<DefaultServer>(c =>
         {
             c.SendFailedMessagesTo(Conventions.EndpointNamingConvention(typeof(FakeSCError)));
-            c.AuditProcessedMessagesTo("Retry.FakeSCAudit");
+            c.AuditProcessedMessagesTo(Conventions.EndpointNamingConvention(typeof(FakeSCAudit)));
         });
 
         public class MessageHandler : IHandleMessages<FaultyMessage>
