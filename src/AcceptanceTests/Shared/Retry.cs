@@ -63,7 +63,7 @@ public class Retry : BridgeAcceptanceTest
         public ProcessingEndpoint() => EndpointSetup<DefaultServer>(c =>
         {
             c.SendFailedMessagesTo(Conventions.EndpointNamingConvention(typeof(FakeSCError)));
-            c.AuditProcessedMessagesTo(Conventions.EndpointNamingConvention(typeof(FakeSCAudit)));
+            c.AuditProcessedMessagesTo("Retry.FakeSCAudit");
         });
 
         public class MessageHandler : IHandleMessages<FaultyMessage>
