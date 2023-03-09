@@ -19,7 +19,7 @@ class MessageShovelErrorHandlingPolicy : IErrorHandlingPolicy
     {
         if (handlingContext.Error.ImmediateProcessingFailures < 3)
         {
-            logger.LogWarning("Message shovel operation failed and will be retried", handlingContext.Error.Exception);
+            logger.LogWarning(handlingContext.Error.Exception, "Message shovel operation failed and will be retried");
             return Task.FromResult(ErrorHandleResult.RetryRequired);
         }
 
