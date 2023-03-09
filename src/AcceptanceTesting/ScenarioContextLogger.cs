@@ -19,7 +19,7 @@ public class ScenarioContextLogger : ILogger
         Exception exception,
         Func<TState, Exception, string> formatter)
     {
-        scenarioContext.AddTrace(categoryName + ": " + formatter(state, exception));
+        scenarioContext.AddTrace($"{categoryName}: {formatter(state, exception)} - {exception}");
     }
 
     readonly string categoryName;
