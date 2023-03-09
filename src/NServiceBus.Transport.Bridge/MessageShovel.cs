@@ -39,7 +39,8 @@ class MessageShovel
             }
             else if (IsAuditMessage(messageToSend))
             {
-                //This is a message sent to the audit queue. We _do not_ transform any headers
+                //This is a message sent to the audit queue. We _do not_ transform any headers. 
+                //This check needs to be done _before_ the retry message check because we don't want to treat audited retry messages as retry messages.
             }
             else if (IsRetryMessage(messageToSend))
             {
