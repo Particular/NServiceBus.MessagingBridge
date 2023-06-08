@@ -83,5 +83,5 @@ class RuntimeTypeGenerator
     Dictionary<string, ModuleBuilder> assemblies = new Dictionary<string, ModuleBuilder>();
     Dictionary<string, Type> types = new Dictionary<string, Type>();
     Dictionary<string, TypeBuilder> typeBuilders = new Dictionary<string, TypeBuilder>();
-    const string unknownAssemblyName = "NServiceBus.Transport.Bridge.UnknownAssembly";
+    const string unknownAssemblyName = "NServiceBus.MessagingBridge.UnknownAssembly";
 }
