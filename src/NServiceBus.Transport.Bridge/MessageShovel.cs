@@ -54,6 +54,7 @@ class MessageShovel
                 // This is a regular message sent between the endpoints on different sides of the bridge.
                 // The ReplyToAddress is transformed to allow for replies to be delivered
                 messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
+
                 TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
             }
 
@@ -91,9 +92,14 @@ class MessageShovel
             return;
         }
 
-        var targetSpecificReplyToAddress = targetEndpointRegistry.TranslateToTargetAddress(headerValue);
+        if (!targetEndpointRegistry.TryTranslateToTargetAddress(headerValue, out string targetAddress))
+        {
+            messageToSend.Headers.Remove(headerKey);
+            logger.LogWarning($"Unable to find translation for {headerKey}:{headerValue}");
+            return;
+        }
 
-        messageToSend.Headers[headerKey] = targetSpecificReplyToAddress;
+        messageToSend.Headers[headerKey] = targetAddress;
     }
 
     readonly ILogger<MessageShovel> logger;

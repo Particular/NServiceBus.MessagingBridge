@@ -53,6 +53,9 @@ class EndpointRegistry : IEndpointRegistry
         throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}");
     }
 
+    public bool TryTranslateToTargetAddress(string sourceAddress, out string targetAddress) =>
+        targetEndpointAddressMappings.TryGetValue(sourceAddress, out targetAddress);
+
     public string TranslateToTargetAddress(string sourceAddress)
     {
         if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out var targetAddress))
