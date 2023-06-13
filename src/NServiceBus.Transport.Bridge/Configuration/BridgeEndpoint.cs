@@ -49,7 +49,7 @@
             Guard.AgainstNull(nameof(eventType), eventType);
             Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
 
-            RegisterPublisher(eventType.FullName, publisher);
+            RegisterPublisher(eventType.AssemblyQualifiedName, publisher);
         }
 
         /// <summary>
@@ -73,11 +73,11 @@
         {
             public Subscription(string eventTypeFullName, string publisher)
             {
-                EventTypeFullName = eventTypeFullName;
+                EventTypeAssemblyQualifiedName = eventTypeFullName;
                 Publisher = publisher;
             }
 
-            public string EventTypeFullName { get; private set; }
+            public string EventTypeAssemblyQualifiedName { get; private set; }
 
             public string Publisher { get; private set; }
         }
