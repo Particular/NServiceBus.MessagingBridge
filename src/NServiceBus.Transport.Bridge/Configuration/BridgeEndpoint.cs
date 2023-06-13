@@ -49,11 +49,20 @@
             Guard.AgainstNull(nameof(eventType), eventType);
             Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
 
-            RegisterPublisher(eventType.AssemblyQualifiedName, publisher);
+            var fullyQualifiedAssemblyTypeName = eventType.AssemblyQualifiedName;
+
+            const string NeutralSuffix = ", Culture=neutral, PublicKeyToken=null";
+
+            if (fullyQualifiedAssemblyTypeName.EndsWith(NeutralSuffix))
+            {
+                fullyQualifiedAssemblyTypeName = fullyQualifiedAssemblyTypeName.Substring(0, fullyQualifiedAssemblyTypeName.Length - NeutralSuffix.Length);
+            }
+
+            RegisterPublisher(fullyQualifiedAssemblyTypeName, publisher);
         }
 
         /// <summary>
-        /// Registers the publisher of the given event type using its assembly fully-qualified name
+        /// Registers the publisher of the given event type using its assembly fully-qualified name i.e `MyNamespace.EventName, AssemblyName, Version=1.0.0.0` (the culture and public keys are ignored by NServiceBus)
         /// </summary>
         public void RegisterPublisher(string eventTypeAssemblyQualifiedName, string publisher)
         {
