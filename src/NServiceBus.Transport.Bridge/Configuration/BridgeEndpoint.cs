@@ -53,7 +53,7 @@
         }
 
         /// <summary>
-        /// Registers the publisher of the given event type using its fully-qualified type name
+        /// Registers the publisher of the given event type using its assembly fully-qualified name
         /// </summary>
         public void RegisterPublisher(string eventTypeFullName, string publisher)
         {
@@ -71,9 +71,9 @@
 
         internal class Subscription
         {
-            public Subscription(string eventTypeFullName, string publisher)
+            public Subscription(string eventTypeAssemblyQualifiedName, string publisher)
             {
-                EventTypeAssemblyQualifiedName = eventTypeFullName;
+                EventTypeAssemblyQualifiedName = eventTypeAssemblyQualifiedName;
                 Publisher = publisher;
             }
 
