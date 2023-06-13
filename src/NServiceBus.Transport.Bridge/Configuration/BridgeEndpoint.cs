@@ -55,12 +55,12 @@
         /// <summary>
         /// Registers the publisher of the given event type using its assembly fully-qualified name
         /// </summary>
-        public void RegisterPublisher(string eventTypeFullName, string publisher)
+        public void RegisterPublisher(string eventTypeAssemblyQualifiedName, string publisher)
         {
-            Guard.AgainstNullAndEmpty(nameof(eventTypeFullName), eventTypeFullName);
+            Guard.AgainstNullAndEmpty(nameof(eventTypeAssemblyQualifiedName), eventTypeAssemblyQualifiedName);
             Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
 
-            Subscriptions.Add(new Subscription(eventTypeFullName, publisher));
+            Subscriptions.Add(new Subscription(eventTypeAssemblyQualifiedName, publisher));
         }
 
         internal string Name { get; private set; }
