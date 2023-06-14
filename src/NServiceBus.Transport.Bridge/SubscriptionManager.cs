@@ -38,7 +38,7 @@ class SubscriptionManager
         var eventTypes = new List<MessageMetadata>();
         foreach (var subscription in subscriptions)
         {
-            var eventType = TypeGenerator.GetType(subscription.EventTypeFullName);
+            var eventType = TypeGenerator.GetType(subscription.EventTypeAssemblyQualifiedName);
 
             eventTypes.Add(new MessageMetadata(eventType));
         }
@@ -63,7 +63,7 @@ class SubscriptionManager
         var localAddress = endpointProxy.TransportAddress;
         var subscriptionMessage = ControlMessageFactory.Create(MessageIntent.Subscribe);
 
-        subscriptionMessage.Headers[Headers.SubscriptionMessageType] = subscription.EventTypeFullName + ",Version=1.0.0";
+        subscriptionMessage.Headers[Headers.SubscriptionMessageType] = subscription.EventTypeAssemblyQualifiedName;
         subscriptionMessage.Headers[Headers.ReplyToAddress] = localAddress;
         subscriptionMessage.Headers[Headers.SubscriberTransportAddress] = localAddress;
 
@@ -81,7 +81,7 @@ class SubscriptionManager
         }
         catch (QueueNotFoundException ex)
         {
-            var message = $"Failed to subscribe to {subscription.EventTypeFullName} at publisher queue {subscription.Publisher}, reason {ex.Message}";
+            var message = $"Failed to subscribe to {subscription.EventTypeAssemblyQualifiedName} at publisher queue {subscription.Publisher}, reason {ex.Message}";
             throw new QueueNotFoundException(subscription.Publisher, message, ex);
         }
     }

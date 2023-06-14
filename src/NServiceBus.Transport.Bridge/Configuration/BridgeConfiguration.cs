@@ -95,7 +95,7 @@
                 sb.AppendLine();
                 foreach (var eventType in eventsWithNoRegisteredPublisher)
                 {
-                    sb.AppendLine($"- {eventType.EventTypeFullName}, publisher: {eventType.Publisher}");
+                    sb.AppendLine($"- {eventType.EventTypeAssemblyQualifiedName}, publisher: {eventType.Publisher}");
                 }
                 throw new InvalidOperationException(sb.ToString());
             }
@@ -103,7 +103,7 @@
             var eventsWithMultiplePublishers = transportConfigurations
                 .SelectMany(t => t.Endpoints)
                 .SelectMany(e => e.Subscriptions)
-                .GroupBy(e => e.EventTypeFullName)
+                .GroupBy(e => e.EventTypeAssemblyQualifiedName)
                 .Where(g => g.GroupBy(s => s.Publisher).Count() > 1);
 
             if (eventsWithMultiplePublishers.Any())
