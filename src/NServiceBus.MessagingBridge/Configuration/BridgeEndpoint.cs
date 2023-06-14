@@ -4,12 +4,12 @@
     using System.Collections.Generic;
 
     /// <summary>
-    /// Configuration options for a specific endpoint in the transport bridge
+    /// Configuration options for a specific endpoint in the bridge
     /// </summary>
     public class BridgeEndpoint
     {
         /// <summary>
-        /// Initializes an endpoint in the transport bridge with the given name
+        /// Initializes an endpoint in the bridge with the given name
         /// </summary>
         public BridgeEndpoint(string name)
         {
@@ -19,7 +19,7 @@
         }
 
         /// <summary>
-        /// Initializes an endpoint in the transport bridge with the given name and a specific transport address.
+        /// Initializes an endpoint in the bridge with the given name and a specific transport address.
         /// This overload is needed when using an MSMQ endpoint and the bridge is running on a separate server.
         /// </summary>
         public BridgeEndpoint(string name, string queueAddress)
