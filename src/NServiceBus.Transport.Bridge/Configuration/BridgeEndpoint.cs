@@ -69,7 +69,18 @@
             Guard.AgainstNullAndEmpty(nameof(eventTypeAssemblyQualifiedName), eventTypeAssemblyQualifiedName);
             Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
 
-            Subscriptions.Add(new Subscription(eventTypeAssemblyQualifiedName, publisher));
+            try
+            {
+                // Try retrieving type, this will validate the assembly qualified name. A value cannot
+                // be parsed it will throw. If it can be parsed it doesn't mean the type can be
+                // resolved thus the result is ignored.
+                _ = Type.GetType(eventTypeAssemblyQualifiedName, false);
+                Subscriptions.Add(new Subscription(eventTypeAssemblyQualifiedName, publisher));
+            }
+            catch
+            {
+                throw new ArgumentException("The event type assembly qualified name is invalid", eventTypeAssemblyQualifiedName);
+            }
         }
 
         internal string Name { get; private set; }
