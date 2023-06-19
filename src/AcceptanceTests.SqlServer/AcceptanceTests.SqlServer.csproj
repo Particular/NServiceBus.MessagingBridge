@@ -11,7 +11,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\AcceptanceTesting\AcceptanceTesting.csproj" />
-    <ProjectReference Include="..\NServiceBus.Transport.Bridge\NServiceBus.Transport.Bridge.csproj" />
+    <ProjectReference Include="..\NServiceBus.MessagingBridge\NServiceBus.MessagingBridge.csproj" />
   </ItemGroup>
 
   <ItemGroup>
