@@ -49,18 +49,38 @@
             Guard.AgainstNull(nameof(eventType), eventType);
             Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
 
-            RegisterPublisher(eventType.FullName, publisher);
+            var fullyQualifiedAssemblyTypeName = eventType.AssemblyQualifiedName;
+
+            const string NeutralSuffix = ", Culture=neutral, PublicKeyToken=null";
+
+            if (fullyQualifiedAssemblyTypeName.EndsWith(NeutralSuffix))
+            {
+                fullyQualifiedAssemblyTypeName = fullyQualifiedAssemblyTypeName.Substring(0, fullyQualifiedAssemblyTypeName.Length - NeutralSuffix.Length);
+            }
+
+            RegisterPublisher(fullyQualifiedAssemblyTypeName, publisher);
         }
 
         /// <summary>
-        /// Registers the publisher of the given event type using its fully-qualified type name
+        /// Registers the publisher of the given event type using its assembly fully-qualified name i.e `MyNamespace.EventName, AssemblyName, Version=1.0.0.0` (the culture and public keys are ignored by NServiceBus)
         /// </summary>
-        public void RegisterPublisher(string eventTypeFullName, string publisher)
+        public void RegisterPublisher(string eventTypeAssemblyQualifiedName, string publisher)
         {
-            Guard.AgainstNullAndEmpty(nameof(eventTypeFullName), eventTypeFullName);
+            Guard.AgainstNullAndEmpty(nameof(eventTypeAssemblyQualifiedName), eventTypeAssemblyQualifiedName);
             Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
 
-            Subscriptions.Add(new Subscription(eventTypeFullName, publisher));
+            try
+            {
+                // Try retrieving type, this will validate the assembly qualified name. A value cannot
+                // be parsed it will throw. If it can be parsed it doesn't mean the type can be
+                // resolved thus the result is ignored.
+                _ = Type.GetType(eventTypeAssemblyQualifiedName, false);
+                Subscriptions.Add(new Subscription(eventTypeAssemblyQualifiedName, publisher));
+            }
+            catch
+            {
+                throw new ArgumentException("The event type assembly qualified name is invalid", eventTypeAssemblyQualifiedName);
+            }
         }
 
         internal string Name { get; private set; }
@@ -71,13 +91,13 @@
 
         internal class Subscription
         {
-            public Subscription(string eventTypeFullName, string publisher)
+            public Subscription(string eventTypeAssemblyQualifiedName, string publisher)
             {
-                EventTypeFullName = eventTypeFullName;
+                EventTypeAssemblyQualifiedName = eventTypeAssemblyQualifiedName;
                 Publisher = publisher;
             }
 
-            public string EventTypeFullName { get; private set; }
+            public string EventTypeAssemblyQualifiedName { get; private set; }
 
             public string Publisher { get; private set; }
         }
