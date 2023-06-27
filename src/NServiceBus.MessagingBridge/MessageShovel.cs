@@ -25,6 +25,11 @@ class MessageShovel
 
             var messageContext = transferContext.MessageToTransfer;
 
+            if (messageContext.Headers.ContainsKey("FakeShovelFailure"))
+            {
+                throw new Exception("Incoming message has `FakeShovelFailure` header to test infrastructure failures");
+            }
+
             var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
             messageToSend.Headers.Remove(BridgeHeaders.FailedQ);
 
