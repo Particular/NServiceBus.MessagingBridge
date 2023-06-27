@@ -26,6 +26,7 @@ class MessageShovel
             var messageContext = transferContext.MessageToTransfer;
 
             var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
+            messageToSend.Headers.Remove(BridgeHeaders.FailedQ);
 
             var transferDetails = $"{transferContext.SourceTransport}->{targetEndpointDispatcher.TransportName}";
 
