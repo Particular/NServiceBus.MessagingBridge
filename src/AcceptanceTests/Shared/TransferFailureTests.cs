@@ -3,11 +3,13 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
+using NServiceBus.Features;
 using NUnit.Framework;
 
 public class TransferFailureTests : BridgeAcceptanceTest
 {
-    const string ReceiveDummyQueue = "TransferFailureTests.Dummy";
+    const string ReceiveDummyQueue = "DummyQueue"; // Required because Bridge needs endpoints on both sides.
+    const string ErrorQueue = "BridgeErrorQueue";
     const string FailedQHeader = "NServiceBus.MessagingBridge.FailedQ";
 
     [Test]
@@ -27,7 +29,7 @@ public class TransferFailureTests : BridgeAcceptanceTest
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
                 bridgeTransport.AddTestEndpoint<Sender>();
                 bridgeConfiguration.AddTransport(bridgeTransport);
-                bridgeTransport.ErrorQueue = "TransferFailureTests." + nameof(ErrorSpy);
+                bridgeTransport.ErrorQueue = ErrorQueue;
 
                 var subscriberEndpoint = new BridgeEndpoint(ReceiveDummyQueue);
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
@@ -53,7 +55,10 @@ public class TransferFailureTests : BridgeAcceptanceTest
     {
         public ErrorSpy()
         {
-            EndpointSetup<DefaultServer>();
+            EndpointSetup<DefaultServer>(c =>
+            {
+                c.OverrideLocalAddress(ErrorQueue);
+            });
         }
 
         class FailedMessageHander : IHandleMessages<FaultyMessage>
