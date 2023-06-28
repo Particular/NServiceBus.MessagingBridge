@@ -5,20 +5,20 @@ body:
   - type: markdown
     attributes:
       value: |     
-        For additional support options visit [particular.net/support](https://particular.net/support)
+        For additional support options, or if this is related to a security vulnerability or sensitive information must be included in the bug report, visit [particular.net/support](https://particular.net/support).
   - type: textarea
     id: what-happened
     attributes:
       label: Describe the bug 
       description: A clear and concise description of the bug.
       value: | 
-        ## Description
+        #### Description
         
-        ## Expected behavior
+        #### Expected behavior
         
-        ## Actual behavior
+        #### Actual behavior
         
-        ## Versions
+        #### Versions
         
         Please list the version of the relevant packages or applications in which the bug exists.        
     validations:
@@ -42,10 +42,10 @@ body:
       label: Additional Information
       description: If there are any possible solutions, workarounds, or additional information please describe them here
       value: | 
-       ## Workarounds
+       #### Workarounds
        
-       ## Possible solutions
+       #### Possible solutions
        
-       ## Additional information
+       #### Additional information
     validations:
       required: false

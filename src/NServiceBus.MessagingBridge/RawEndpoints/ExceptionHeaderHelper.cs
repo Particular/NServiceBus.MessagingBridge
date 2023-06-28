@@ -8,18 +8,18 @@
     {
         public static void SetExceptionHeaders(Dictionary<string, string> headers, Exception e)
         {
-            headers["NServiceBus.Transport.Bridge.ExceptionInfo.ExceptionType"] = e.GetType().FullName;
+            headers["NServiceBus.MessagingBridge.ExceptionInfo.ExceptionType"] = e.GetType().FullName;
 
             if (e.InnerException != null)
             {
                 headers["NServiceBus.ExceptionInfo.InnerExceptionType"] = e.InnerException.GetType().FullName;
             }
 
-            headers["NServiceBus.Transport.Bridge.ExceptionInfo.HelpLink"] = e.HelpLink;
-            headers["NServiceBus.Transport.Bridge.ExceptionInfo.Message"] = e.GetMessage().Truncate(16384);
-            headers["NServiceBus.Transport.Bridge.ExceptionInfo.Source"] = e.Source;
-            headers["NServiceBus.Transport.Bridge.ExceptionInfo.StackTrace"] = e.ToString();
-            headers["NServiceBus.Transport.Bridge.TimeOfFailure"] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
+            headers["NServiceBus.MessagingBridge.ExceptionInfo.HelpLink"] = e.HelpLink;
+            headers["NServiceBus.MessagingBridge.ExceptionInfo.Message"] = e.GetMessage().Truncate(16384);
+            headers["NServiceBus.MessagingBridge.ExceptionInfo.Source"] = e.Source;
+            headers["NServiceBus.MessagingBridge.ExceptionInfo.StackTrace"] = e.ToString();
+            headers["NServiceBus.MessagingBridge.TimeOfFailure"] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (e.Data == null)
@@ -35,7 +35,7 @@
                 {
                     continue;
                 }
-                headers["NServiceBus.Transport.Bridge.ExceptionInfo.Data." + entry.Key] = entry.Value.ToString();
+                headers["NServiceBus.MessagingBridge.ExceptionInfo.Data." + entry.Key] = entry.Value.ToString();
             }
         }
 

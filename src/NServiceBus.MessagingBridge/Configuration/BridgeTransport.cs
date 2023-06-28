@@ -5,7 +5,7 @@
     using NServiceBus.Transport;
 
     /// <summary>
-    /// Configuration options for a specific transport in the transport bridge
+    /// Configuration options for a specific transport in the bridge
     /// </summary>
     public class BridgeTransport
     {
@@ -35,7 +35,7 @@
         public string ErrorQueue { get; set; }
 
         /// <summary>
-        /// Set to true to automatically create the queues necessary for transport bridge operation
+        /// Set to true to automatically create the queues necessary for the bridge operation
         /// </summary>
         public bool AutoCreateQueues { get; set; }
 
