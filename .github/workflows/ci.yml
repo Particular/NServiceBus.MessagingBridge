@@ -32,11 +32,11 @@ jobs:
         shell: pwsh
         run: exit $(If ($env:SECRETS_AVAILABLE -eq 'true') { 0 } Else { 1 })
       - name: Checkout
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.3
         with:
           fetch-depth: 0
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v3.0.3
+        uses: actions/setup-dotnet@v3.2.0
         with:
           dotnet-version: |
             7.0.x
@@ -92,7 +92,7 @@ jobs:
           echo "AWS_REGION=${{ secrets.AWS_REGION }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
       - name: Setup RabbitMQ
         if: matrix.transport == 'RabbitMQ'
-        uses: Particular/setup-rabbitmq-action@v1.3.0
+        uses: Particular/setup-rabbitmq-action@v1.4.0
         with:
           connection-string-name: RabbitMQTransport_ConnectionString
           tag: RabbitMQTransportBridge
@@ -103,4 +103,4 @@ jobs:
           connection-string-name: AzureStorageQueueTransport_ConnectionString
           tag: ASQTransport
       - name: Run tests
-        uses: Particular/run-tests-action@v1.5.0
+        uses: Particular/run-tests-action@v1.6.0

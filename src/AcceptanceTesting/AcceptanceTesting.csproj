@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="8.0.3" />
-    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.0.3" />
+    <PackageReference Include="NServiceBus" Version="8.1.1" />
+    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.1.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.Transport.Bridge\NServiceBus.Transport.Bridge.csproj" />
+    <ProjectReference Include="..\NServiceBus.MessagingBridge\NServiceBus.MessagingBridge.csproj" />
   </ItemGroup>
 
 </Project>
