@@ -36,10 +36,8 @@ public class TransferFailureTests : BridgeAcceptanceTest
             .Run();
 
         Assert.IsTrue(ctx.MessageFailed, "Message did not fail");
-        foreach (var header in ctx.FailedMessageHeaders)
-        {
-            Assert.IsTrue(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader), $"Failed message headers does not contain {FailedQHeader}");
-        }
+        Assert.IsTrue(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
+            $"Failed message headers does not contain {FailedQHeader}");
     }
 
     public class Sender : EndpointConfigurationBuilder
@@ -64,7 +62,8 @@ public class TransferFailureTests : BridgeAcceptanceTest
 
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
-                testContext.FailedMessageHeaders = new ReadOnlyDictionary<string, string>((IDictionary<string, string>)context.MessageHeaders);
+                testContext.FailedMessageHeaders =
+                    new ReadOnlyDictionary<string, string>((IDictionary<string, string>)context.MessageHeaders);
                 testContext.MessageFailed = true;
                 return Task.CompletedTask;
             }
