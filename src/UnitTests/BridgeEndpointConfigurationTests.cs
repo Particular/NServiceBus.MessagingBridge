@@ -12,10 +12,10 @@ public class BridgeEndpointConfigurationTests
         endpoint.RegisterPublisher<MyEvent>("Billing");
         endpoint.RegisterPublisher(typeof(MyOtherEvent), "Shipping");
 
-        var billingSubscription = endpoint.Subscriptions.SingleOrDefault(t => t.EventTypeFullName == typeof(MyEvent).FullName);
+        var billingSubscription = endpoint.Subscriptions.SingleOrDefault(t => t.EventTypeAssemblyQualifiedName == typeof(MyEvent).AssemblyQualifiedName);
         Assert.AreEqual("Billing", billingSubscription.Publisher);
 
-        var shippingSubscription = endpoint.Subscriptions.SingleOrDefault(t => t.EventTypeFullName == typeof(MyOtherEvent).FullName);
+        var shippingSubscription = endpoint.Subscriptions.SingleOrDefault(t => t.EventTypeAssemblyQualifiedName == typeof(MyOtherEvent).AssemblyQualifiedName);
         Assert.AreEqual("Shipping", shippingSubscription.Publisher);
 
     }
