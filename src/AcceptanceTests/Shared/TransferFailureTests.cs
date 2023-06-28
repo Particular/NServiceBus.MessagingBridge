@@ -8,8 +8,8 @@ using NUnit.Framework;
 
 public class TransferFailureTests : BridgeAcceptanceTest
 {
-    const string ReceiveDummyQueue = "DummyQueue"; // Required because Bridge needs endpoints on both sides.
-    const string ErrorQueue = "BridgeErrorQueue";
+    const string ReceiveDummyQueue = "TransferFailureTests_DummyQueue"; // Required because Bridge needs endpoints on both sides.
+    const string ErrorQueue = "TransferFailureTests_BridgeErrorQueue";
     const string FailedQHeader = "NServiceBus.MessagingBridge.FailedQ";
 
     [Test]
