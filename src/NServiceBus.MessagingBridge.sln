@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests", "AcceptanceTests\AcceptanceTests.csproj", "{C27BC21F-5283-483C-BE77-E86543B26E9E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Transport.Bridge", "NServiceBus.Transport.Bridge\NServiceBus.Transport.Bridge.csproj", "{64580C11-646C-414C-B86E-456E6ABFC31E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.MessagingBridge", "NServiceBus.MessagingBridge\NServiceBus.MessagingBridge.csproj", "{64580C11-646C-414C-B86E-456E6ABFC31E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTesting", "AcceptanceTesting\AcceptanceTesting.csproj", "{005F90DA-F476-4A08-BA67-D0464FD872B1}"
 EndProject
