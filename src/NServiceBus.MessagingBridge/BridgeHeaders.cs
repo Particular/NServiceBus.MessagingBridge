@@ -1,4 +1,5 @@
 ﻿class BridgeHeaders
 {
-    public static string Transfer = "NServiceBus.Bridge.Transfer";
+    public const string Transfer = "NServiceBus.Bridge.Transfer";
+    public const string FailedQ = "NServiceBus.MessagingBridge.FailedQ";
 }
