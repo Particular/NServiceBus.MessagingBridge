@@ -47,8 +47,8 @@ class EndpointProxyFactory
                 messageContext,
                 shouldPassTransportTransaction);
 
-            return serviceProvider.GetRequiredService<MessageShovel>()
-                .TransferMessage(transferContext, ct);
+            return serviceProvider.GetRequiredService<IMessageShovel>()
+                .TransferMessage(transferContext, cancellationToken: ct);
         },
         translatedErrorQueue);
 
