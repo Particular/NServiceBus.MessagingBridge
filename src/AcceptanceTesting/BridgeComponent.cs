@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using AcceptanceTesting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
@@ -40,6 +42,10 @@ public class BridgeComponent<TContext> : IComponentBehavior
                 .ConfigureServices((_, serviceCollection) =>
                 {
                     serviceCollection.AddSingleton(loggerFactory);
+                    serviceCollection.RemoveAll(typeof(IMessageShovel));
+                    serviceCollection.AddTransient<MessageShovel>();
+                    serviceCollection.AddTransient<FakeShovel>();
+                    serviceCollection.AddTransient<IMessageShovel, FakeShovel>();
                 });
 
             host = await hostBuilder.StartAsync(cancellationToken).ConfigureAwait(false);

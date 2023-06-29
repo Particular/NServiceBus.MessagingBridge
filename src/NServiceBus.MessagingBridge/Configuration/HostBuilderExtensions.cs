@@ -55,7 +55,7 @@
                 serviceCollection.AddSingleton<SubscriptionManager>();
                 serviceCollection.AddSingleton<EndpointRegistry>();
                 serviceCollection.AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>());
-                serviceCollection.AddTransient<MessageShovel>();
+                serviceCollection.AddTransient<IMessageShovel, MessageShovel>();
             });
 
             return hostBuilder;
