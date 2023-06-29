@@ -6,7 +6,7 @@ using NServiceBus;
 using NServiceBus.Faults;
 using NServiceBus.Transport;
 
-class MessageShovel
+sealed class MessageShovel : IMessageShovel
 {
     public MessageShovel(
         ILogger<MessageShovel> logger,
@@ -24,11 +24,6 @@ class MessageShovel
             targetEndpointDispatcher = targetEndpointRegistry.GetTargetEndpointDispatcher(transferContext.SourceEndpointName);
 
             var messageContext = transferContext.MessageToTransfer;
-
-            if (messageContext.Headers.ContainsKey("FakeShovelFailure"))
-            {
-                throw new Exception("Incoming message has `FakeShovelFailure` header to test infrastructure failures");
-            }
 
             var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
             messageToSend.Headers.Remove(BridgeHeaders.FailedQ);

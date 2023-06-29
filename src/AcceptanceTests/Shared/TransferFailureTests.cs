@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using AcceptanceTesting;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
-using NServiceBus.Features;
 using NUnit.Framework;
 
 public class TransferFailureTests : BridgeAcceptanceTest
@@ -21,7 +21,7 @@ public class TransferFailureTests : BridgeAcceptanceTest
                 .When(c => c.EndpointsStarted, async (session, c) =>
                 {
                     var opts = new SendOptions();
-                    opts.SetHeader("FakeShovelFailure", string.Empty);
+                    opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
                     await session.Send(new FaultyMessage(), opts);
                 }))
             .WithBridge(bridgeConfiguration =>

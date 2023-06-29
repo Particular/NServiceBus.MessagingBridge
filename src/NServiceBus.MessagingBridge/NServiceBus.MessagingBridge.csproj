@@ -18,5 +18,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="UnitTests" Key="$(NServiceBusTestsKey)" />
+    <InternalsVisibleTo Include="AcceptanceTesting" Key="$(NServiceBusTestsKey)" />
   </ItemGroup>
 </Project>
