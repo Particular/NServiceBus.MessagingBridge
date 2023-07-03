@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NServiceBus;
 using NServiceBus.Transport;
 using NUnit.Framework;
+using UnitTests;
 
 public class BridgeConfigurationTests
 {
@@ -158,6 +160,38 @@ public class BridgeConfigurationTests
     }
 
     [Test]
+    public void Subscriptions_for_same_event_can_have_different_publisher()
+    {
+        var configuration = new BridgeConfiguration();
+        configuration.DoNotEnforceBestPractices();
+
+        var someTransport = new BridgeTransport(new SomeTransport());
+
+        someTransport.HasEndpoint("Publisher");
+        someTransport.HasEndpoint("OtherEndpoint");
+        configuration.AddTransport(someTransport);
+
+        var someOtherTransport = new BridgeTransport(new SomeOtherTransport());
+
+        var subscriber1 = new BridgeEndpoint("Subscriber1");
+
+        subscriber1.RegisterPublisher<MyEvent>("Publisher");
+        someOtherTransport.HasEndpoint(subscriber1);
+
+        var subscriber2 = new BridgeEndpoint("Subscriber2");
+
+        subscriber1.RegisterPublisher<MyEvent>("OtherEndpoint");
+        someOtherTransport.HasEndpoint(subscriber2);
+        configuration.AddTransport(someOtherTransport);
+
+        FinalizeConfiguration(configuration);
+
+        Assert.Contains(
+            "The following subscriptions with multiple registered publishers are ignored as best practices are not enforced:\r- BridgeConfigurationTests+MyEvent, UnitTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b50674d1e0c6ce54, registered publishers: Publisher, OtherEndpoint\r",
+            logger.logEntries);
+    }
+
+    [Test]
     public void Should_require_transports_of_the_same_type_to_be_uniquely_identifiable_by_name()
     {
         var configuration = new BridgeConfiguration();
@@ -280,7 +314,7 @@ public class BridgeConfigurationTests
 
     FinalizedBridgeConfiguration FinalizeConfiguration(BridgeConfiguration bridgeConfiguration)
     {
-        return bridgeConfiguration.FinalizeConfiguration(new NullLogger<BridgeConfiguration>());
+        return bridgeConfiguration.FinalizeConfiguration(logger);
     }
 
     class SomeScopeSupportingTransport : FakeTransport
@@ -308,5 +342,6 @@ public class BridgeConfigurationTests
     class MyEvent
     {
     }
-}
 
+    readonly FakeLogger<BridgeConfiguration> logger = new();
+}
