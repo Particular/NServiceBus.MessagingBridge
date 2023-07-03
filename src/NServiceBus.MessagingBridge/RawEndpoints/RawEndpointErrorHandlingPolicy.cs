@@ -35,7 +35,7 @@ namespace NServiceBus.Raw
             headers.Remove(Headers.DelayedRetries);
             headers.Remove(Headers.ImmediateRetries);
 
-            headers.Add(BridgeHeaders.FailedQ, localAddress);
+            headers[BridgeHeaders.FailedQ] = localAddress;
             ExceptionHeaderHelper.SetExceptionHeaders(headers, errorContext.Exception);
 
             var transportOperations = new TransportOperations(new TransportOperation(outgoingMessage, new UnicastAddressTag(errorQueue)));
