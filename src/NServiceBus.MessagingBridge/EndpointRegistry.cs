@@ -50,7 +50,9 @@ class EndpointRegistry : IEndpointRegistry
             return endpointDispatcher;
         }
 
-        throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive.");
+        var nearestMatch = GetNearestMatch(sourceEndpointName, targetEndpointDispatchers.Keys);
+
+        throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string TranslateToTargetAddress(string sourceAddress)
@@ -60,7 +62,9 @@ class EndpointRegistry : IEndpointRegistry
             return targetAddress;
         }
 
-        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive.");
+        var nearestMatch = GetNearestMatch(sourceAddress, targetEndpointAddressMappings.Keys);
+
+        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string GetEndpointAddress(string endpointName)
@@ -70,7 +74,27 @@ class EndpointRegistry : IEndpointRegistry
             return address;
         }
 
-        throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive.");
+        var nearestMatch = GetNearestMatch(endpointName, endpointAddressMappings.Keys);
+
+        throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+    }
+
+    string GetNearestMatch(string sourceEndpointName, IEnumerable<string> items)
+    {
+        var results = new List<(int distance, string value)>();
+
+        foreach (var i in items)
+        {
+            var distance = fuzzyMatch.GetDistance(sourceEndpointName.ToLower(), i.ToLower());
+            results.Add((distance, i));
+        }
+
+        var nearestMatch = results
+            .OrderBy(x => x.distance)
+            .Select(x => x.value)
+            .First();
+
+        return nearestMatch;
     }
 
     public IEnumerable<ProxyRegistration> Registrations => registrations;
@@ -79,6 +103,7 @@ class EndpointRegistry : IEndpointRegistry
     readonly Dictionary<string, string> targetEndpointAddressMappings = new Dictionary<string, string>();
     readonly Dictionary<string, string> endpointAddressMappings = new Dictionary<string, string>();
     readonly List<ProxyRegistration> registrations = new List<ProxyRegistration>();
+    readonly DamerauLevensteinMetric fuzzyMatch = new DamerauLevensteinMetric();
 
     public class ProxyRegistration
     {
