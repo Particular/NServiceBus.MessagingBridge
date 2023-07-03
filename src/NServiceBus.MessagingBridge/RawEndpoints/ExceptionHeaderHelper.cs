@@ -55,7 +55,16 @@
                 {
                     continue;
                 }
-                headers["NServiceBus.MessagingBridge.ExceptionInfo.Data." + entry.Key] = entry.Value.ToString();
+
+                var value = entry.Value.ToString();
+
+                if (value.Length > MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS)
+                {
+                    Logger.WarnFormat($"Truncating {entry.Key} to {MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS:N0} characters to prevent too large headers to be rejected by transport. Original value:\n{{0}}", stackTrace);
+                    value = value.Truncate(MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS);
+                }
+
+                headers["NServiceBus.MessagingBridge.ExceptionInfo.Data." + entry.Key] = value;
             }
         }
 
