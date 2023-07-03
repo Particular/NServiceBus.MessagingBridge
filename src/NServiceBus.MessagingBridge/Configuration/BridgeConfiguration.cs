@@ -54,7 +54,7 @@ namespace NServiceBus
             if (tranportsWithNoEndpoints.Any())
             {
                 var endpointNames = string.Join(", ", tranportsWithNoEndpoints);
-                logger.LogWarning($"The following transport(s) have no endpoints: {endpointNames}");
+                logger.LogWarning("The following transport(s) have no endpoints: {endpointNames}", endpointNames);
             }
 
             if (tranportsWithNoEndpoints.Count() == transportConfigurations.Count)
