@@ -50,7 +50,7 @@ class EndpointRegistry : IEndpointRegistry
             return endpointDispatcher;
         }
 
-        throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}");
+        throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive.");
     }
 
     public string TranslateToTargetAddress(string sourceAddress)
@@ -60,7 +60,7 @@ class EndpointRegistry : IEndpointRegistry
             return targetAddress;
         }
 
-        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}");
+        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive.");
     }
 
     public string GetEndpointAddress(string endpointName)
@@ -70,7 +70,7 @@ class EndpointRegistry : IEndpointRegistry
             return address;
         }
 
-        throw new Exception($"No address mapping could be found for endpoint: {endpointName}");
+        throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive.");
     }
 
     public IEnumerable<ProxyRegistration> Registrations => registrations;
