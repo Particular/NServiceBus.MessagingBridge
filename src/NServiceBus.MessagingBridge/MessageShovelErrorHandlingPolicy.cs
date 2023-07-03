@@ -1,8 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NServiceBus.MessagingBridge;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
+using NServiceBus.Unicast.Queuing;
 
 class MessageShovelErrorHandlingPolicy : IErrorHandlingPolicy
 {
@@ -17,7 +19,10 @@ class MessageShovelErrorHandlingPolicy : IErrorHandlingPolicy
         IMessageDispatcher dispatcher,
         CancellationToken cancellationToken = default)
     {
-        if (handlingContext.Error.ImmediateProcessingFailures < 3)
+        var exception = handlingContext.Error.Exception;
+        var isUnrecoverable = exception is MappingException || exception is QueueNotFoundException;
+
+        if (!isUnrecoverable && handlingContext.Error.ImmediateProcessingFailures < 3)
         {
             logger.LogWarning(handlingContext.Error.Exception, "Message shovel operation failed and will be retried");
             return Task.FromResult(ErrorHandleResult.RetryRequired);

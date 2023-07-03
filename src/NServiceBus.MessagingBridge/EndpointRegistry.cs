@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
+using NServiceBus.MessagingBridge;
 
 class EndpointRegistry : IEndpointRegistry
 {
@@ -52,7 +52,7 @@ class EndpointRegistry : IEndpointRegistry
 
         var nearestMatch = GetNearestCaseInsensitiveMatch(sourceEndpointName, targetEndpointDispatchers.Keys);
 
-        throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        throw new MappingException($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string TranslateToTargetAddress(string sourceAddress)
@@ -64,7 +64,7 @@ class EndpointRegistry : IEndpointRegistry
 
         var nearestMatch = GetNearestCaseInsensitiveMatch(sourceAddress, targetEndpointAddressMappings.Keys);
 
-        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        throw new MappingException($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string GetEndpointAddress(string endpointName)
@@ -76,7 +76,7 @@ class EndpointRegistry : IEndpointRegistry
 
         var nearestMatch = GetNearestCaseInsensitiveMatch(endpointName, endpointAddressMappings.Keys);
 
-        throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        throw new MappingException($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     string GetNearestCaseInsensitiveMatch(string sourceEndpointName, IEnumerable<string> items)
