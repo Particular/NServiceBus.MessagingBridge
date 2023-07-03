@@ -23,14 +23,22 @@
 
             if (exceptionMessage.Length > MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS)
             {
-                Logger.WarnFormat($"Truncating exception message to {MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS:N0} characters to prevent too large headers to be rejected by transport. Original message:\n{{0}}", exceptionMessage);
+                Logger.WarnFormat($"Truncating exception message to {MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS:N0} characters to prevent too large headers to be rejected by transport. Original value:\n{{0}}", exceptionMessage);
                 exceptionMessage = exceptionMessage.Truncate(MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS);
+            }
+
+            var stackTrace = e.ToString();
+
+            if (stackTrace.Length > MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS)
+            {
+                Logger.WarnFormat($"Truncating stack trace message to {MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS:N0} characters to prevent too large headers to be rejected by transport. Original value:\n{{0}}", stackTrace);
+                stackTrace = stackTrace.Truncate(MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS);
             }
 
             headers["NServiceBus.MessagingBridge.ExceptionInfo.HelpLink"] = e.HelpLink;
             headers["NServiceBus.MessagingBridge.ExceptionInfo.Message"] = exceptionMessage;
             headers["NServiceBus.MessagingBridge.ExceptionInfo.Source"] = e.Source;
-            headers["NServiceBus.MessagingBridge.ExceptionInfo.StackTrace"] = e.ToString();
+            headers["NServiceBus.MessagingBridge.ExceptionInfo.StackTrace"] = stackTrace;
             headers["NServiceBus.MessagingBridge.TimeOfFailure"] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
