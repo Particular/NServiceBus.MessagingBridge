@@ -59,7 +59,7 @@ namespace NServiceBus
 
             if (tranportsWithNoEndpoints.Count() == transportConfigurations.Count)
             {
-                throw new InvalidOperationException($"No transport has an endpoint configured. At least one transport should have an endpoint to be able to bridge messages");
+                throw new InvalidOperationException("No transport has an endpoint configured. At least one transport should have an endpoint to be able to bridge messages");
             }
 
             var allEndpoints = transportConfigurations
