@@ -342,5 +342,6 @@ public class BridgeConfigurationTests
     class MyEvent
     {
     }
-}
 
+    readonly FakeLogger<BridgeConfiguration> logger = new();
+}
