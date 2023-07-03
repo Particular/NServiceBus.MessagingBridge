@@ -23,9 +23,8 @@
 
             if (exceptionMessage.Length > MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS)
             {
-                Logger.WarnFormat($"Truncating exception message to {MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS:N0} characters to prevent too large headers to be rejected by transport. Original message:\n{0}", exceptionMessage);
+                Logger.WarnFormat($"Truncating exception message to {MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS:N0} characters to prevent too large headers to be rejected by transport. Original message:\n{{0}}", exceptionMessage);
                 exceptionMessage = exceptionMessage.Truncate(MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS);
-                throw new Exception(exceptionMessage);
             }
 
             headers["NServiceBus.MessagingBridge.ExceptionInfo.HelpLink"] = e.HelpLink;
