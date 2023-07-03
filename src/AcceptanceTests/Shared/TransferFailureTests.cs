@@ -51,7 +51,7 @@ public class TransferFailureTests : BridgeAcceptanceTest
                 .When(c => c.EndpointsStarted, async (session, c) =>
                 {
                     var opts = new SendOptions();
-                    opts.SetHeader("NServiceBus.MessagingBridge.FailedQ", ReceiveDummyQueue);
+                    opts.SetHeader(FailedQHeader, ReceiveDummyQueue);
                     opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
                     await session.Send(new FaultyMessage(), opts);
                 }))
