@@ -42,6 +42,37 @@ public class TransferFailureTests : BridgeAcceptanceTest
             $"Failed message headers does not contain {FailedQHeader}");
     }
 
+    [Test]
+    public async Task Should_add_failedq_header_when_transfer_fails_for_subsequent_failures()
+    {
+        var ctx = await Scenario.Define<Context>()
+            .WithEndpoint<ErrorSpy>()
+            .WithEndpoint<Sender>(b => b
+                .When(c => c.EndpointsStarted, async (session, c) =>
+                {
+                    var opts = new SendOptions();
+                    opts.SetHeader(FailedQHeader, ReceiveDummyQueue);
+                    opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
+                    await session.Send(new FaultyMessage(), opts);
+                }))
+            .WithBridge(bridgeConfiguration =>
+            {
+                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
+                bridgeTransport.AddTestEndpoint<Sender>();
+                bridgeConfiguration.AddTransport(bridgeTransport);
+                bridgeTransport.ErrorQueue = ErrorQueue;
+
+                var subscriberEndpoint = new BridgeEndpoint(ReceiveDummyQueue);
+                bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
+            })
+            .Done(c => c.MessageFailed)
+            .Run();
+
+        Assert.IsTrue(ctx.MessageFailed, "Message did not fail");
+        Assert.IsTrue(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
+            $"Failed message headers does not contain {FailedQHeader}");
+    }
+
     public class Sender : EndpointConfigurationBuilder
     {
         public Sender() =>
