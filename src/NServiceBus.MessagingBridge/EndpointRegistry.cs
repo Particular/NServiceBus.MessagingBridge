@@ -50,7 +50,7 @@ class EndpointRegistry : IEndpointRegistry
             return endpointDispatcher;
         }
 
-        var nearestMatch = GetNearestMatch(sourceEndpointName, targetEndpointDispatchers.Keys);
+        var nearestMatch = GetNearestCaseInsensitiveMatch(sourceEndpointName, targetEndpointDispatchers.Keys);
 
         throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
@@ -62,7 +62,7 @@ class EndpointRegistry : IEndpointRegistry
             return targetAddress;
         }
 
-        var nearestMatch = GetNearestMatch(sourceAddress, targetEndpointAddressMappings.Keys);
+        var nearestMatch = GetNearestCaseInsensitiveMatch(sourceAddress, targetEndpointAddressMappings.Keys);
 
         throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
@@ -74,12 +74,12 @@ class EndpointRegistry : IEndpointRegistry
             return address;
         }
 
-        var nearestMatch = GetNearestMatch(endpointName, endpointAddressMappings.Keys);
+        var nearestMatch = GetNearestCaseInsensitiveMatch(endpointName, endpointAddressMappings.Keys);
 
         throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    string GetNearestMatch(string sourceEndpointName, IEnumerable<string> items)
+    string GetNearestCaseInsensitiveMatch(string sourceEndpointName, IEnumerable<string> items)
     {
         var results = new List<(int distance, string value)>();
 
