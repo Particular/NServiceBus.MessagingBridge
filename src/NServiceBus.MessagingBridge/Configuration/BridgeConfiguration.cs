@@ -113,32 +113,21 @@ namespace NServiceBus
 
             if (eventsWithMultiplePublishers.Any())
             {
-                var sb = new StringBuilder();
-
-                if (allowMultiplePublishersSameEvent)
-                {
-                    sb.Append(
-                        "The following subscriptions with multiple registered publishers are ignored as best practices are not enforced:\r");
-                }
-                else
-                {
-                    sb.Append(
-                        "Events can only be associated with a single publisher, please verify subscriptions for:\r");
-                }
+                var data = new StringBuilder();
 
                 foreach (var eventType in eventsWithMultiplePublishers)
                 {
                     var publishers = string.Join(", ", eventType.Select(e => e.Publisher));
-                    sb.Append($"- {eventType.Key}, registered publishers: {publishers}\r");
+                    data.Append($"- {eventType.Key}, registered publishers: {publishers}\r");
                 }
 
                 if (allowMultiplePublishersSameEvent)
                 {
-                    logger.LogWarning(sb.ToString());
+                    logger.LogWarning("The following subscriptions with multiple registered publishers are ignored as best practices are not enforced:\r{events}", data);
                 }
                 else
                 {
-                    throw new InvalidOperationException(sb.ToString());
+                    throw new InvalidOperationException("Events can only be associated with a single publisher, please verify subscriptions for:\r" + data);
                 }
             }
 
