@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NServiceBus.Logging;
 using NServiceBus.Raw;
 using NUnit.Framework;
 
@@ -8,14 +9,16 @@ public class ExceptionHeaderHelperFixture
     [Test]
     public void When_exception_message_is_large_then_it_must_be_truncated()
     {
+        LogManager.Use<DefaultFactory>().Level(LogLevel.Debug);
+
         var headers = new Dictionary<string, string>();
         try
         {
             try
             {
-                throw new Exception(new string('Y', 10000))
+                throw new Exception(new string('Y', 21000))
                 {
-                    Data = { { "a", new string('Z', 20000) } }
+                    Data = { { "a", new string('Z', 22000) } }
                 };
             }
             catch (Exception inner)
@@ -33,9 +36,9 @@ public class ExceptionHeaderHelperFixture
         {
             ExceptionHeaderHelper.SetExceptionHeaders(headers, outer);
 
-            Assert.LessOrEqual(headers["NServiceBus.MessagingBridge.ExceptionInfo.Message"].Length, 16399, "Message");
-            Assert.LessOrEqual(headers["NServiceBus.MessagingBridge.ExceptionInfo.StackTrace"].Length, 16399, "Stacktrace");
-            Assert.LessOrEqual(headers["NServiceBus.MessagingBridge.ExceptionInfo.Data.b"].Length, 16399, "Stacktrace");
+            Assert.AreEqual(10000, headers["NServiceBus.MessagingBridge.ExceptionInfo.Message"].Length, "Message");
+            Assert.AreEqual(16384, headers["NServiceBus.MessagingBridge.ExceptionInfo.StackTrace"].Length, "Stacktrace");
+            Assert.AreEqual(20000, headers["NServiceBus.MessagingBridge.ExceptionInfo.Data.b"].Length, "b");
         }
     }
 }

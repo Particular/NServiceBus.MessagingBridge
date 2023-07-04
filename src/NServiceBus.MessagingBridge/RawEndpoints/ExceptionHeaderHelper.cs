@@ -3,43 +3,36 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
     using NServiceBus.Logging;
+
+    using static BridgeHeaders;
 
     static class ExceptionHeaderHelper
     {
-        const int MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS = 16384;
+        const int MaxHeaderSize = 32 * 1024; // Half of 64KB to account for unicode + serializer overhead and 64 is AFAIK the lowest limit of all transports
+        const int MaxHeaderLengthToPreventTooLargeHeaders = 16 * 1024;
+
         static readonly ILog Logger = LogManager.GetLogger(typeof(ExceptionHeaderHelper));
+        static readonly bool IsDebugEnabled = Logger.IsDebugEnabled;
 
         public static void SetExceptionHeaders(Dictionary<string, string> headers, Exception e)
         {
-            headers["NServiceBus.MessagingBridge.ExceptionInfo.ExceptionType"] = e.GetType().FullName;
+            headers[ExceptionInfoExceptionType] = e.GetType().FullName;
 
             if (e.InnerException != null)
             {
-                headers["NServiceBus.ExceptionInfo.InnerExceptionType"] = e.InnerException.GetType().FullName;
+                headers[ExceptionInfoInnerExceptionType] = e.InnerException.GetType().FullName;
             }
 
-            var exceptionMessage = e.GetMessage();
+            headers[ExceptionInfoHelpLink] = e.HelpLink;
+            headers[ExceptionInfoMessage] = e.GetMessage();
+            headers[ExceptionInfoSource] = e.Source;
+            headers[ExceptionInfoStackTrace] = e.ToString();
+            headers[TimeOfFailure] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
 
-            if (exceptionMessage.Length > MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS)
-            {
-                Logger.WarnFormat($"Truncating exception message to {MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS:N0} characters to prevent too large headers to be rejected by transport. Original value:\n{{0}}", exceptionMessage);
-                exceptionMessage = exceptionMessage.Truncate(MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS);
-            }
-
-            var stackTrace = e.ToString();
-
-            if (stackTrace.Length > MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS)
-            {
-                Logger.WarnFormat($"Truncating stack trace message to {MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS:N0} characters to prevent too large headers to be rejected by transport. Original value:\n{{0}}", stackTrace);
-                stackTrace = stackTrace.Truncate(MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS);
-            }
-
-            headers["NServiceBus.MessagingBridge.ExceptionInfo.HelpLink"] = e.HelpLink;
-            headers["NServiceBus.MessagingBridge.ExceptionInfo.Message"] = exceptionMessage;
-            headers["NServiceBus.MessagingBridge.ExceptionInfo.Source"] = e.Source;
-            headers["NServiceBus.MessagingBridge.ExceptionInfo.StackTrace"] = stackTrace;
-            headers["NServiceBus.MessagingBridge.TimeOfFailure"] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
+            TruncateHeaderAndWarnIfNeeded(headers, ExceptionInfoMessage);
+            TruncateHeaderAndWarnIfNeeded(headers, ExceptionInfoStackTrace);
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (e.Data == null)
@@ -57,14 +50,47 @@
                 }
 
                 var value = entry.Value.ToString();
+                var headerKey = ExceptionInfoDataPrefix + entry.Key;
 
-                if (value.Length > MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS)
+                headers[headerKey] = value;
+            }
+
+            var totalHeaderSize = headers.Sum(x => x.Key.Length + x.Value?.Length);
+
+            if (IsDebugEnabled)
+            {
+                Logger.DebugFormat("Total header size is {0:N0} characters", totalHeaderSize);
+            }
+
+            foreach (var entry in headers)
+            {
+                if (entry.Value == null)
                 {
-                    Logger.WarnFormat($"Truncating {entry.Key} to {MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS:N0} characters to prevent too large headers to be rejected by transport. Original value:\n{{0}}", stackTrace);
-                    value = value.Truncate(MAX_LENGTH_TO_PREVENT_TOO_LARGE_HEADERS);
+                    continue;
                 }
 
-                headers["NServiceBus.MessagingBridge.ExceptionInfo.Data." + entry.Key] = value;
+                if (entry.Value.Length > MaxHeaderLengthToPreventTooLargeHeaders)
+                {
+                    Logger.InfoFormat($"Header {{0:N0}} with value length {{1:N0}} exceeds {nameof(MaxHeaderLengthToPreventTooLargeHeaders)} threshold of {MaxHeaderLengthToPreventTooLargeHeaders:N0} characters", entry.Key, entry.Value.Length);
+                }
+            }
+
+            if (totalHeaderSize > MaxHeaderSize)
+            {
+                Logger.WarnFormat($"Total header size is {{0:N0}} characters which exceeds {nameof(MaxHeaderSize)} threshold of {MaxHeaderSize:N0} characters. Exceeding this threshold may fail on the transport if the header size exceeds its message size limit", totalHeaderSize);
+
+            }
+        }
+
+        static void TruncateHeaderAndWarnIfNeeded(Dictionary<string, string> headers, string headerKeyName)
+        {
+            var value = headers[headerKeyName];
+
+            if (value.Length > MaxHeaderLengthToPreventTooLargeHeaders)
+            {
+                Logger.WarnFormat($"Truncating header {headerKeyName} to {MaxHeaderLengthToPreventTooLargeHeaders:N0} characters to prevent too large headers and the message to be rejected by transport. Original value:\n{{0}}", value);
+                value = value.Truncate(MaxHeaderLengthToPreventTooLargeHeaders);
+                headers[headerKeyName] = value;
             }
         }
 
