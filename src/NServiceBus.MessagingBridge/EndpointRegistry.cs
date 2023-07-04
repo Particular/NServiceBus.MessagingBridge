@@ -83,9 +83,11 @@ class EndpointRegistry : IEndpointRegistry
     {
         var results = new List<(int distance, string value)>();
 
+        var calculator = new Fastenshtein.Levenshtein(sourceEndpointName.ToLower());
+
         foreach (var i in items)
         {
-            var distance = fuzzyMatch.GetDistance(sourceEndpointName.ToLower(), i.ToLower());
+            var distance = calculator.DistanceFrom(i.ToLower());
             results.Add((distance, i));
         }
 
@@ -103,7 +105,6 @@ class EndpointRegistry : IEndpointRegistry
     readonly Dictionary<string, string> targetEndpointAddressMappings = new Dictionary<string, string>();
     readonly Dictionary<string, string> endpointAddressMappings = new Dictionary<string, string>();
     readonly List<ProxyRegistration> registrations = new List<ProxyRegistration>();
-    readonly DamerauLevensteinMetric fuzzyMatch = new DamerauLevensteinMetric();
 
     public class ProxyRegistration
     {
