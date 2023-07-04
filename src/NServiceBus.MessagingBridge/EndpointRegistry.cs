@@ -79,23 +79,13 @@ class EndpointRegistry : IEndpointRegistry
         throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    string GetNearestCaseInsensitiveMatch(string sourceEndpointName, IEnumerable<string> items)
+    static string GetNearestCaseInsensitiveMatch(string sourceEndpointName, IEnumerable<string> items)
     {
         var results = new List<(int distance, string value)>();
-
-        var calculator = new Fastenshtein.Levenshtein(sourceEndpointName.ToLower());
-
-        foreach (var i in items)
-        {
-            var distance = calculator.DistanceFrom(i.ToLower());
-            results.Add((distance, i));
-        }
-
-        var nearestMatch = results
-            .OrderBy(x => x.distance)
-            .Select(x => x.value)
+        var calculator = new Levenshtein(sourceEndpointName.ToLower());
+        var nearestMatch = items
+            .OrderBy(x => calculator.DistanceFrom(x.ToLower()))
             .First();
-
         return nearestMatch;
     }
 
