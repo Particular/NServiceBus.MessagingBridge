@@ -50,7 +50,9 @@ class EndpointRegistry : IEndpointRegistry
             return endpointDispatcher;
         }
 
-        throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}");
+        var nearestMatch = GetNearestCaseInsensitiveMatch(sourceEndpointName, targetEndpointDispatchers.Keys);
+
+        throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string TranslateToTargetAddress(string sourceAddress)
@@ -60,7 +62,9 @@ class EndpointRegistry : IEndpointRegistry
             return targetAddress;
         }
 
-        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}");
+        var nearestMatch = GetNearestCaseInsensitiveMatch(sourceAddress, targetEndpointAddressMappings.Keys);
+
+        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string GetEndpointAddress(string endpointName)
@@ -70,7 +74,19 @@ class EndpointRegistry : IEndpointRegistry
             return address;
         }
 
-        throw new Exception($"No address mapping could be found for endpoint: {endpointName}");
+        var nearestMatch = GetNearestCaseInsensitiveMatch(endpointName, endpointAddressMappings.Keys);
+
+        throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+    }
+
+    static string GetNearestCaseInsensitiveMatch(string sourceEndpointName, IEnumerable<string> items)
+    {
+        var results = new List<(int distance, string value)>();
+        var calculator = new Levenshtein(sourceEndpointName.ToLower());
+        var nearestMatch = items
+            .OrderBy(x => calculator.DistanceFrom(x.ToLower()))
+            .First();
+        return nearestMatch;
     }
 
     public IEnumerable<ProxyRegistration> Registrations => registrations;
