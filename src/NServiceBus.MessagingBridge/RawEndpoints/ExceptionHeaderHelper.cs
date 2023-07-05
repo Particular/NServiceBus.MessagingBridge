@@ -15,6 +15,7 @@
 
         static readonly ILog Logger = LogManager.GetLogger(typeof(ExceptionHeaderHelper));
         static readonly bool IsDebugEnabled = Logger.IsDebugEnabled;
+        static readonly bool IsInfoEnabled = Logger.IsInfoEnabled;
 
         public static void SetExceptionHeaders(Dictionary<string, string> headers, Exception e)
         {
@@ -57,28 +58,30 @@
 
             var totalHeaderSize = headers.Sum(x => x.Key.Length + x.Value?.Length);
 
-            if (IsDebugEnabled)
+            if (IsInfoEnabled)
             {
-                Logger.DebugFormat("Total header size is {0:N0} characters", totalHeaderSize);
+                foreach (var entry in headers)
+                {
+                    if (entry.Value == null)
+                    {
+                        continue;
+                    }
+
+                    if (entry.Value.Length > MaxHeaderLengthToPreventTooLargeHeaders)
+                    {
+                        Logger.InfoFormat("Header {0:N0} with value length {1:N0} exceeds threshold of {2:N0} characters", entry.Key, entry.Value.Length, MaxHeaderLengthToPreventTooLargeHeaders);
+                    }
+                }
             }
 
-            foreach (var entry in headers)
+            if (IsDebugEnabled)
             {
-                if (entry.Value == null)
-                {
-                    continue;
-                }
-
-                if (entry.Value.Length > MaxHeaderLengthToPreventTooLargeHeaders)
-                {
-                    Logger.InfoFormat($"Header {{0:N0}} with value length {{1:N0}} exceeds {nameof(MaxHeaderLengthToPreventTooLargeHeaders)} threshold of {MaxHeaderLengthToPreventTooLargeHeaders:N0} characters", entry.Key, entry.Value.Length);
-                }
+                Logger.DebugFormat("Total size of header of keys and values is {0:N0} characters", totalHeaderSize);
             }
 
             if (totalHeaderSize > MaxHeaderSize)
             {
-                Logger.WarnFormat($"Total header size is {{0:N0}} characters which exceeds {nameof(MaxHeaderSize)} threshold of {MaxHeaderSize:N0} characters. Exceeding this threshold may fail on the transport if the header size exceeds its message size limit", totalHeaderSize);
-
+                Logger.WarnFormat("Total size of header of keys and values is {0:N0} characters exceeds threshold of {1:N0} characters", totalHeaderSize, MaxHeaderSize);
             }
         }
 
@@ -88,7 +91,7 @@
 
             if (value.Length > MaxHeaderLengthToPreventTooLargeHeaders)
             {
-                Logger.WarnFormat($"Truncating header {headerKeyName} to {MaxHeaderLengthToPreventTooLargeHeaders:N0} characters to prevent too large headers and the message to be rejected by transport. Original value:\n{{0}}", value);
+                Logger.WarnFormat("Truncating header {0} from {1:N0} to {2:N0} characters. Original value:\n{3}", headerKeyName, value.Length, MaxHeaderLengthToPreventTooLargeHeaders, value);
                 value = value.Truncate(MaxHeaderLengthToPreventTooLargeHeaders);
                 headers[headerKeyName] = value;
             }
