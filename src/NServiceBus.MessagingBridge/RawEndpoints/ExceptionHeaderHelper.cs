@@ -32,9 +32,6 @@
             headers[ExceptionInfoStackTrace] = e.ToString();
             headers[TimeOfFailure] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
 
-            TruncateHeaderAndWarnIfNeeded(headers, ExceptionInfoMessage);
-            TruncateHeaderAndWarnIfNeeded(headers, ExceptionInfoStackTrace);
-
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (e.Data == null)
             // ReSharper disable HeuristicUnreachableCode
@@ -57,6 +54,9 @@
             }
 
             var totalHeaderSize = headers.Sum(x => x.Key.Length + x.Value?.Length);
+
+            TruncateHeaderAndWarnIfNeeded(headers, ExceptionInfoMessage);
+            TruncateHeaderAndWarnIfNeeded(headers, ExceptionInfoStackTrace);
 
             if (IsInfoEnabled)
             {
