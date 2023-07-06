@@ -9,8 +9,6 @@ public class ExceptionHeaderHelperFixture
     [Test]
     public void When_exception_message_is_large_then_it_must_be_truncated()
     {
-        LogManager.Use<DefaultFactory>().Level(LogLevel.Debug);
-
         var headers = new Dictionary<string, string>();
         try
         {
@@ -28,8 +26,6 @@ public class ExceptionHeaderHelperFixture
                 {
                     Data = { { "b", new string('V', 20000) } }
                 };
-
-
             }
         }
         catch (Exception outer)
