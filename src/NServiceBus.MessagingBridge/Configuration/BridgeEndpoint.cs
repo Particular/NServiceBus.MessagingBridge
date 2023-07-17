@@ -101,5 +101,14 @@
 
             public string Publisher { get; private set; }
         }
+
+        /// <summary>
+        /// Instructs the bridge to not bridge TO this endpoint and not create receive proxies on all other transports but only to allow sending FROM this endpoint to another transport endpoint.
+        /// </summary>
+        public bool OneWay
+        {
+            get;
+            set;
+        }
     }
 }

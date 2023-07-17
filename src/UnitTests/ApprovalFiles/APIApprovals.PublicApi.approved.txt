@@ -13,6 +13,7 @@ namespace NServiceBus
     {
         public BridgeEndpoint(string name) { }
         public BridgeEndpoint(string name, string queueAddress) { }
+        public bool OneWay { get; set; }
         public void RegisterPublisher(string eventTypeAssemblyQualifiedName, string publisher) { }
         public void RegisterPublisher(System.Type eventType, string publisher) { }
         public void RegisterPublisher<T>(string publisher) { }

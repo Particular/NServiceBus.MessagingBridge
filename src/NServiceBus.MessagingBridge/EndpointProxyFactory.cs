@@ -18,6 +18,7 @@ class EndpointProxyFactory
     public Task<IStartableRawEndpoint> CreateProxy(
         BridgeEndpoint endpointToProxy,
         BridgeTransport transportConfiguration,
+        bool sendOnly,
         CancellationToken cancellationToken = default)
     {
         var transportDefinition = transportConfiguration.TransportDefinition;
@@ -31,26 +32,28 @@ class EndpointProxyFactory
         var translatedErrorQueue = transportDefinition.ToTransportAddress(new QueueAddress(transportConfiguration.ErrorQueue));
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        var transportEndpointConfiguration = RawEndpointConfiguration.Create(
-        endpointToProxy.Name,
-        transportConfiguration.TransportDefinition,
-        (messageContext, _, ct) =>
-        {
-            if (IsSubscriptionMessage(messageContext.Headers))
-            {
-                return Task.CompletedTask;
-            }
-
-            var transferContext = new TransferContext(
-                transportConfiguration.Name,
+        var transportEndpointConfiguration = sendOnly
+            ? RawEndpointConfiguration.CreateSendOnly(endpointToProxy.Name, transportDefinition)
+            : RawEndpointConfiguration.Create(
                 endpointToProxy.Name,
-                messageContext,
-                shouldPassTransportTransaction);
+                transportConfiguration.TransportDefinition,
+                (messageContext, _, ct) =>
+                {
+                    if (IsSubscriptionMessage(messageContext.Headers))
+                    {
+                        return Task.CompletedTask;
+                    }
 
-            return serviceProvider.GetRequiredService<IMessageShovel>()
-                .TransferMessage(transferContext, cancellationToken: ct);
-        },
-        translatedErrorQueue);
+                    var transferContext = new TransferContext(
+                        transportConfiguration.Name,
+                        endpointToProxy.Name,
+                        messageContext,
+                        shouldPassTransportTransaction);
+
+                    return serviceProvider.GetRequiredService<IMessageShovel>()
+                        .TransferMessage(transferContext, cancellationToken: ct);
+                },
+                translatedErrorQueue);
 
         if (transportConfiguration.AutoCreateQueues)
         {

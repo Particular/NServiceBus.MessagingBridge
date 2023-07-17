@@ -40,6 +40,7 @@ class StartableBridge : IStartableBridge
                 var startableEndpointProxy = await endpointProxyFactory.CreateProxy(
                    endpointToSimulate,
                    transportConfiguration,
+                   endpointToSimulate.OneWay,
                    cancellationToken)
                    .ConfigureAwait(false);
 
