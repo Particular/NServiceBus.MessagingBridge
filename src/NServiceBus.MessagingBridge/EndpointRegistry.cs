@@ -81,12 +81,11 @@ class EndpointRegistry : IEndpointRegistry
 
     static string GetNearestCaseInsensitiveMatch(string sourceEndpointName, IEnumerable<string> items)
     {
-        var results = new List<(int distance, string value)>();
         var calculator = new Levenshtein(sourceEndpointName.ToLower());
         var nearestMatch = items
             .OrderBy(x => calculator.DistanceFrom(x.ToLower()))
-            .First();
-        return nearestMatch;
+            .FirstOrDefault();
+        return nearestMatch ?? "(No mappings registered)";
     }
 
     public IEnumerable<ProxyRegistration> Registrations => registrations;
