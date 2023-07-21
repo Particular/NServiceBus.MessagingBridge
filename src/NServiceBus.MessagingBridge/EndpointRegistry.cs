@@ -50,7 +50,7 @@ class EndpointRegistry : IEndpointRegistry
             return endpointDispatcher;
         }
 
-        var nearestMatch = GetNearestCaseInsensitiveMatch(sourceEndpointName, targetEndpointDispatchers.Keys);
+        var nearestMatch = GetClosestMatchForExceptionMessage(sourceEndpointName, targetEndpointDispatchers.Keys);
 
         throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
@@ -62,7 +62,7 @@ class EndpointRegistry : IEndpointRegistry
             return targetAddress;
         }
 
-        var nearestMatch = GetNearestCaseInsensitiveMatch(sourceAddress, targetEndpointAddressMappings.Keys);
+        var nearestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
 
         throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
@@ -74,12 +74,12 @@ class EndpointRegistry : IEndpointRegistry
             return address;
         }
 
-        var nearestMatch = GetNearestCaseInsensitiveMatch(endpointName, endpointAddressMappings.Keys);
+        var nearestMatch = GetClosestMatchForExceptionMessage(endpointName, endpointAddressMappings.Keys);
 
         throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    static string GetNearestCaseInsensitiveMatch(string sourceEndpointName, IEnumerable<string> items)
+    static string GetClosestMatchForExceptionMessage(string sourceEndpointName, IEnumerable<string> items)
     {
         var calculator = new Levenshtein(sourceEndpointName.ToLower());
         var nearestMatch = items
