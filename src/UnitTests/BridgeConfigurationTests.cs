@@ -1,11 +1,9 @@
-using System;
+﻿using System;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NServiceBus;
 using NServiceBus.Transport;
 using NUnit.Framework;
-using UnitTests;
 
 public class BridgeConfigurationTests
 {
@@ -24,7 +22,7 @@ public class BridgeConfigurationTests
     }
 
     [Test]
-    public void At_least_one_transport_should_have_endpoints()
+    public void At_least_on_endpoint_per_endpoint_should_be_configured()
     {
         var configuration = new BridgeConfiguration();
 
@@ -33,25 +31,8 @@ public class BridgeConfigurationTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
-        Assert.AreEqual("No transport has an endpoint configured. At least one transport should have an endpoint to be able to bridge messages", ex.Message);
-    }
-
-    [Test]
-    public void Oneway_bridging_should_be_possible()
-    {
-        var configuration = new BridgeConfiguration();
-
-        configuration.AddTransport(new BridgeTransport(new SomeTransport()));
-
-        var transportWithEndpoint = new BridgeTransport(new SomeOtherTransport());
-        transportWithEndpoint.HasEndpoint("SomeEndpoint");
-        configuration.AddTransport(transportWithEndpoint);
-
-        FinalizeConfiguration(configuration);
-
-        Assert.Contains(
-            "The following transport(s) have no endpoints: some",
-            logger.logEntries);
+        StringAssert.Contains("At least one", ex.Message);
+        StringAssert.Contains("some, someother", ex.Message);
     }
 
     [Test]
@@ -177,38 +158,6 @@ public class BridgeConfigurationTests
     }
 
     [Test]
-    public void Subscriptions_for_same_event_can_have_different_publisher()
-    {
-        var configuration = new BridgeConfiguration();
-        configuration.DoNotEnforceBestPractices();
-
-        var someTransport = new BridgeTransport(new SomeTransport());
-
-        someTransport.HasEndpoint("Publisher");
-        someTransport.HasEndpoint("OtherEndpoint");
-        configuration.AddTransport(someTransport);
-
-        var someOtherTransport = new BridgeTransport(new SomeOtherTransport());
-
-        var subscriber1 = new BridgeEndpoint("Subscriber1");
-
-        subscriber1.RegisterPublisher<MyEvent>("Publisher");
-        someOtherTransport.HasEndpoint(subscriber1);
-
-        var subscriber2 = new BridgeEndpoint("Subscriber2");
-
-        subscriber1.RegisterPublisher<MyEvent>("OtherEndpoint");
-        someOtherTransport.HasEndpoint(subscriber2);
-        configuration.AddTransport(someOtherTransport);
-
-        FinalizeConfiguration(configuration);
-
-        Assert.Contains(
-            "The following subscriptions with multiple registered publishers are ignored as best practices are not enforced:\r- BridgeConfigurationTests+MyEvent, UnitTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b50674d1e0c6ce54, registered publishers: Publisher, OtherEndpoint\r",
-            logger.logEntries);
-    }
-
-    [Test]
     public void Should_require_transports_of_the_same_type_to_be_uniquely_identifiable_by_name()
     {
         var configuration = new BridgeConfiguration();
@@ -331,7 +280,7 @@ public class BridgeConfigurationTests
 
     FinalizedBridgeConfiguration FinalizeConfiguration(BridgeConfiguration bridgeConfiguration)
     {
-        return bridgeConfiguration.FinalizeConfiguration(logger);
+        return bridgeConfiguration.FinalizeConfiguration(new NullLogger<BridgeConfiguration>());
     }
 
     class SomeScopeSupportingTransport : FakeTransport
@@ -359,6 +308,5 @@ public class BridgeConfigurationTests
     class MyEvent
     {
     }
-
-    readonly FakeLogger<BridgeConfiguration> logger = new();
 }
+

@@ -6,7 +6,6 @@ namespace NServiceBus
     {
         public BridgeConfiguration() { }
         public void AddTransport(NServiceBus.BridgeTransport transportConfiguration) { }
-        public void DoNotEnforceBestPractices() { }
         public void RunInReceiveOnlyTransactionMode() { }
     }
     public class BridgeEndpoint
