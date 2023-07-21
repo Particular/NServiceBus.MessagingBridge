@@ -1,4 +1,4 @@
-namespace NServiceBus
+﻿namespace NServiceBus
 {
 
     using System;
@@ -35,11 +35,6 @@ namespace NServiceBus
         {
             runInReceiveOnlyTransactionMode = true;
         }
-
-        /// <summary>
-        /// Disables the enforcement of messaging best practices (e.g. validating that an event has only one logical publisher).
-        /// </summary>
-        public void DoNotEnforceBestPractices() => allowMultiplePublishersSameEvent = true;
 
         internal FinalizedBridgeConfiguration FinalizeConfiguration(ILogger<BridgeConfiguration> logger)
         {
@@ -113,22 +108,16 @@ namespace NServiceBus
 
             if (eventsWithMultiplePublishers.Any())
             {
-                var data = new StringBuilder();
+                var sb = new StringBuilder();
 
+                sb.AppendLine("Events can only be associated with a single publisher, please verify subscriptions for:");
+                sb.AppendLine();
                 foreach (var eventType in eventsWithMultiplePublishers)
                 {
                     var publishers = string.Join(", ", eventType.Select(e => e.Publisher));
-                    data.Append($"- {eventType.Key}, registered publishers: {publishers}\r");
+                    sb.AppendLine($"- {eventType.Key}, registered publishers: {publishers}");
                 }
-
-                if (allowMultiplePublishersSameEvent)
-                {
-                    logger.LogWarning("The following subscriptions with multiple registered publishers are ignored as best practices are not enforced:\r{events}", data);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Events can only be associated with a single publisher, please verify subscriptions for:\r" + data);
-                }
+                throw new InvalidOperationException(sb.ToString());
             }
 
             // determine transaction mode
@@ -179,7 +168,6 @@ namespace NServiceBus
         }
 
         bool runInReceiveOnlyTransactionMode;
-        bool allowMultiplePublishersSameEvent;
 
         readonly List<BridgeTransport> transportConfigurations = new List<BridgeTransport>();
     }
