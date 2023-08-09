@@ -52,7 +52,7 @@
                 serviceCollection.AddSingleton<SubscriptionManager>();
                 serviceCollection.AddSingleton<EndpointRegistry>();
                 serviceCollection.AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>());
-                serviceCollection.AddTransient<IMessageShovel, MessageShovel>();
+                serviceCollection.AddSingleton<IMessageShovel, MessageShovel>();
             });
 
             return hostBuilder;
