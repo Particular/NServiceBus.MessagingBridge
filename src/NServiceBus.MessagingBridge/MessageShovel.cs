@@ -29,9 +29,7 @@ sealed class MessageShovel : IMessageShovel
             messageToSend.Headers.Remove(BridgeHeaders.FailedQ);
 
 #if NET
-            // Using string.Create is safe here because even the longest transport names allocated fit into the stack
             var length = transferContext.SourceTransport.Length + targetEndpointDispatcher.TransportName.Length + 2 /* ->*/;
-            System.Diagnostics.Debug.Assert(length < 256, "The transfer details length exceeds reasonable stack sizes");
             var transferDetails = string.Create(length,
                 (Source: transferContext.SourceTransport, Target: targetEndpointDispatcher.TransportName),
                 static (chars, context) =>
