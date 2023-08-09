@@ -28,7 +28,24 @@ sealed class MessageShovel : IMessageShovel
             var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
             messageToSend.Headers.Remove(BridgeHeaders.FailedQ);
 
+#if NET
+            // Using string.Create is safe here because even the longest transport names allocated fit into the stack
+            var length = transferContext.SourceTransport.Length + targetEndpointDispatcher.TransportName.Length + 2 /* ->*/;
+            System.Diagnostics.Debug.Assert(length < 256, "The transfer details length exceeds reasonable stack sizes");
+            var transferDetails = string.Create(length,
+                (Source: transferContext.SourceTransport, Target: targetEndpointDispatcher.TransportName),
+                static (chars, context) =>
+                {
+                    var position = 0;
+                    context.Source.AsSpan().CopyTo(chars);
+                    position += context.Source.Length;
+                    chars[position++] = '-';
+                    chars[position++] = '>';
+                    context.Target.AsSpan().CopyTo(chars.Slice(position));
+                });
+#else
             var transferDetails = $"{transferContext.SourceTransport}->{targetEndpointDispatcher.TransportName}";
+#endif
 
             if (IsErrorMessage(messageToSend))
             {
@@ -63,7 +80,10 @@ sealed class MessageShovel : IMessageShovel
                 transferContext.PassTransportTransaction ? messageContext.TransportTransaction : new TransportTransaction(),
                 cancellationToken).ConfigureAwait(false);
 
-            logger.LogDebug("{TransferDetails}: Transferred message {MessageId}", transferDetails, messageToSend.MessageId);
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug("{TransferDetails}: Transferred message {MessageId}", transferDetails, messageToSend.MessageId);
+            }
         }
         catch (Exception ex) when (ex.IsCausedBy(cancellationToken))
         {
