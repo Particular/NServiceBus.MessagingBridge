@@ -41,7 +41,7 @@ namespace NServiceBus.Raw
             SendOnly = onMessage == null;
             PushRuntimeSettings = PushRuntimeSettings.Default;
             OnCriticalError = (_, __) => Task.CompletedTask;
-            AdditionalQueues = new string[0];
+            AdditionalQueues = Array.Empty<string>();
         }
 
         /// <summary>
