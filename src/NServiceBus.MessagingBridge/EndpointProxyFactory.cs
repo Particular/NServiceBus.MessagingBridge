@@ -10,10 +10,7 @@ using NServiceBus.Transport;
 
 class EndpointProxyFactory
 {
-    public EndpointProxyFactory(IServiceProvider serviceProvider)
-    {
-        this.serviceProvider = serviceProvider;
-    }
+    public EndpointProxyFactory(IServiceProvider serviceProvider) => this.serviceProvider = serviceProvider;
 
     public Task<IStartableRawEndpoint> CreateProxy(
         BridgeEndpoint endpointToProxy,

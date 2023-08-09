@@ -13,10 +13,7 @@ namespace NServiceBus.Raw
         /// <summary>
         /// Creates a send-only raw endpoint config.
         /// </summary>
-        public static RawEndpointConfiguration CreateSendOnly(string endpointName, TransportDefinition transportDefinition)
-        {
-            return new RawEndpointConfiguration(endpointName, transportDefinition, null, null);
-        }
+        public static RawEndpointConfiguration CreateSendOnly(string endpointName, TransportDefinition transportDefinition) => new RawEndpointConfiguration(endpointName, transportDefinition, null, null);
 
         /// <summary>
         /// Creates a regular raw endpoint config.
@@ -25,10 +22,8 @@ namespace NServiceBus.Raw
             string endpointName,
             TransportDefinition transportDefinition,
             Func<MessageContext, IMessageDispatcher, CancellationToken, Task> onMessage,
-            string poisonMessageQueue)
-        {
-            return new RawEndpointConfiguration(endpointName, transportDefinition, onMessage, poisonMessageQueue);
-        }
+            string poisonMessageQueue) =>
+            new RawEndpointConfiguration(endpointName, transportDefinition, onMessage, poisonMessageQueue);
 
         RawEndpointConfiguration(
             string endpointName,
@@ -84,10 +79,7 @@ namespace NServiceBus.Raw
         /// <summary>
         /// Instructs the endpoint to not enable the pub/sub capabilities of the transport.
         /// </summary>
-        public void DisablePublishAndSubscribe()
-        {
-            PublishAndSubscribeDisabled = true;
-        }
+        public void DisablePublishAndSubscribe() => PublishAndSubscribeDisabled = true;
 
         /// <summary>
         /// Instructs the transport to limits the allowed concurrency when processing messages.
@@ -100,10 +92,7 @@ namespace NServiceBus.Raw
             PushRuntimeSettings = new PushRuntimeSettings(maxConcurrency);
         }
 
-        internal InitializableRawEndpoint Build()
-        {
-            return new InitializableRawEndpoint(this);
-        }
+        internal InitializableRawEndpoint Build() => new InitializableRawEndpoint(this);
 
         static void ValidateEndpointName(string endpointName)
         {

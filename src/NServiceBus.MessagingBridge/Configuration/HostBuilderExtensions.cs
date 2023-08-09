@@ -43,10 +43,7 @@
 
                 bridgeConfigurationAction(hostBuilderContext, bridgeConfiguration);
 
-                serviceCollection.AddSingleton(sp =>
-                {
-                    return bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>());
-                });
+                serviceCollection.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()));
 
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();

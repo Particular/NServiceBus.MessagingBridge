@@ -16,11 +16,6 @@ class TargetEndpointDispatcher
 
     public string TransportName { get; }
 
-    public string ToTransportAddress(string endpointName)
-    {
-        return rawEndpoint.ToTransportAddress(new QueueAddress(endpointName));
-    }
-
     public Task Dispatch(
         OutgoingMessage outgoingMessage,
         TransportTransaction transaction,

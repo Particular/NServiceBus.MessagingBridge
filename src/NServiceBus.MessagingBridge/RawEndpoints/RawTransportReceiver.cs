@@ -21,12 +21,9 @@ namespace NServiceBus.Raw
             this.onMessage = (ctx, ct) => onMessage(ctx, dispatcher, ct);
         }
 
-        public IMessageReceiver Receiver;
+        public readonly IMessageReceiver Receiver;
 
-        public Task Init(CancellationToken cancellationToken = default)
-        {
-            return Receiver.Initialize(pushRuntimeSettings, (ctx, ct) => onMessage(ctx, ct), (ctx, ct) => errorHandlingPolicy.OnError(ctx, ct), cancellationToken);
-        }
+        public Task Init(CancellationToken cancellationToken = default) => Receiver.Initialize(pushRuntimeSettings, (ctx, ct) => onMessage(ctx, ct), (ctx, ct) => errorHandlingPolicy.OnError(ctx, ct), cancellationToken);
 
         public async Task Start(CancellationToken cancellationToken = default)
         {
@@ -70,10 +67,10 @@ namespace NServiceBus.Raw
             isStarted = false;
         }
 
-        RawEndpointErrorHandlingPolicy errorHandlingPolicy;
         bool isStarted;
-        PushRuntimeSettings pushRuntimeSettings;
+        readonly RawEndpointErrorHandlingPolicy errorHandlingPolicy;
+        readonly PushRuntimeSettings pushRuntimeSettings;
         readonly Func<MessageContext, CancellationToken, Task> onMessage;
-        static ILog Logger = LogManager.GetLogger<RawTransportReceiver>();
+        static readonly ILog Logger = LogManager.GetLogger<RawTransportReceiver>();
     }
 }

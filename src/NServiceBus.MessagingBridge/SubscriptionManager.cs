@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,17 +34,18 @@ class SubscriptionManager
             return;
         }
 
-        var eventTypes = new List<MessageMetadata>();
+        var eventTypes = new MessageMetadata[subscriptions.Count];
+        var index = 0;
         foreach (var subscription in subscriptions)
         {
             var eventType = TypeGenerator.GetType(subscription.EventTypeAssemblyQualifiedName);
 
-            eventTypes.Add(new MessageMetadata(eventType));
+            eventTypes[index++] = new MessageMetadata(eventType);
         }
 
         if (endpointProxy.SubscriptionManager != null)
         {
-            await endpointProxy.SubscriptionManager.SubscribeAll(eventTypes.ToArray(), new ContextBag(), cancellationToken)
+            await endpointProxy.SubscriptionManager.SubscribeAll(eventTypes, new ContextBag(), cancellationToken)
                 .ConfigureAwait(false);
             return;
         }

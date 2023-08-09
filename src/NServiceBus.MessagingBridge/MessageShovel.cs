@@ -82,9 +82,9 @@ sealed class MessageShovel : IMessageShovel
 
     static bool IsRetryMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.Retry.UniqueMessageId");
 
-    void TransformAddressHeader(
+    static void TransformAddressHeader(
         OutgoingMessage messageToSend,
-        IEndpointRegistry targetEndpointRegistry,
+        IEndpointRegistry endpointRegistry,
         string headerKey)
     {
         if (!messageToSend.Headers.TryGetValue(headerKey, out var headerValue))
@@ -92,7 +92,7 @@ sealed class MessageShovel : IMessageShovel
             return;
         }
 
-        var targetSpecificReplyToAddress = targetEndpointRegistry.TranslateToTargetAddress(headerValue);
+        var targetSpecificReplyToAddress = endpointRegistry.TranslateToTargetAddress(headerValue);
 
         messageToSend.Headers[headerKey] = targetSpecificReplyToAddress;
     }

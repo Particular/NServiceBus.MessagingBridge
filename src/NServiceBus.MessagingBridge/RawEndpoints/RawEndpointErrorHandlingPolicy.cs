@@ -9,10 +9,6 @@ namespace NServiceBus.Raw
 
     class RawEndpointErrorHandlingPolicy
     {
-        string localAddress;
-        IMessageDispatcher dispatcher;
-        IErrorHandlingPolicy policy;
-
         public RawEndpointErrorHandlingPolicy(string localAddress, IMessageDispatcher dispatcher, IErrorHandlingPolicy policy)
         {
             this.localAddress = localAddress;
@@ -20,10 +16,7 @@ namespace NServiceBus.Raw
             this.policy = policy;
         }
 
-        public Task<ErrorHandleResult> OnError(ErrorContext errorContext, CancellationToken cancellationToken = default)
-        {
-            return policy.OnError(new Context(localAddress, errorContext, MoveToErrorQueue), dispatcher, cancellationToken);
-        }
+        public Task<ErrorHandleResult> OnError(ErrorContext errorContext, CancellationToken cancellationToken = default) => policy.OnError(new Context(localAddress, errorContext, MoveToErrorQueue), dispatcher, cancellationToken);
 
         async Task<ErrorHandleResult> MoveToErrorQueue(ErrorContext errorContext, string errorQueue, CancellationToken cancellationToken)
         {
@@ -55,13 +48,14 @@ namespace NServiceBus.Raw
                 FailedQueue = failedQueue;
             }
 
-            public Task<ErrorHandleResult> MoveToErrorQueue(string errorQueue, CancellationToken cancellationToken = default)
-            {
-                return moveToErrorQueue(Error, errorQueue, cancellationToken);
-            }
+            public Task<ErrorHandleResult> MoveToErrorQueue(string errorQueue, CancellationToken cancellationToken = default) => moveToErrorQueue(Error, errorQueue, cancellationToken);
 
             public ErrorContext Error { get; }
             public string FailedQueue { get; }
         }
+
+        readonly string localAddress;
+        readonly IMessageDispatcher dispatcher;
+        readonly IErrorHandlingPolicy policy;
     }
 }

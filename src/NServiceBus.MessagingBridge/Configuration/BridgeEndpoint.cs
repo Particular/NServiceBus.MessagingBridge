@@ -53,7 +53,7 @@
 
             const string NeutralSuffix = ", Culture=neutral, PublicKeyToken=null";
 
-            if (fullyQualifiedAssemblyTypeName.EndsWith(NeutralSuffix))
+            if (fullyQualifiedAssemblyTypeName?.EndsWith(NeutralSuffix) == true)
             {
                 fullyQualifiedAssemblyTypeName = fullyQualifiedAssemblyTypeName.Substring(0, fullyQualifiedAssemblyTypeName.Length - NeutralSuffix.Length);
             }

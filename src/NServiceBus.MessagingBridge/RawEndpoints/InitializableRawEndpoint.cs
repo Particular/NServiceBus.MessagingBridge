@@ -7,10 +7,7 @@ namespace NServiceBus.Raw
 
     class InitializableRawEndpoint
     {
-        public InitializableRawEndpoint(RawEndpointConfiguration rawEndpointConfiguration)
-        {
-            this.rawEndpointConfiguration = rawEndpointConfiguration;
-        }
+        public InitializableRawEndpoint(RawEndpointConfiguration rawEndpointConfiguration) => this.rawEndpointConfiguration = rawEndpointConfiguration;
 
         public async Task<IStartableRawEndpoint> Initialize(CancellationToken cancellationToken = default)
         {

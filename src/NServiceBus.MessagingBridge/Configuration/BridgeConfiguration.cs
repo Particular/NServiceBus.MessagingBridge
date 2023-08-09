@@ -31,10 +31,7 @@ namespace NServiceBus
         /// <summary>
         /// Runs the bridge in receive-only transaction mode regardless of whether the bridged transports support distributed transactions
         /// </summary>
-        public void RunInReceiveOnlyTransactionMode()
-        {
-            runInReceiveOnlyTransactionMode = true;
-        }
+        public void RunInReceiveOnlyTransactionMode() => runInReceiveOnlyTransactionMode = true;
 
         /// <summary>
         /// Disables the enforcement of messaging best practices (e.g. validating that an event has only one logical publisher).
@@ -49,7 +46,7 @@ namespace NServiceBus
             }
 
             var tranportsWithNoEndpoints = transportConfigurations.Where(tc => !tc.Endpoints.Any())
-                .Select(t => t.Name);
+                .Select(t => t.Name).ToArray();
 
             if (tranportsWithNoEndpoints.Any())
             {
@@ -58,12 +55,13 @@ namespace NServiceBus
             }
 
             var allEndpoints = transportConfigurations
-                .SelectMany(t => t.Endpoints);
+                .SelectMany(t => t.Endpoints).ToArray();
 
             var duplicatedEndpoints = allEndpoints
                 .GroupBy(e => e.Name)
                 .Where(g => g.Count() > 1)
-                .Select(g => g.Key);
+                .Select(g => g.Key)
+                .ToArray();
 
             if (duplicatedEndpoints.Any())
             {
@@ -71,7 +69,9 @@ namespace NServiceBus
                 throw new InvalidOperationException($"Endpoints can only be associated with a single transport, please remove endpoint(s): {endpointNames} from one transport");
             }
 
-            var transportsWithMappedErrorQueue = transportConfigurations.Where(tc => tc.Endpoints.Any(e => e.Name.ToLower() == tc.ErrorQueue.ToLower()));
+            var transportsWithMappedErrorQueue = transportConfigurations
+                .Where(tc => tc.Endpoints.Any(e => string.Equals(e.Name, tc.ErrorQueue, StringComparison.CurrentCultureIgnoreCase)))
+                .ToArray();
 
             if (transportsWithMappedErrorQueue.Any())
             {
@@ -90,7 +90,8 @@ namespace NServiceBus
             var eventsWithNoRegisteredPublisher = transportConfigurations
                .SelectMany(t => t.Endpoints)
                .SelectMany(e => e.Subscriptions)
-               .Where(s => !allEndpoints.Any(e => e.Name == s.Publisher));
+               .Where(s => allEndpoints.All(e => e.Name != s.Publisher))
+               .ToArray();
 
             if (eventsWithNoRegisteredPublisher.Any())
             {
@@ -109,7 +110,8 @@ namespace NServiceBus
                 .SelectMany(t => t.Endpoints)
                 .SelectMany(e => e.Subscriptions)
                 .GroupBy(e => e.EventTypeAssemblyQualifiedName)
-                .Where(g => g.GroupBy(s => s.Publisher).Count() > 1);
+                .Where(g => g.GroupBy(s => s.Publisher).Count() > 1)
+                .ToArray();
 
             if (eventsWithMultiplePublishers.Any())
             {
