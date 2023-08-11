@@ -74,15 +74,9 @@ namespace NServiceBus.Raw
         public string TransportAddress { get; }
         public string EndpointName => rawEndpointConfiguration.EndpointName;
 
-        public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, CancellationToken cancellationToken = default)
-        {
-            return dispatcher.Dispatch(outgoingMessages, transaction, cancellationToken);
-        }
+        public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, CancellationToken cancellationToken = default) => dispatcher.Dispatch(outgoingMessages, transaction, cancellationToken);
 
-        public string ToTransportAddress(QueueAddress logicalAddress)
-        {
-            return transportInfrastructure.ToTransportAddress(logicalAddress);
-        }
+        public string ToTransportAddress(QueueAddress logicalAddress) => transportInfrastructure.ToTransportAddress(logicalAddress);
 
         RawTransportReceiver BuildMainReceiver()
         {
@@ -96,11 +90,11 @@ namespace NServiceBus.Raw
             return receiver;
         }
 
-        readonly RawEndpointConfiguration rawEndpointConfiguration;
-        TransportInfrastructure transportInfrastructure;
-        RawCriticalError criticalError;
-        IMessageReceiver messagePump;
-        IMessageDispatcher dispatcher;
         bool startHasBeenCalled;
+        readonly RawEndpointConfiguration rawEndpointConfiguration;
+        readonly TransportInfrastructure transportInfrastructure;
+        readonly RawCriticalError criticalError;
+        readonly IMessageReceiver messagePump;
+        readonly IMessageDispatcher dispatcher;
     }
 }

@@ -6,10 +6,7 @@ class DeferredLoggerFactory : ILoggerFactory
 {
     readonly ConcurrentBag<DeferredLogger> acquiredLoggers = new ConcurrentBag<DeferredLogger>();
 
-    public ILog GetLogger(Type type)
-    {
-        return GetLogger(type.FullName);
-    }
+    public ILog GetLogger(Type type) => GetLogger(type.FullName);
 
     public ILog GetLogger(string name)
     {

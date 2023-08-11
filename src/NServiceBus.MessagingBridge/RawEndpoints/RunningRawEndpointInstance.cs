@@ -18,15 +18,9 @@ namespace NServiceBus.Raw
             EndpointName = endpointName;
         }
 
-        public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, CancellationToken cancellationToken = default)
-        {
-            return transportInfrastructure.Dispatcher.Dispatch(outgoingMessages, transaction, cancellationToken);
-        }
+        public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, CancellationToken cancellationToken = default) => transportInfrastructure.Dispatcher.Dispatch(outgoingMessages, transaction, cancellationToken);
 
-        public string ToTransportAddress(QueueAddress logicalAddress)
-        {
-            return transportInfrastructure.ToTransportAddress(logicalAddress);
-        }
+        public string ToTransportAddress(QueueAddress logicalAddress) => transportInfrastructure.ToTransportAddress(logicalAddress);
 
         public async Task<IStoppableRawEndpoint> StopReceiving(CancellationToken cancellationToken = default)
         {
@@ -51,9 +45,9 @@ namespace NServiceBus.Raw
             await stoppable.Stop(cancellationToken).ConfigureAwait(false);
         }
 
-        TransportInfrastructure transportInfrastructure;
-        RawTransportReceiver receiver;
+        readonly TransportInfrastructure transportInfrastructure;
+        readonly RawTransportReceiver receiver;
 
-        static ILog Log = LogManager.GetLogger<RunningRawEndpointInstance>();
+        static readonly ILog Log = LogManager.GetLogger<RunningRawEndpointInstance>();
     }
 }

@@ -9,10 +9,8 @@ namespace NServiceBus.Raw
     class RawCriticalError : CriticalError
     {
         public RawCriticalError(Func<ICriticalErrorContext, CancellationToken, Task> onCriticalErrorAction)
-            : base(onCriticalErrorAction)
-        {
+            : base(onCriticalErrorAction) =>
             criticalErrorAction = onCriticalErrorAction;
-        }
 
         public override void Raise(string errorMessage, Exception exception, CancellationToken cancellationToken = default)
         {
@@ -74,11 +72,11 @@ namespace NServiceBus.Raw
             }
         }
 
-        Func<CriticalErrorContext, CancellationToken, Task> criticalErrorAction;
-
-        List<LatentCritical> criticalErrors = new List<LatentCritical>();
         IReceivingRawEndpoint endpoint;
-        object endpointCriticalLock = new object();
+
+        readonly Func<CriticalErrorContext, CancellationToken, Task> criticalErrorAction;
+        readonly List<LatentCritical> criticalErrors = new List<LatentCritical>();
+        readonly object endpointCriticalLock = new object();
 
         class LatentCritical
         {

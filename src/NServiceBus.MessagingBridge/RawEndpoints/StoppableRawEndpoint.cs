@@ -8,10 +8,7 @@ namespace NServiceBus.Raw
     class StoppableRawEndpoint : IStoppableRawEndpoint
     {
 
-        public StoppableRawEndpoint(TransportInfrastructure transportInfrastructure)
-        {
-            this.transportInfrastructure = transportInfrastructure;
-        }
+        public StoppableRawEndpoint(TransportInfrastructure transportInfrastructure) => this.transportInfrastructure = transportInfrastructure;
 
         public async Task Stop(CancellationToken cancellationToken = default)
         {
@@ -31,8 +28,8 @@ namespace NServiceBus.Raw
             }
         }
 
-        TransportInfrastructure transportInfrastructure;
+        readonly TransportInfrastructure transportInfrastructure;
 
-        static ILog Log = LogManager.GetLogger<StoppableRawEndpoint>();
+        static readonly ILog Log = LogManager.GetLogger<StoppableRawEndpoint>();
     }
 }

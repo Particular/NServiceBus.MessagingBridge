@@ -5,10 +5,7 @@ using ILoggerFactory = Microsoft.Extensions.Logging.ILoggerFactory;
 
 class DeferredLogger : ILog
 {
-    public DeferredLogger(string name)
-    {
-        this.name = name;
-    }
+    public DeferredLogger(string name) => this.name = name;
 
     // capturing everything just in case when the logger is not yet set
     public bool IsDebugEnabled => logger == null || logger.IsDebugEnabled;

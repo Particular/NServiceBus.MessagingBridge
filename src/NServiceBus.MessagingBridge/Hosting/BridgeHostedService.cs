@@ -25,10 +25,7 @@ class BridgeHostedService : IHostedService
             .ConfigureAwait(false);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken = default)
-    {
-        return runningBridge.Stop(cancellationToken);
-    }
+    public Task StopAsync(CancellationToken cancellationToken = default) => runningBridge.Stop(cancellationToken);
 
     IStoppableBridge runningBridge;
 

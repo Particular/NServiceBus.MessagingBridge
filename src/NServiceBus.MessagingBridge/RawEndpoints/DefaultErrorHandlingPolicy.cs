@@ -6,9 +6,6 @@ namespace NServiceBus.Raw
 
     class DefaultErrorHandlingPolicy : IErrorHandlingPolicy
     {
-        string errorQueue;
-        int immediateRetryCount;
-
         public DefaultErrorHandlingPolicy(string errorQueue, int immediateRetryCount)
         {
             this.errorQueue = errorQueue;
@@ -19,9 +16,14 @@ namespace NServiceBus.Raw
         {
             if (handlingContext.Error.ImmediateProcessingFailures < immediateRetryCount)
             {
-                return Task.FromResult(ErrorHandleResult.RetryRequired);
+                return RetryRequiredTask;
             }
             return handlingContext.MoveToErrorQueue(errorQueue, cancellationToken: cancellationToken);
         }
+
+        readonly string errorQueue;
+        readonly int immediateRetryCount;
+
+        static Task<ErrorHandleResult> RetryRequiredTask = Task.FromResult(ErrorHandleResult.RetryRequired);
     }
 }

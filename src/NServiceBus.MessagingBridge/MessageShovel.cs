@@ -28,7 +28,22 @@ sealed class MessageShovel : IMessageShovel
             var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
             messageToSend.Headers.Remove(BridgeHeaders.FailedQ);
 
+#if NET
+            var length = transferContext.SourceTransport.Length + targetEndpointDispatcher.TransportName.Length + 2 /* ->*/;
+            var transferDetails = string.Create(length,
+                (Source: transferContext.SourceTransport, Target: targetEndpointDispatcher.TransportName),
+                static (chars, context) =>
+                {
+                    var position = 0;
+                    context.Source.AsSpan().CopyTo(chars);
+                    position += context.Source.Length;
+                    chars[position++] = '-';
+                    chars[position++] = '>';
+                    context.Target.AsSpan().CopyTo(chars.Slice(position));
+                });
+#else
             var transferDetails = $"{transferContext.SourceTransport}->{targetEndpointDispatcher.TransportName}";
+#endif
 
             if (IsErrorMessage(messageToSend))
             {
@@ -63,7 +78,10 @@ sealed class MessageShovel : IMessageShovel
                 transferContext.PassTransportTransaction ? messageContext.TransportTransaction : new TransportTransaction(),
                 cancellationToken).ConfigureAwait(false);
 
-            logger.LogDebug("{TransferDetails}: Transferred message {MessageId}", transferDetails, messageToSend.MessageId);
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug("{TransferDetails}: Transferred message {MessageId}", transferDetails, messageToSend.MessageId);
+            }
         }
         catch (Exception ex) when (ex.IsCausedBy(cancellationToken))
         {
@@ -82,9 +100,9 @@ sealed class MessageShovel : IMessageShovel
 
     static bool IsRetryMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.Retry.UniqueMessageId");
 
-    void TransformAddressHeader(
+    static void TransformAddressHeader(
         OutgoingMessage messageToSend,
-        IEndpointRegistry targetEndpointRegistry,
+        IEndpointRegistry endpointRegistry,
         string headerKey)
     {
         if (!messageToSend.Headers.TryGetValue(headerKey, out var headerValue))
@@ -92,7 +110,7 @@ sealed class MessageShovel : IMessageShovel
             return;
         }
 
-        var targetSpecificReplyToAddress = targetEndpointRegistry.TranslateToTargetAddress(headerValue);
+        var targetSpecificReplyToAddress = endpointRegistry.TranslateToTargetAddress(headerValue);
 
         messageToSend.Headers[headerKey] = targetSpecificReplyToAddress;
     }

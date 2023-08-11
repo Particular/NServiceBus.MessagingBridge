@@ -43,10 +43,7 @@
 
                 bridgeConfigurationAction(hostBuilderContext, bridgeConfiguration);
 
-                serviceCollection.AddSingleton(sp =>
-                {
-                    return bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>());
-                });
+                serviceCollection.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()));
 
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
@@ -55,7 +52,7 @@
                 serviceCollection.AddSingleton<SubscriptionManager>();
                 serviceCollection.AddSingleton<EndpointRegistry>();
                 serviceCollection.AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>());
-                serviceCollection.AddTransient<IMessageShovel, MessageShovel>();
+                serviceCollection.AddSingleton<IMessageShovel, MessageShovel>();
             });
 
             return hostBuilder;
