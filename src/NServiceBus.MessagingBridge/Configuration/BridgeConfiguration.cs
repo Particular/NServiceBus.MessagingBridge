@@ -38,7 +38,7 @@ namespace NServiceBus
         /// </summary>
         public void DoNotEnforceBestPractices() => allowMultiplePublishersSameEvent = true;
 
-        internal FinalizedBridgeConfiguration FinalizeConfiguration(ILogger<BridgeConfiguration> logger)
+        internal FinalizedBridgeConfiguration FinalizeConfiguration(ILogger<BridgeConfiguration> logger, ITransportAddressResolver transportAddressResolver)
         {
             if (transportConfigurations.Count < 2)
             {
@@ -169,10 +169,7 @@ namespace NServiceBus
                 {
                     if (string.IsNullOrEmpty(endpoint.QueueAddress))
                     {
-#pragma warning disable CS0618 // Type or member is obsolete
-                        endpoint.QueueAddress = transportConfiguration.TransportDefinition
-                            .ToTransportAddress(new QueueAddress(endpoint.Name));
-#pragma warning restore CS0618 // Type or member is obsolete
+                        endpoint.QueueAddress = transportAddressResolver.ToTransportAddress(new QueueAddress(endpoint.Name));
                     }
                 }
             }

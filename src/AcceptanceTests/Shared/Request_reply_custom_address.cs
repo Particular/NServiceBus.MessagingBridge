@@ -2,6 +2,7 @@
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
+using NServiceBus.Transport;
 using NUnit.Framework;
 
 public class Request_reply_custom_address : BridgeAcceptanceTest
@@ -11,15 +12,7 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
     {
         var ctx = await Scenario.Define<Context>()
                     .WithEndpoint<SendingEndpoint>(c => c
-                        .When(cc => cc.EndpointsStarted, (b, _) =>
-                        {
-                            var sendOptions = new SendOptions();
-                            var endpointAddress = GetTestEndpointAddress<ReplyReceivingEndpoint>();
-
-                            sendOptions.RouteReplyTo(endpointAddress);
-
-                            return b.Send(new MyMessage(), sendOptions);
-                        }))
+                        .When(cc => cc.EndpointsStarted, (b, _) => b.SendLocal(new StartMessage())))
                     .WithEndpoint<ReplyingEndpoint>()
                     .WithEndpoint<ReplyReceivingEndpoint>()
                     .WithBridge(bridgeConfiguration =>
@@ -52,6 +45,26 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
             {
                 c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReplyingEndpoint));
             });
+        }
+
+        public class ResponseHandler : IHandleMessages<StartMessage>
+        {
+            readonly ITransportAddressResolver transportAddressResolver;
+
+            public ResponseHandler(ITransportAddressResolver transportAddressResolver)
+            {
+                this.transportAddressResolver = transportAddressResolver;
+            }
+
+            public Task Handle(StartMessage message, IMessageHandlerContext context)
+            {
+                var sendOptions = new SendOptions();
+                var endpointName = NServiceBus.AcceptanceTesting.Customization.Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint));
+                var endpointAddress = transportAddressResolver.ToTransportAddress(new QueueAddress(endpointName));
+                sendOptions.RouteReplyTo(endpointAddress);
+
+                return context.Send(new MyMessage(), sendOptions);
+            }
         }
     }
 
@@ -93,6 +106,10 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
                 return context.Reply(new MyReply());
             }
         }
+    }
+
+    public class StartMessage : IMessage
+    {
     }
 
     public class MyMessage : IMessage

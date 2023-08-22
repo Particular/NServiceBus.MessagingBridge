@@ -41,14 +41,6 @@ public class BridgeAcceptanceTest
         return bridgeTransportDefinition.Cleanup(CancellationToken.None);
     }
 
-    protected string GetTestEndpointAddress<T>() where T : EndpointConfigurationBuilder
-    {
-        var endpointName = NServiceBus.AcceptanceTesting.Customization.Conventions.EndpointNamingConvention(typeof(T));
-#pragma warning disable CS0618 // Type or member is obsolete
-        return bridgeTransportDefinition.TransportDefinition.ToTransportAddress(new QueueAddress(endpointName));
-#pragma warning restore CS0618 // Type or member is obsolete
-    }
-
     protected TransportDefinition TransportBeingTested => bridgeTransportDefinition.TransportDefinition;
     protected TransportDefinition TestTransport;
 

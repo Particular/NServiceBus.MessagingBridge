@@ -1,7 +1,5 @@
 using System;
 using System.Linq;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using NServiceBus;
 using NServiceBus.Transport;
 using NUnit.Framework;
@@ -314,7 +312,7 @@ public class BridgeConfigurationTests
 
     FinalizedBridgeConfiguration FinalizeConfiguration(BridgeConfiguration bridgeConfiguration)
     {
-        return bridgeConfiguration.FinalizeConfiguration(logger);
+        return bridgeConfiguration.FinalizeConfiguration(logger, new FakeTransportAddressResolver());
     }
 
     class SomeScopeSupportingTransport : FakeTransport
@@ -327,6 +325,11 @@ public class BridgeConfigurationTests
         public SomeOtherScopeSupportingTransport() : base(TransportTransactionMode.TransactionScope) { }
     }
 
+    class FakeTransportAddressResolver : ITransportAddressResolver
+    {
+        public string ToTransportAddress(QueueAddress queueAddress) => queueAddress.ToString();
+    }
+
     class SomeTransport : FakeTransport
     {
         public Func<string, string> AddressTranslation = name => name;
@@ -334,7 +337,7 @@ public class BridgeConfigurationTests
         public override string ToTransportAddress(QueueAddress address)
 #pragma warning restore CS0672 // Member overrides obsolete member
         {
-            return AddressTranslation(address.BaseAddress);
+            throw new NotImplementedException();
         }
     }
     class SomeOtherTransport : FakeTransport { }

@@ -5,6 +5,7 @@
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using NServiceBus.Logging;
+    using NServiceBus.Transport;
 
     /// <summary>
     /// Extension methods to configure the bridge for the .NET Core generic host.
@@ -43,7 +44,7 @@
 
                 bridgeConfigurationAction(hostBuilderContext, bridgeConfiguration);
 
-                serviceCollection.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()));
+                serviceCollection.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>(), sp.GetRequiredService<ITransportAddressResolver>()));
 
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
