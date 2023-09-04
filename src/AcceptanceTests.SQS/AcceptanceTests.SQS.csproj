@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.1.1" />
+    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.1.2" />
     <PackageReference Include="NServiceBus.AmazonSQS" Version="6.1.1" />
   </ItemGroup>
 
