@@ -333,13 +333,9 @@ public class BridgeConfigurationTests
     class SomeTransport : FakeTransport
     {
         public Func<string, string> AddressTranslation = name => name;
-#pragma warning disable CS0672 // Member overrides obsolete member
-        public override string ToTransportAddress(QueueAddress address)
-#pragma warning restore CS0672 // Member overrides obsolete member
-        {
-            throw new NotImplementedException();
-        }
+
     }
+
     class SomeOtherTransport : FakeTransport { }
 
     class MyEvent

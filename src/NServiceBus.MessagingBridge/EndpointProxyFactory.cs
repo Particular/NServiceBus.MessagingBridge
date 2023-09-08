@@ -73,9 +73,7 @@ class EndpointProxyFactory
             Enum.TryParse(messageIntentString, true, out messageIntent);
         }
 
-#pragma warning disable IDE0078
-        return messageIntent == MessageIntent.Subscribe || messageIntent == MessageIntent.Unsubscribe;
-#pragma warning restore IDE0078
+        return messageIntent is MessageIntent.Subscribe or MessageIntent.Unsubscribe;
     }
 
     readonly IServiceProvider serviceProvider;
