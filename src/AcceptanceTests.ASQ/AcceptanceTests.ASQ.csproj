@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <PackageReference Include="NServiceBus.AcceptanceTesting" Version="9.0.0-alpha.2" />
-    <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="4.0.0-alpha.1" />
     <PackageReference Include="NServiceBus.Transport.AzureStorageQueues" Version="13.0.0-alpha.1" />
   </ItemGroup>
 
