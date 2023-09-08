@@ -65,7 +65,7 @@ jobs:
         shell: pwsh
         run: |
           echo "Create extra databases"
-          sqlcmd -Q "CREATE DATABASE nservicebus2"          
+          sqlcmd -Q "CREATE DATABASE nservicebus2"
       - name: Setup Azure Service Bus
         if: matrix.transport == 'AzureServiceBus'
         uses: Particular/setup-azureservicebus-action@v1.2.0
