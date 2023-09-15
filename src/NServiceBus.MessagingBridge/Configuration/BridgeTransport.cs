@@ -16,7 +16,7 @@
         {
             Guard.AgainstNull(nameof(transportDefinition), transportDefinition);
 
-            Endpoints = new List<BridgeEndpoint>();
+            Endpoints = [];
             TransportDefinition = transportDefinition;
             Name = transportDefinition.GetType().Name.ToLower().Replace("transport", "");
             ErrorQueue = "bridge.error";
