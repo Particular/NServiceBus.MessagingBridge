@@ -9,7 +9,7 @@ using AcceptanceTests.SqlServer;
 
 class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecution
 {
-    readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString") ?? @"Data Source=.\SQLEXPRESS;Initial Catalog=nservicebus;Integrated Security=True";
+    readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString");
 
     public BridgeTransportDefinition GetBridgeTransport()
     {
@@ -44,7 +44,7 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
                 return connection;
             }
 
-            return transport.ConnectionFactory(CancellationToken.None).Result;
+            return transport.ConnectionFactory(cancellationToken).Result;
         };
 
         using (var conn = factory())
