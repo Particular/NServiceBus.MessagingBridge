@@ -191,7 +191,7 @@ public class MessageShovelTests
 
         public TargetEndpointDispatcher GetTargetEndpointDispatcher(string sourceEndpointName)
         {
-            return new TargetEndpointDispatcher(targetTransport, rawEndpoint, targetEndpoint.QueueAddress);
+            return new TargetEndpointDispatcher(targetTransport, rawEndpoint, targetEndpoint.QueueAddress.ToString());
         }
 
         public string TranslateToTargetAddress(string sourceAddress)

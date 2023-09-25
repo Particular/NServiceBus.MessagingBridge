@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using NServiceBus;
-using NServiceBus.Transport;
 using NUnit.Framework;
 using UnitTests;
 
@@ -208,15 +207,11 @@ public class BridgeConfigurationTests
     }
 
     [Test]
-    public void Should_translate_endpoint_addresses_if_not_set()
+    public void Should_default_endpoint_address_if_not_set()
     {
         var configuration = new BridgeConfiguration();
 
-        var defaultAddress = "TheDefaultAddress";
-        var transportWithDefaultAddress = new BridgeTransport(new SomeTransport
-        {
-            AddressTranslation = _ => defaultAddress
-        });
+        var transportWithDefaultAddress = new BridgeTransport(new SomeTransport());
 
         transportWithDefaultAddress.HasEndpoint("EndpointWithDefaultAddress");
 
@@ -230,11 +225,11 @@ public class BridgeConfigurationTests
 
         var finalizedConfiguration = FinalizeConfiguration(configuration);
 
-        Assert.AreEqual(defaultAddress, finalizedConfiguration.TransportConfigurations
-            .Single(t => t.Name == transportWithDefaultAddress.Name).Endpoints.Single().QueueAddress);
+        Assert.AreEqual("EndpointWithDefaultAddress", finalizedConfiguration.TransportConfigurations
+            .Single(t => t.Name == transportWithDefaultAddress.Name).Endpoints.Single().QueueAddress.ToString());
 
         Assert.AreEqual(customAddress, finalizedConfiguration.TransportConfigurations
-            .Single(t => t.Name == transportWithCustomAddress.Name).Endpoints.Single().QueueAddress);
+            .Single(t => t.Name == transportWithCustomAddress.Name).Endpoints.Single().QueueAddress.ToString());
     }
 
     [Test]
@@ -312,7 +307,7 @@ public class BridgeConfigurationTests
 
     FinalizedBridgeConfiguration FinalizeConfiguration(BridgeConfiguration bridgeConfiguration)
     {
-        return bridgeConfiguration.FinalizeConfiguration(logger, new FakeTransportAddressResolver());
+        return bridgeConfiguration.FinalizeConfiguration(logger);
     }
 
     class SomeScopeSupportingTransport : FakeTransport
@@ -325,15 +320,8 @@ public class BridgeConfigurationTests
         public SomeOtherScopeSupportingTransport() : base(TransportTransactionMode.TransactionScope) { }
     }
 
-    class FakeTransportAddressResolver : ITransportAddressResolver
-    {
-        public string ToTransportAddress(QueueAddress queueAddress) => queueAddress.ToString();
-    }
-
     class SomeTransport : FakeTransport
     {
-        public Func<string, string> AddressTranslation = name => name;
-
     }
 
     class SomeOtherTransport : FakeTransport { }

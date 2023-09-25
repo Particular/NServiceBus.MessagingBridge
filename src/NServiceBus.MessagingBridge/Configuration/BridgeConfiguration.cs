@@ -6,7 +6,6 @@ namespace NServiceBus
     using System.Linq;
     using System.Text;
     using Microsoft.Extensions.Logging;
-    using NServiceBus.Transport;
 
     /// <summary>
     /// Configuration options for bridging multiple transports
@@ -38,7 +37,7 @@ namespace NServiceBus
         /// </summary>
         public void DoNotEnforceBestPractices() => allowMultiplePublishersSameEvent = true;
 
-        internal FinalizedBridgeConfiguration FinalizeConfiguration(ILogger<BridgeConfiguration> logger, ITransportAddressResolver transportAddressResolver)
+        internal FinalizedBridgeConfiguration FinalizeConfiguration(ILogger<BridgeConfiguration> logger)
         {
             if (transportConfigurations.Count < 2)
             {
@@ -164,14 +163,6 @@ namespace NServiceBus
             foreach (var transportConfiguration in transportConfigurations)
             {
                 transportConfiguration.TransportDefinition.TransportTransactionMode = transportTransactionMode;
-
-                foreach (var endpoint in transportConfiguration.Endpoints)
-                {
-                    if (string.IsNullOrEmpty(endpoint.QueueAddress))
-                    {
-                        endpoint.QueueAddress = transportAddressResolver.ToTransportAddress(new QueueAddress(endpoint.Name));
-                    }
-                }
             }
 
             return new FinalizedBridgeConfiguration(transportConfigurations);

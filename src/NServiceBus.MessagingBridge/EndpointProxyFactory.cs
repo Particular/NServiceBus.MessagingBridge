@@ -6,14 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Raw;
-using NServiceBus.Transport;
 
 class EndpointProxyFactory
 {
-    public EndpointProxyFactory(IServiceProvider serviceProvider, ITransportAddressResolver transportAddressResolver)
+    public EndpointProxyFactory(IServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
-        this.transportAddressResolver = transportAddressResolver;
     }
 
     public Task<IStartableRawEndpoint> CreateProxy(
@@ -28,7 +26,7 @@ class EndpointProxyFactory
 
         // the transport seam assumes the error queue address to be a native address so we need to translate
         // unfortunately this method is obsoleted but we can't use the one on TransportInfrastructure since that is too late
-        var translatedErrorQueue = transportAddressResolver.ToTransportAddress(new QueueAddress(transportConfiguration.ErrorQueue));
+        //TODO: var translatedErrorQueue = transportAddressResolver.ToTransportAddress(new QueueAddress(transportConfiguration.ErrorQueue));
 
         var transportEndpointConfiguration = RawEndpointConfiguration.Create(
         endpointToProxy.Name,
@@ -49,7 +47,7 @@ class EndpointProxyFactory
             return serviceProvider.GetRequiredService<IMessageShovel>()
                 .TransferMessage(transferContext, cancellationToken: ct);
         },
-        translatedErrorQueue);
+        transportConfiguration.ErrorQueue);
 
         if (transportConfiguration.AutoCreateQueues)
         {
@@ -60,7 +58,7 @@ class EndpointProxyFactory
 
         transportEndpointConfiguration.CustomErrorHandlingPolicy(new MessageShovelErrorHandlingPolicy(
             serviceProvider.GetRequiredService<ILogger<MessageShovelErrorHandlingPolicy>>(),
-            translatedErrorQueue));
+            transportConfiguration.ErrorQueue));
 
         return RawEndpoint.Create(transportEndpointConfiguration, cancellationToken);
     }
@@ -77,5 +75,4 @@ class EndpointProxyFactory
     }
 
     readonly IServiceProvider serviceProvider;
-    readonly ITransportAddressResolver transportAddressResolver;
 }
