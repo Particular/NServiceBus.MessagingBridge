@@ -37,7 +37,7 @@ namespace NServiceBus.Raw
             TransportDefinition = transportDefinition;
             OnMessage = onMessage;
             PoisonMessageQueue = poisonMessageQueue;
-            ErrorHandlingPolicy = new DefaultErrorHandlingPolicy(poisonMessageQueue, 3);
+            ErrorHandlingPolicy = new DefaultErrorHandlingPolicy(3);
             SendOnly = onMessage == null;
             PushRuntimeSettings = PushRuntimeSettings.Default;
             OnCriticalError = (_, __) => Task.CompletedTask;

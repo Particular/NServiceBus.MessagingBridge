@@ -81,12 +81,16 @@ namespace NServiceBus.Raw
         RawTransportReceiver BuildMainReceiver()
         {
             var endpointName = rawEndpointConfiguration.EndpointName;
+
+            // the transport seam assumes the error queue address to be a native address so we need to translate
+            var errorQueue = transportInfrastructure.ToTransportAddress(new QueueAddress(rawEndpointConfiguration.PoisonMessageQueue));
+
             var receiver = new RawTransportReceiver(
                 messagePump,
                 dispatcher,
                 rawEndpointConfiguration.OnMessage,
                 rawEndpointConfiguration.PushRuntimeSettings,
-                new RawEndpointErrorHandlingPolicy(endpointName, dispatcher, rawEndpointConfiguration.ErrorHandlingPolicy));
+                new RawEndpointErrorHandlingPolicy(endpointName, errorQueue, dispatcher, rawEndpointConfiguration.ErrorHandlingPolicy));
             return receiver;
         }
 

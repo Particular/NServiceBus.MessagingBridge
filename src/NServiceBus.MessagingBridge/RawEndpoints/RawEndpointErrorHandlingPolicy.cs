@@ -9,14 +9,15 @@ namespace NServiceBus.Raw
 
     class RawEndpointErrorHandlingPolicy
     {
-        public RawEndpointErrorHandlingPolicy(string localAddress, IMessageDispatcher dispatcher, IErrorHandlingPolicy policy)
+        public RawEndpointErrorHandlingPolicy(string localAddress, string errorQueue, IMessageDispatcher dispatcher, IErrorHandlingPolicy policy)
         {
             this.localAddress = localAddress;
+            this.errorQueue = errorQueue;
             this.dispatcher = dispatcher;
             this.policy = policy;
         }
 
-        public Task<ErrorHandleResult> OnError(ErrorContext errorContext, CancellationToken cancellationToken = default) => policy.OnError(new Context(localAddress, errorContext, MoveToErrorQueue), dispatcher, cancellationToken);
+        public Task<ErrorHandleResult> OnError(ErrorContext errorContext, CancellationToken cancellationToken = default) => policy.OnError(new Context(errorQueue, localAddress, errorContext, MoveToErrorQueue), dispatcher, cancellationToken);
 
         async Task<ErrorHandleResult> MoveToErrorQueue(ErrorContext errorContext, string errorQueue, CancellationToken cancellationToken)
         {
@@ -41,20 +42,23 @@ namespace NServiceBus.Raw
         {
             Func<ErrorContext, string, CancellationToken, Task<ErrorHandleResult>> moveToErrorQueue;
 
-            public Context(string failedQueue, ErrorContext error, Func<ErrorContext, string, CancellationToken, Task<ErrorHandleResult>> moveToErrorQueue)
+            public Context(string errorQueue, string failedQueue, ErrorContext error, Func<ErrorContext, string, CancellationToken, Task<ErrorHandleResult>> moveToErrorQueue)
             {
                 this.moveToErrorQueue = moveToErrorQueue;
                 Error = error;
+                ErrorQueue = errorQueue;
                 FailedQueue = failedQueue;
             }
 
-            public Task<ErrorHandleResult> MoveToErrorQueue(string errorQueue, CancellationToken cancellationToken = default) => moveToErrorQueue(Error, errorQueue, cancellationToken);
+            public Task<ErrorHandleResult> MoveToErrorQueue(CancellationToken cancellationToken = default) => moveToErrorQueue(Error, ErrorQueue, cancellationToken);
 
             public ErrorContext Error { get; }
             public string FailedQueue { get; }
+            public string ErrorQueue { get; }
         }
 
         readonly string localAddress;
+        readonly string errorQueue;
         readonly IMessageDispatcher dispatcher;
         readonly IErrorHandlingPolicy policy;
     }
