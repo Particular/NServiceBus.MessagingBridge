@@ -1,15 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0-preview3.23201.1" />
+    <PackageReference Include="MSMQ.Messaging" Version="1.0.4" />
     <PackageReference Include="NServiceBus" Version="9.0.0-alpha.6" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Particular.Packaging" Version="3.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="InstanceMapping\endpoints.xsd" />
+    <None Remove="InstanceMapping\endpointsV2.xsd" />
+    <EmbeddedResource Include="InstanceMapping\Validators\endpointsV2.xsd" />
+    <EmbeddedResource Include="InstanceMapping\Validators\endpoints.xsd" />
   </ItemGroup>
 
 </Project>
