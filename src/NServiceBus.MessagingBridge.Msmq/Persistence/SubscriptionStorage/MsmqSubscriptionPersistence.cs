@@ -18,7 +18,7 @@
 
             context.Settings.Get<QueueBindings>().BindSending(configuredQueueName);
 
-            var transportSettings = context.Settings.Get<TransportDefinition>() as MsmqTransport;
+            var transportSettings = context.Settings.Get<TransportDefinition>() as MsmqBridgeTransport;
 
             var queue = new MsmqSubscriptionStorageQueue(MsmqAddress.Parse(configuredQueueName), transportSettings.UseTransactionalQueues);
             var storage = new MsmqSubscriptionStorage(queue);

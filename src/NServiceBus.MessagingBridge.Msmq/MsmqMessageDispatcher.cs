@@ -14,11 +14,11 @@ namespace NServiceBus.MessagingBridge.Msmq
 
     class MsmqMessageDispatcher : IMessageDispatcher
     {
-        readonly MsmqTransport transportSettings;
+        readonly MsmqBridgeTransport transportSettings;
         readonly string timeoutsQueue;
         readonly Action<TransportTransaction, UnicastTransportOperation> onSendCallback;
 
-        public MsmqMessageDispatcher(MsmqTransport transportSettings, string timeoutsQueue, Action<TransportTransaction, UnicastTransportOperation> onSendCallback = null)
+        public MsmqMessageDispatcher(MsmqBridgeTransport transportSettings, string timeoutsQueue, Action<TransportTransaction, UnicastTransportOperation> onSendCallback = null)
         {
             this.transportSettings = transportSettings;
             this.timeoutsQueue = timeoutsQueue;

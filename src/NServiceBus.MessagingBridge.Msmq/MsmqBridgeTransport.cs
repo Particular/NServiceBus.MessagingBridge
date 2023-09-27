@@ -17,14 +17,14 @@ namespace NServiceBus
     /// <summary>
     /// Transport definition for MSMQ.
     /// </summary>
-    public partial class MsmqTransport : TransportDefinition, IMessageDrivenSubscriptionTransport
+    public partial class MsmqBridgeTransport : TransportDefinition, IMessageDrivenSubscriptionTransport
     {
         const string TimeoutsQueueQualifier = "timeouts";
 
         /// <summary>
-        /// Creates a new instance of <see cref="MsmqTransport"/> for configuration.
+        /// Creates a new instance of <see cref="MsmqBridgeTransport"/> for configuration.
         /// </summary>
-        public MsmqTransport() : base(TransportTransactionMode.TransactionScope, true, false, true)
+        public MsmqBridgeTransport() : base(TransportTransactionMode.TransactionScope, true, false, true)
         {
         }
 

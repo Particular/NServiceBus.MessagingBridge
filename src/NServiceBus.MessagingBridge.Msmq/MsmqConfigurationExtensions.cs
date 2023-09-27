@@ -16,12 +16,12 @@
         /// <summary>
         /// Configures the endpoint to use MSMQ to send and receive messages.
         /// </summary>
-        public static TransportExtensions<MsmqTransport> UseTransport<TTransport>(this EndpointConfiguration endpointConfiguration)
-            where TTransport : MsmqTransport
+        public static TransportExtensions<MsmqBridgeTransport> UseTransport<TTransport>(this EndpointConfiguration endpointConfiguration)
+            where TTransport : MsmqBridgeTransport
         {
-            var msmqTransport = new MsmqTransport();
+            var msmqTransport = new MsmqBridgeTransport();
             var routingSettings = endpointConfiguration.UseTransport(msmqTransport);
-            return new TransportExtensions<MsmqTransport>(msmqTransport, routingSettings);
+            return new TransportExtensions<MsmqBridgeTransport>(msmqTransport, routingSettings);
         }
 
         /// <summary>
@@ -29,7 +29,7 @@
         /// </summary>
         /// <param name="config">MSMQ Transport configuration object.</param>
         /// <param name="distributionStrategy">The instance of a distribution strategy.</param>
-        public static void SetMessageDistributionStrategy(this RoutingSettings<MsmqTransport> config, DistributionStrategy distributionStrategy)
+        public static void SetMessageDistributionStrategy(this RoutingSettings<MsmqBridgeTransport> config, DistributionStrategy distributionStrategy)
         {
             Guard.AgainstNull(nameof(config), config);
             Guard.AgainstNull(nameof(distributionStrategy), distributionStrategy);
@@ -41,7 +41,7 @@
         /// Returns the configuration options for the file based instance mapping file.
         /// </summary>
         /// <param name="config">MSMQ Transport configuration object.</param>
-        public static InstanceMappingFileSettings InstanceMappingFile(this RoutingSettings<MsmqTransport> config)
+        public static InstanceMappingFileSettings InstanceMappingFile(this RoutingSettings<MsmqBridgeTransport> config)
         {
             Guard.AgainstNull(nameof(config), config);
             return new InstanceMappingFileSettings(config.GetSettings());
@@ -58,8 +58,8 @@
         /// The only exception to this rule is received messages with corrupted headers. These messages will be forwarded to the
         /// error queue with no label applied.
         /// </remarks>
-        public static TransportExtensions<MsmqTransport> ApplyLabelToMessages(
-            this TransportExtensions<MsmqTransport> transport,
+        public static TransportExtensions<MsmqBridgeTransport> ApplyLabelToMessages(
+            this TransportExtensions<MsmqBridgeTransport> transport,
             Func<IReadOnlyDictionary<string, string>, string> labelGenerator)
         {
             transport.Transport.ApplyCustomLabelToOutgoingMessages = labelGenerator;
@@ -76,8 +76,8 @@
         /// <param name="transport">The transport settings to configure.</param>
         /// <param name="timeout">Transaction timeout duration.</param>
         /// <param name="isolationLevel">Transaction isolation level.</param>
-        public static TransportExtensions<MsmqTransport> TransactionScopeOptions(
-            this TransportExtensions<MsmqTransport> transport,
+        public static TransportExtensions<MsmqBridgeTransport> TransactionScopeOptions(
+            this TransportExtensions<MsmqBridgeTransport> transport,
             TimeSpan? timeout = null,
             IsolationLevel? isolationLevel = null)
         {
@@ -88,8 +88,8 @@
         /// <summary>
         /// Moves messages that have exceeded their TimeToBeReceived to the dead letter queue instead of discarding them.
         /// </summary>
-        public static TransportExtensions<MsmqTransport> UseDeadLetterQueueForMessagesWithTimeToBeReceived(
-            this TransportExtensions<MsmqTransport> transport)
+        public static TransportExtensions<MsmqBridgeTransport> UseDeadLetterQueueForMessagesWithTimeToBeReceived(
+            this TransportExtensions<MsmqBridgeTransport> transport)
         {
             transport.Transport.UseDeadLetterQueueForMessagesWithTimeToBeReceived = true;
             return transport;
@@ -104,7 +104,7 @@
         /// The installers might still need to be enabled to fulfill the installation needs of other components, but this method allows
         /// scripts to be used for queue creation instead.
         /// </remarks>
-        public static TransportExtensions<MsmqTransport> DisableInstaller(this TransportExtensions<MsmqTransport> transport)
+        public static TransportExtensions<MsmqBridgeTransport> DisableInstaller(this TransportExtensions<MsmqBridgeTransport> transport)
         {
             transport.Transport.CreateQueues = false;
             return transport;
@@ -115,7 +115,7 @@
         /// in the dead letter queue. Therefore this setting must only be used where loss of messages
         /// is an acceptable scenario.
         /// </summary>
-        public static TransportExtensions<MsmqTransport> DisableDeadLetterQueueing(this TransportExtensions<MsmqTransport> transport)
+        public static TransportExtensions<MsmqBridgeTransport> DisableDeadLetterQueueing(this TransportExtensions<MsmqBridgeTransport> transport)
         {
             transport.Transport.UseDeadLetterQueue = false;
             return transport;
@@ -127,7 +127,7 @@
         /// Turning connection caching off will negatively impact the message throughput in
         /// most scenarios.
         /// </summary>
-        public static TransportExtensions<MsmqTransport> DisableConnectionCachingForSends(this TransportExtensions<MsmqTransport> transport)
+        public static TransportExtensions<MsmqBridgeTransport> DisableConnectionCachingForSends(this TransportExtensions<MsmqBridgeTransport> transport)
         {
             transport.Transport.UseConnectionCache = false;
             return transport;
@@ -138,7 +138,7 @@
         /// an exception during processing will not be rolled back to the queue. Therefore this setting must only
         /// be used where loss of messages is an acceptable scenario.
         /// </summary>
-        public static TransportExtensions<MsmqTransport> UseNonTransactionalQueues(this TransportExtensions<MsmqTransport> transport)
+        public static TransportExtensions<MsmqBridgeTransport> UseNonTransactionalQueues(this TransportExtensions<MsmqBridgeTransport> transport)
         {
             transport.Transport.UseTransactionalQueues = false;
             return transport;
@@ -149,7 +149,7 @@
         /// Should be used ONLY when debugging as it can
         /// potentially use up the MSMQ journal storage quota based on the message volume.
         /// </summary>
-        public static TransportExtensions<MsmqTransport> EnableJournaling(this TransportExtensions<MsmqTransport> transport)
+        public static TransportExtensions<MsmqBridgeTransport> EnableJournaling(this TransportExtensions<MsmqBridgeTransport> transport)
         {
             transport.Transport.UseJournalQueue = true;
             return transport;
@@ -158,7 +158,7 @@
         /// <summary>
         /// Overrides the Time-To-Reach-Queue (TTRQ) timespan. The default value if not set is Message.InfiniteTimeout
         /// </summary>
-        public static TransportExtensions<MsmqTransport> TimeToReachQueue(this TransportExtensions<MsmqTransport> transport, TimeSpan timeToReachQueue)
+        public static TransportExtensions<MsmqBridgeTransport> TimeToReachQueue(this TransportExtensions<MsmqBridgeTransport> transport, TimeSpan timeToReachQueue)
         {
             transport.Transport.TimeToReachQueue = timeToReachQueue;
             return transport;
@@ -167,7 +167,7 @@
         /// <summary>
         /// Disables native Time-To-Be-Received (TTBR) when combined with transactions.
         /// </summary>
-        public static TransportExtensions<MsmqTransport> DisableNativeTimeToBeReceivedInTransactions(this TransportExtensions<MsmqTransport> transport)
+        public static TransportExtensions<MsmqBridgeTransport> DisableNativeTimeToBeReceivedInTransactions(this TransportExtensions<MsmqBridgeTransport> transport)
         {
             transport.Transport.UseNonNativeTimeToBeReceivedInTransactions = true;
             return transport;
@@ -176,7 +176,7 @@
         /// <summary>
         /// Configures native delayed delivery.
         /// </summary>
-        public static DelayedDeliverySettings NativeDelayedDelivery(this TransportExtensions<MsmqTransport> config, IDelayedMessageStore delayedMessageStore)
+        public static DelayedDeliverySettings NativeDelayedDelivery(this TransportExtensions<MsmqBridgeTransport> config, IDelayedMessageStore delayedMessageStore)
         {
             Guard.AgainstNull(nameof(delayedMessageStore), delayedMessageStore);
             config.Transport.DelayedDelivery = new DelayedDeliverySettings(delayedMessageStore);
@@ -186,7 +186,7 @@
         /// <summary>
         /// Ignore incoming Time-To-Be-Received (TTBR) headers. By default an expired TTBR header will result in the message to be discarded.
         /// </summary>
-        public static TransportExtensions<MsmqTransport> IgnoreIncomingTimeToBeReceivedHeaders(this TransportExtensions<MsmqTransport> transport)
+        public static TransportExtensions<MsmqBridgeTransport> IgnoreIncomingTimeToBeReceivedHeaders(this TransportExtensions<MsmqBridgeTransport> transport)
         {
             transport.Transport.IgnoreIncomingTimeToBeReceivedHeaders = true;
             return transport;
