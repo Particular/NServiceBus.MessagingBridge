@@ -174,16 +174,6 @@
         }
 
         /// <summary>
-        /// Configures native delayed delivery.
-        /// </summary>
-        public static DelayedDeliverySettings NativeDelayedDelivery(this TransportExtensions<MsmqBridgeTransport> config, IDelayedMessageStore delayedMessageStore)
-        {
-            Guard.AgainstNull(nameof(delayedMessageStore), delayedMessageStore);
-            config.Transport.DelayedDelivery = new DelayedDeliverySettings(delayedMessageStore);
-            return config.Transport.DelayedDelivery;
-        }
-
-        /// <summary>
         /// Ignore incoming Time-To-Be-Received (TTBR) headers. By default an expired TTBR header will result in the message to be discarded.
         /// </summary>
         public static TransportExtensions<MsmqBridgeTransport> IgnoreIncomingTimeToBeReceivedHeaders(this TransportExtensions<MsmqBridgeTransport> transport)
