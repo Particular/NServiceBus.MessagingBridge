@@ -24,7 +24,7 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
     {
         var transportDefinition = new TestableMsmqTransport();
         var routingConfig = endpointConfiguration.UseTransport(transportDefinition);
-        endpointConfiguration.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
+        endpointConfiguration.UsePersistence<AcceptanceTestingPersistence, StorageType.Subscriptions>();
 
         foreach (var publisher in publisherMetadata.Publishers)
         {
