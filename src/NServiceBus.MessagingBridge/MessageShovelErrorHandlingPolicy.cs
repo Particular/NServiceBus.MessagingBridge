@@ -6,10 +6,9 @@ using NServiceBus.Transport;
 
 class MessageShovelErrorHandlingPolicy : IErrorHandlingPolicy
 {
-    public MessageShovelErrorHandlingPolicy(ILogger<MessageShovelErrorHandlingPolicy> logger, string errorQueue)
+    public MessageShovelErrorHandlingPolicy(ILogger<MessageShovelErrorHandlingPolicy> logger)
     {
         this.logger = logger;
-        this.errorQueue = errorQueue;
     }
 
     public Task<ErrorHandleResult> OnError(
@@ -23,11 +22,10 @@ class MessageShovelErrorHandlingPolicy : IErrorHandlingPolicy
             return Task.FromResult(ErrorHandleResult.RetryRequired);
         }
 
-        logger.LogError(handlingContext.Error.Exception, "Message shovel operation failed, message will be moved to {ErrorQueue}", errorQueue);
+        logger.LogError(handlingContext.Error.Exception, "Message shovel operation failed, message will be moved to {ErrorQueue}", handlingContext.ErrorQueue);
 
-        return handlingContext.MoveToErrorQueue(errorQueue, cancellationToken: cancellationToken);
+        return handlingContext.MoveToErrorQueue(cancellationToken);
     }
 
     readonly ILogger<MessageShovelErrorHandlingPolicy> logger;
-    readonly string errorQueue;
 }

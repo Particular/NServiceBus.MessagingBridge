@@ -1,9 +1,6 @@
 using System;
 using System.Linq;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using NServiceBus;
-using NServiceBus.Transport;
 using NUnit.Framework;
 using UnitTests;
 
@@ -210,15 +207,11 @@ public class BridgeConfigurationTests
     }
 
     [Test]
-    public void Should_translate_endpoint_addresses_if_not_set()
+    public void Should_default_endpoint_address_if_not_set()
     {
         var configuration = new BridgeConfiguration();
 
-        var defaultAddress = "TheDefaultAddress";
-        var transportWithDefaultAddress = new BridgeTransport(new SomeTransport
-        {
-            AddressTranslation = _ => defaultAddress
-        });
+        var transportWithDefaultAddress = new BridgeTransport(new SomeTransport());
 
         transportWithDefaultAddress.HasEndpoint("EndpointWithDefaultAddress");
 
@@ -232,11 +225,11 @@ public class BridgeConfigurationTests
 
         var finalizedConfiguration = FinalizeConfiguration(configuration);
 
-        Assert.AreEqual(defaultAddress, finalizedConfiguration.TransportConfigurations
-            .Single(t => t.Name == transportWithDefaultAddress.Name).Endpoints.Single().QueueAddress);
+        Assert.AreEqual("EndpointWithDefaultAddress", finalizedConfiguration.TransportConfigurations
+            .Single(t => t.Name == transportWithDefaultAddress.Name).Endpoints.Single().QueueAddress.ToString());
 
         Assert.AreEqual(customAddress, finalizedConfiguration.TransportConfigurations
-            .Single(t => t.Name == transportWithCustomAddress.Name).Endpoints.Single().QueueAddress);
+            .Single(t => t.Name == transportWithCustomAddress.Name).Endpoints.Single().QueueAddress.ToString());
     }
 
     [Test]
@@ -329,14 +322,8 @@ public class BridgeConfigurationTests
 
     class SomeTransport : FakeTransport
     {
-        public Func<string, string> AddressTranslation = name => name;
-#pragma warning disable CS0672 // Member overrides obsolete member
-        public override string ToTransportAddress(QueueAddress address)
-#pragma warning restore CS0672 // Member overrides obsolete member
-        {
-            return AddressTranslation(address.BaseAddress);
-        }
     }
+
     class SomeOtherTransport : FakeTransport { }
 
     class MyEvent

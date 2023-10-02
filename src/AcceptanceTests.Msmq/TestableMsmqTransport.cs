@@ -6,11 +6,11 @@ using NServiceBus;
 using NServiceBus.Transport;
 
 /// <summary>
-/// A dedicated subclass of the MsmqTransport that enables us to intercept the receive queues for the test.
+/// A dedicated subclass of the MsmqBridgeTransport that enables us to intercept the receive queues for the test.
 /// </summary>
-class TestableMsmqTransport : MsmqTransport
+class TestableMsmqTransport : MsmqBridgeTransport
 {
-    public string[] ReceiveQueues = new string[0];
+    public string[] ReceiveQueues = Array.Empty<string>();
 
     public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers, string[] sendingAddresses, CancellationToken cancellationToken = default)
     {

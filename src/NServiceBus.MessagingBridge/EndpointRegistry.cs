@@ -10,36 +10,42 @@ class EndpointRegistry : IEndpointRegistry
     public void RegisterDispatcher(
         BridgeEndpoint endpoint,
         string targetTransportName,
-        IStartableRawEndpoint startableRawEndpoint)
+        IStartableRawEndpoint rawEndpoint)
     {
         registrations.Add(new ProxyRegistration
         {
             Endpoint = endpoint,
             TranportName = targetTransportName,
-            RawEndpoint = startableRawEndpoint
+            RawEndpoint = rawEndpoint
         });
-
-        endpointAddressMappings[endpoint.Name] = endpoint.QueueAddress;
-        targetEndpointAddressMappings[endpoint.QueueAddress] = startableRawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
     }
 
     public void ApplyMappings(IReadOnlyCollection<BridgeTransport> transportConfigurations)
     {
         foreach (var registration in registrations)
         {
+            var endpoint = registration.Endpoint;
+
             // target transport is the transport where this endpoint is actually running
-            var targetTransport = transportConfigurations.Single(t => t.Endpoints.Any(e => e.Name == registration.Endpoint.Name));
+            var targetTransport = transportConfigurations.Single(t => t.Endpoints.Any(e => e.Name == endpoint.Name));
 
             // just pick the first proxy that is running on the target transport since
             // we just need to be able to send messages to that transport
             var proxyEndpoint = registrations
                 .First(r => r.TranportName == targetTransport.Name)
-                .RawEndpoint;
+            .RawEndpoint;
+
+            var transportAddress = proxyEndpoint.ToTransportAddress(endpoint.QueueAddress);
+
+            endpointAddressMappings[registration.Endpoint.Name] = transportAddress;
+
+            targetEndpointAddressMappings[transportAddress] = registration.RawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
+
 
             targetEndpointDispatchers[registration.Endpoint.Name] = new TargetEndpointDispatcher(
                 targetTransport.Name,
                 proxyEndpoint,
-                registration.Endpoint.QueueAddress);
+                transportAddress);
         }
     }
 

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using NServiceBus.Transport;
 
     /// <summary>
     /// Configuration options for a specific endpoint in the bridge
@@ -11,11 +12,8 @@
         /// <summary>
         /// Initializes an endpoint in the bridge with the given name
         /// </summary>
-        public BridgeEndpoint(string name)
+        public BridgeEndpoint(string name) : this(name, name)
         {
-            Guard.AgainstNullAndEmpty(nameof(name), name);
-
-            Name = name;
         }
 
         /// <summary>
@@ -28,7 +26,7 @@
             Guard.AgainstNullAndEmpty(nameof(queueAddress), queueAddress);
 
             Name = name;
-            QueueAddress = queueAddress;
+            QueueAddress = new QueueAddress(queueAddress);
         }
 
         /// <summary>
@@ -85,7 +83,7 @@
 
         internal string Name { get; private set; }
 
-        internal string QueueAddress { get; set; }
+        internal QueueAddress QueueAddress { get; private set; }
 
         internal IList<Subscription> Subscriptions { get; } = new List<Subscription>();
 

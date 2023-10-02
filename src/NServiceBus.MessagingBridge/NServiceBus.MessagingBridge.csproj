@@ -1,15 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\NServiceBus.snk</AssemblyOriginatorKeyFile>
-    <RootNamespace>NServiceBus.MessagingBridge</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="[8.0.0, 9.0.0)" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="NServiceBus" Version="9.0.0-alpha.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-rc.1.23419.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,4 +19,5 @@
     <InternalsVisibleTo Include="UnitTests" Key="$(NServiceBusTestsKey)" />
     <InternalsVisibleTo Include="AcceptanceTesting" Key="$(NServiceBusTestsKey)" />
   </ItemGroup>
+
 </Project>

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
+using MSMQ.Messaging;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
 
@@ -24,7 +24,7 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
     {
         var transportDefinition = new TestableMsmqTransport();
         var routingConfig = endpointConfiguration.UseTransport(transportDefinition);
-        endpointConfiguration.UsePersistence<MsmqPersistence, StorageType.Subscriptions>();
+        endpointConfiguration.UsePersistence<AcceptanceTestingPersistence, StorageType.Subscriptions>();
 
         foreach (var publisher in publisherMetadata.Publishers)
         {

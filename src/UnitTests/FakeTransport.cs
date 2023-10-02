@@ -22,9 +22,6 @@ class FakeTransport : TransportDefinition
     public override IReadOnlyCollection<TransportTransactionMode> GetSupportedTransactionModes() => supportedTransactionModes;
 
     public override Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers, string[] sendingAddresses, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-#pragma warning disable CS0672 // Member overrides obsolete member
-    public override string ToTransportAddress(QueueAddress address) => address.BaseAddress;
-#pragma warning restore CS0672 // Member overrides obsolete member
 
     List<TransportTransactionMode> supportedTransactionModes = new List<TransportTransactionMode>();
 }

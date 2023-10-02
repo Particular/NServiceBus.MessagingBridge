@@ -28,7 +28,6 @@ sealed class MessageShovel : IMessageShovel
             var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
             messageToSend.Headers.Remove(BridgeHeaders.FailedQ);
 
-#if NET
             var length = transferContext.SourceTransport.Length + targetEndpointDispatcher.TransportName.Length + 2 /* ->*/;
             var transferDetails = string.Create(length,
                 (Source: transferContext.SourceTransport, Target: targetEndpointDispatcher.TransportName),
@@ -41,9 +40,6 @@ sealed class MessageShovel : IMessageShovel
                     chars[position++] = '>';
                     context.Target.AsSpan().CopyTo(chars.Slice(position));
                 });
-#else
-            var transferDetails = $"{transferContext.SourceTransport}->{targetEndpointDispatcher.TransportName}";
-#endif
 
             if (IsErrorMessage(messageToSend))
             {
@@ -55,7 +51,7 @@ sealed class MessageShovel : IMessageShovel
             }
             else if (IsAuditMessage(messageToSend))
             {
-                //This is a message sent to the audit queue. We _do not_ transform any headers. 
+                //This is a message sent to the audit queue. We _do not_ transform any headers.
                 //This check needs to be done _before_ the retry message check because we don't want to treat audited retry messages as retry messages.
             }
             else if (IsRetryMessage(messageToSend))
