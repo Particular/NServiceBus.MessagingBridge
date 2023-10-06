@@ -3,7 +3,7 @@
     using System.Security;
     using System.Security.Principal;
     using Logging;
-    using MSMQ.Messaging;
+    using Particular.Msmq;
 
     static class QueuePermissions
     {

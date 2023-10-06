@@ -4,10 +4,10 @@ namespace NServiceBus.MessagingBridge.Msmq
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using MSMQ.Messaging;
     using System.Text;
     using System.Xml;
     using Logging;
+    using Particular.Msmq;
     using Transport;
 
     class MsmqUtilities

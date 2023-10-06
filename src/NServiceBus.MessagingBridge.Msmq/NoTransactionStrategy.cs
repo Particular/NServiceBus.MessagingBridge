@@ -2,10 +2,10 @@ namespace NServiceBus.MessagingBridge.Msmq
 {
     using System;
     using System.Buffers;
-    using MSMQ.Messaging;
     using System.Threading;
     using System.Threading.Tasks;
     using NServiceBus.Extensibility;
+    using Particular.Msmq;
     using Transport;
 
     class NoTransactionStrategy : ReceiveStrategy
