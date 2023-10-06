@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -24,11 +24,5 @@
   <ItemGroup>
     <Compile Include="..\AcceptanceTests\Shared\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
-
-  <!-- Workaround for "NETSDK1073: The FrameworkReference 'Microsoft.WindowsDesktop.App.WindowsForms' was not recognized" -->
-  <!-- This should not be required, but something is incorrectly causing the Microsoft.WindowsDesktop.App.WindowsForms reference -->
-  <PropertyGroup>
-    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
-  </PropertyGroup>
 
 </Project>

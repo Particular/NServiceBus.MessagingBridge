@@ -20,12 +20,6 @@
     <EmbeddedResource Include="InstanceMapping\Validators\endpoints.xsd" />
   </ItemGroup>
 
-  <!-- Workaround for "NETSDK1073: The FrameworkReference 'Microsoft.WindowsDesktop.App.WindowsForms' was not recognized" -->
-  <!-- This should not be required, but something is incorrectly causing the Microsoft.WindowsDesktop.App.WindowsForms reference -->
-  <PropertyGroup>
-    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
-  </PropertyGroup>
-
   <ItemGroup>
     <InternalsVisibleTo Include="AcceptanceTests.Msmq" />
   </ItemGroup>
