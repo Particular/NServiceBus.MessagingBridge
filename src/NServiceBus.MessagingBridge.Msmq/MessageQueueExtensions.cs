@@ -4,7 +4,7 @@
     using System.ComponentModel;
     using System.Runtime.InteropServices;
     using System.Security.Principal;
-    using MSMQ.Messaging;
+    using Particular.Msmq;
 
     /// <summary>
     /// Reads the Access Control Entries (ACE) from an MSMQ queue.
@@ -34,11 +34,9 @@
         [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         static extern bool ConvertSidToStringSid([MarshalAs(UnmanagedType.LPArray)] byte[] pSID, out IntPtr ptrSid);
 
-        const string PREFIX_FORMAT_NAME = "FORMATNAME:";
         const int DACL_SECURITY_INFORMATION = 4;
         const int MQ_ERROR_SECURITY_DESCRIPTOR_TOO_SMALL = unchecked((int)0xc00e0023);
         const int MQ_OK = 0;
-        static bool administerGranted;
 
         //Security constants
 
@@ -75,14 +73,6 @@
 
         public static bool TryGetPermissions(this MessageQueue queue, string user, out MessageQueueAccessRights? rights, out AccessControlEntryType? accessType)
         {
-            if (!administerGranted)
-            {
-                var permission = new MessageQueuePermission(MessageQueuePermissionAccess.Administer, PREFIX_FORMAT_NAME + queue.FormatName);
-                permission.Demand();
-
-                administerGranted = true;
-            }
-
             var sid = GetSidForUser(user);
 
             try

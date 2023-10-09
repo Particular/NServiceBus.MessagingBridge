@@ -6,7 +6,7 @@ namespace NServiceBus.MessagingBridge.Msmq
     using System.Threading;
     using System.Threading.Tasks;
     using System.Transactions;
-    using MSMQ.Messaging;
+    using Particular.Msmq;
     using Performance.TimeToBeReceived;
     using Transport;
     using Unicast.Queuing;

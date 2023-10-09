@@ -7,8 +7,8 @@ namespace NServiceBus
     using System.Threading.Tasks;
     using System.Transactions;
     using Features;
-    using MSMQ.Messaging;
     using NServiceBus.MessagingBridge.Msmq;
+    using Particular.Msmq;
     using Routing;
     using Transport;
 

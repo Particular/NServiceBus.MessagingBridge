@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSMQ.Messaging" Version="1.0.4" />
     <PackageReference Include="NServiceBus" Version="9.0.0-alpha.6" />
+    <PackageReference Include="Particular.Msmq" Version="1.0.0-alpha.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,10 +20,8 @@
     <EmbeddedResource Include="InstanceMapping\Validators\endpoints.xsd" />
   </ItemGroup>
 
-  <!-- Workaround for "NETSDK1073: The FrameworkReference 'Microsoft.WindowsDesktop.App.WindowsForms' was not recognized" -->
-  <!-- This should not be required, but something is incorrectly causing the Microsoft.WindowsDesktop.App.WindowsForms reference -->
-  <PropertyGroup>
-    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
-  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="AcceptanceTests.Msmq" />
+  </ItemGroup>
 
 </Project>

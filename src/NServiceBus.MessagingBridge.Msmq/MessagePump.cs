@@ -5,7 +5,7 @@ namespace NServiceBus.MessagingBridge.Msmq
     using System.Threading;
     using System.Threading.Tasks;
     using Logging;
-    using MSMQ.Messaging;
+    using Particular.Msmq;
     using Support;
     using Transport;
 
@@ -172,7 +172,7 @@ namespace NServiceBus.MessagingBridge.Msmq
 
         async Task PumpMessages(CancellationToken messagePumpCancellationToken)
         {
-            using (var enumerator = inputQueue.GetMessageEnumerator2())
+            using (var enumerator = inputQueue.GetMessageEnumerator())
             {
                 while (true)
                 {

@@ -3,11 +3,11 @@ namespace NServiceBus.MessagingBridge.Msmq
     using System;
     using System.Buffers;
     using System.Collections.Generic;
-    using MSMQ.Messaging;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Transactions;
     using NServiceBus.Extensibility;
+    using Particular.Msmq;
     using Transport;
 
     class TransactionScopeStrategy : ReceiveStrategy

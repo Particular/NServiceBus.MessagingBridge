@@ -1,9 +1,9 @@
 namespace NServiceBus.MessagingBridge.Msmq
 {
     using System.Collections.Generic;
-    using MSMQ.Messaging;
     using System.Security.Principal;
     using Logging;
+    using Particular.Msmq;
 
     class MsmqQueueCreator
     {
