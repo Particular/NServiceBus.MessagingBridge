@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="9.0.0-alpha.6" />
+    <PackageReference Include="NServiceBus" Version="9.0.0-alpha.8" />
     <PackageReference Include="Particular.Msmq" Version="1.0.0-alpha.1" />
   </ItemGroup>
 
