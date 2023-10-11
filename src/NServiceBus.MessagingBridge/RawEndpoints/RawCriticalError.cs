@@ -75,7 +75,7 @@ namespace NServiceBus.Raw
         IReceivingRawEndpoint endpoint;
 
         readonly Func<CriticalErrorContext, CancellationToken, Task> criticalErrorAction;
-        readonly List<LatentCritical> criticalErrors = new List<LatentCritical>();
+        readonly List<LatentCritical> criticalErrors = [];
         readonly object endpointCriticalLock = new object();
 
         class LatentCritical

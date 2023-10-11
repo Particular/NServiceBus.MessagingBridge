@@ -171,6 +171,6 @@ namespace NServiceBus
         bool runInReceiveOnlyTransactionMode;
         bool allowMultiplePublishersSameEvent;
 
-        readonly List<BridgeTransport> transportConfigurations = new List<BridgeTransport>();
+        readonly List<BridgeTransport> transportConfigurations = [];
     }
 }

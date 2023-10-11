@@ -73,7 +73,7 @@ namespace NServiceBus.MessagingBridge.Msmq
             }
         }
 
-        Dictionary<string, FailureInfoNode> failureInfoPerMessage = new Dictionary<string, FailureInfoNode>();
+        Dictionary<string, FailureInfoNode> failureInfoPerMessage = [];
         LinkedList<string> leastRecentlyUsedMessages = new LinkedList<string>();
         object lockObject = new object();
 

@@ -96,10 +96,10 @@ class EndpointRegistry : IEndpointRegistry
 
     public IEnumerable<ProxyRegistration> Registrations => registrations;
 
-    readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = new Dictionary<string, TargetEndpointDispatcher>();
-    readonly Dictionary<string, string> targetEndpointAddressMappings = new Dictionary<string, string>();
-    readonly Dictionary<string, string> endpointAddressMappings = new Dictionary<string, string>();
-    readonly List<ProxyRegistration> registrations = new List<ProxyRegistration>();
+    readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = [];
+    readonly Dictionary<string, string> targetEndpointAddressMappings = [];
+    readonly Dictionary<string, string> endpointAddressMappings = [];
+    readonly List<ProxyRegistration> registrations = [];
 
     public class ProxyRegistration
     {
