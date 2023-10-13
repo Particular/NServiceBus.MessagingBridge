@@ -23,5 +23,5 @@ class FakeTransport : TransportDefinition
 
     public override Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers, string[] sendingAddresses, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-    List<TransportTransactionMode> supportedTransactionModes = new List<TransportTransactionMode>();
+    List<TransportTransactionMode> supportedTransactionModes = [];
 }

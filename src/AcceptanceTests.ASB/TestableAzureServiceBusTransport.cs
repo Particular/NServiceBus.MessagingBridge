@@ -24,5 +24,5 @@ public class TestableAzureServiceBusTransport : AzureServiceBusTransport
         return infrastructure;
     }
 
-    public List<string> QueuesToCleanup { get; } = new List<string>();
+    public List<string> QueuesToCleanup { get; } = [];
 }
