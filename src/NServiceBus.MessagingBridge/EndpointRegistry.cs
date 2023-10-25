@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
