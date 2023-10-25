@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="NServiceBus" Version="9.0.0-alpha.9" />
-    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="9.0.0-alpha.6" />
+    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="9.0.0-alpha.9" />
   </ItemGroup>
 
 </Project>
