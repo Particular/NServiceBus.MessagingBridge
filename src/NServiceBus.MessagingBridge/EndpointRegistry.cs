@@ -41,11 +41,16 @@ class EndpointRegistry : IEndpointRegistry
 
             targetEndpointAddressMappings[transportAddress] = registration.RawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
 
+            if (!targetEndpointDispatchers.ContainsKey(registration.Endpoint.Name))
+            {
+                targetEndpointDispatchers[registration.Endpoint.Name] = [];
+            }
 
-            targetEndpointDispatchers[registration.Endpoint.Name] = new TargetEndpointDispatcher(
+            targetEndpointDispatchers[registration.Endpoint.Name].Add(new TargetEndpointDispatcher(
                 targetTransport.Name,
                 proxyEndpoint,
-                transportAddress);
+                transportAddress)
+            );
         }
     }
 
@@ -53,7 +58,12 @@ class EndpointRegistry : IEndpointRegistry
     {
         if (targetEndpointDispatchers.TryGetValue(sourceEndpointName, out var endpointDispatcher))
         {
-            return endpointDispatcher;
+            if (endpointDispatcher.Count == 1)
+            {
+                return endpointDispatcher[0];
+            }
+
+            return endpointDispatcher.MinBy(x => Guid.NewGuid());
         }
 
         var nearestMatch = GetClosestMatchForExceptionMessage(sourceEndpointName, targetEndpointDispatchers.Keys);
@@ -96,7 +106,7 @@ class EndpointRegistry : IEndpointRegistry
 
     public IEnumerable<ProxyRegistration> Registrations => registrations;
 
-    readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = [];
+    readonly Dictionary<string, List<TargetEndpointDispatcher>> targetEndpointDispatchers = [];
     readonly Dictionary<string, string> targetEndpointAddressMappings = [];
     readonly Dictionary<string, string> endpointAddressMappings = [];
     readonly List<ProxyRegistration> registrations = [];

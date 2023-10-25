@@ -54,11 +54,11 @@ namespace NServiceBus
             }
 
             var allEndpoints = transportConfigurations
-                .SelectMany(t => t.Endpoints).ToArray();
+                .SelectMany(transportCfg => transportCfg.Endpoints.Select(endpointCfg => new { transportCfg, endpointCfg })).ToArray();
 
             var duplicatedEndpoints = allEndpoints
-                .GroupBy(e => e.Name)
-                .Where(g => g.Count() > 1)
+                .GroupBy(e => e.endpointCfg.Name)
+                .Where(g => g.Select(x => x.transportCfg).Distinct().Count() > 1)
                 .Select(g => g.Key)
                 .ToArray();
 
@@ -89,7 +89,7 @@ namespace NServiceBus
             var eventsWithNoRegisteredPublisher = transportConfigurations
                .SelectMany(t => t.Endpoints)
                .SelectMany(e => e.Subscriptions)
-               .Where(s => allEndpoints.All(e => e.Name != s.Publisher))
+               .Where(s => allEndpoints.All(e => e.endpointCfg.Name != s.Publisher))
                .ToArray();
 
             if (eventsWithNoRegisteredPublisher.Any())
