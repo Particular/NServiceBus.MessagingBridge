@@ -57,13 +57,16 @@ namespace NServiceBus
                 throw new InvalidOperationException($"At least one endpoint needs to be configured for transport(s): {endpointNames}");
             }
 
+
             var allEndpoints = transportConfigurations
-                .SelectMany(t => t.Endpoints);
+                .SelectMany(transportCfg => transportCfg.Endpoints.Select(endpointCfg => new { transportCfg, endpointCfg }))
+                .ToList();
 
             var duplicatedEndpoints = allEndpoints
-                .GroupBy(e => e.Name)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key);
+                .GroupBy(e => e.endpointCfg.Name)
+                .Where(g => g.Select(x => x.transportCfg).Distinct().Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
 
             if (duplicatedEndpoints.Any())
             {
@@ -90,7 +93,7 @@ namespace NServiceBus
             var eventsWithNoRegisteredPublisher = transportConfigurations
                .SelectMany(t => t.Endpoints)
                .SelectMany(e => e.Subscriptions)
-               .Where(s => !allEndpoints.Any(e => e.Name == s.Publisher));
+               .Where(s => !allEndpoints.Any(e => e.endpointCfg.Name == s.Publisher));
 
             if (eventsWithNoRegisteredPublisher.Any())
             {

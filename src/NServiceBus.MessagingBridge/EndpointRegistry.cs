@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
@@ -36,10 +37,16 @@ class EndpointRegistry : IEndpointRegistry
                 .First(r => r.TranportName == targetTransport.Name)
                 .RawEndpoint;
 
-            targetEndpointDispatchers[registration.Endpoint.Name] = new TargetEndpointDispatcher(
+
+            if (!targetEndpointDispatchers.ContainsKey(registration.Endpoint.Name))
+            {
+                targetEndpointDispatchers[registration.Endpoint.Name] = new List<TargetEndpointDispatcher>();
+            }
+
+            targetEndpointDispatchers[registration.Endpoint.Name].Add(new TargetEndpointDispatcher(
                 targetTransport.Name,
                 proxyEndpoint,
-                registration.Endpoint.QueueAddress);
+                registration.Endpoint.QueueAddress));
         }
     }
 
@@ -47,7 +54,15 @@ class EndpointRegistry : IEndpointRegistry
     {
         if (targetEndpointDispatchers.TryGetValue(sourceEndpointName, out var endpointDispatcher))
         {
-            return endpointDispatcher;
+            if (endpointDispatcher.Count == 1)
+            {
+                return endpointDispatcher[0];
+            }
+
+            // Return random endpoint dispatcher
+            return endpointDispatcher
+                .OrderBy(x => Guid.NewGuid())
+                .First();
         }
 
         var nearestMatch = GetClosestMatchForExceptionMessage(sourceEndpointName, targetEndpointDispatchers.Keys);
@@ -90,7 +105,7 @@ class EndpointRegistry : IEndpointRegistry
 
     public IEnumerable<ProxyRegistration> Registrations => registrations;
 
-    readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = new Dictionary<string, TargetEndpointDispatcher>();
+    readonly Dictionary<string, List<TargetEndpointDispatcher>> targetEndpointDispatchers = new Dictionary<string, List<TargetEndpointDispatcher>>();
     readonly Dictionary<string, string> targetEndpointAddressMappings = new Dictionary<string, string>();
     readonly Dictionary<string, string> endpointAddressMappings = new Dictionary<string, string>();
     readonly List<ProxyRegistration> registrations = new List<ProxyRegistration>();
