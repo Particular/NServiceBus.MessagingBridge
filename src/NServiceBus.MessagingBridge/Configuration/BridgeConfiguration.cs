@@ -1,6 +1,5 @@
 namespace NServiceBus
 {
-
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -22,7 +21,8 @@ namespace NServiceBus
 
             if (transportConfigurations.Any(t => t.Name == transportConfiguration.Name))
             {
-                throw new InvalidOperationException($"A transport with the name {transportConfiguration.Name} has already been configured. Use a different transport type or specify a custom name");
+                throw new InvalidOperationException(
+                    $"A transport with the name {transportConfiguration.Name} has already been configured. Use a different transport type or specify a custom name");
             }
 
             transportConfigurations.Add(transportConfiguration);
@@ -31,10 +31,7 @@ namespace NServiceBus
         /// <summary>
         /// Runs the bridge in receive-only transaction mode regardless of whether the bridged transports support distributed transactions
         /// </summary>
-        public void RunInReceiveOnlyTransactionMode()
-        {
-            runInReceiveOnlyTransactionMode = true;
-        }
+        public void RunInReceiveOnlyTransactionMode() => runInReceiveOnlyTransactionMode = true;
 
         /// <summary>
         /// Disables the enforcement of messaging best practices (e.g. validating that an event has only one logical publisher).
@@ -54,12 +51,14 @@ namespace NServiceBus
             if (tranportsWithNoEndpoints.Any())
             {
                 var endpointNames = string.Join(", ", tranportsWithNoEndpoints);
-                throw new InvalidOperationException($"At least one endpoint needs to be configured for transport(s): {endpointNames}");
+                throw new InvalidOperationException(
+                    $"At least one endpoint needs to be configured for transport(s): {endpointNames}");
             }
 
 
             var allEndpoints = transportConfigurations
-                .SelectMany(transportCfg => transportCfg.Endpoints.Select(endpointCfg => new { transportCfg, endpointCfg }))
+                .SelectMany(transportCfg =>
+                    transportCfg.Endpoints.Select(endpointCfg => new { transportCfg, endpointCfg }))
                 .ToList();
 
             var duplicatedEndpoints = allEndpoints
@@ -71,29 +70,35 @@ namespace NServiceBus
             if (duplicatedEndpoints.Any())
             {
                 var endpointNames = string.Join(", ", duplicatedEndpoints);
-                throw new InvalidOperationException($"Endpoints can only be associated with a single transport, please remove endpoint(s): {endpointNames} from one transport");
+                throw new InvalidOperationException(
+                    $"Endpoints can only be associated with a single transport, please remove endpoint(s): {endpointNames} from one transport");
             }
 
-            var transportsWithMappedErrorQueue = transportConfigurations.Where(tc => tc.Endpoints.Any(e => e.Name.ToLower() == tc.ErrorQueue.ToLower()));
+            var transportsWithMappedErrorQueue = transportConfigurations.Where(tc =>
+                tc.Endpoints.Any(e => e.Name.ToLower() == tc.ErrorQueue.ToLower()))
+                .ToArray();
 
             if (transportsWithMappedErrorQueue.Any())
             {
                 var sb = new StringBuilder();
 
-                sb.AppendLine("It is not allowed to register the bridge error queue as an endpoint, please change the error queue or remove the endpoint mapping:");
+                sb.AppendLine(
+                    "It is not allowed to register the bridge error queue as an endpoint, please change the error queue or remove the endpoint mapping:");
                 sb.AppendLine();
 
                 foreach (var transport in transportsWithMappedErrorQueue)
                 {
                     sb.AppendLine($"- Transport: {transport.Name} | ErrorQueue/EndpointName: {transport.ErrorQueue}");
                 }
+
                 throw new InvalidOperationException(sb.ToString());
             }
 
             var eventsWithNoRegisteredPublisher = transportConfigurations
-               .SelectMany(t => t.Endpoints)
-               .SelectMany(e => e.Subscriptions)
-               .Where(s => !allEndpoints.Any(e => e.endpointCfg.Name == s.Publisher));
+                .SelectMany(t => t.Endpoints)
+                .SelectMany(e => e.Subscriptions)
+                .Where(s => allEndpoints.All(e => e.endpointCfg.Name != s.Publisher))
+                .ToArray();
 
             if (eventsWithNoRegisteredPublisher.Any())
             {
@@ -105,6 +110,7 @@ namespace NServiceBus
                 {
                     sb.AppendLine($"- {eventType.EventTypeAssemblyQualifiedName}, publisher: {eventType.Publisher}");
                 }
+
                 throw new InvalidOperationException(sb.ToString());
             }
 
@@ -112,7 +118,8 @@ namespace NServiceBus
                 .SelectMany(t => t.Endpoints)
                 .SelectMany(e => e.Subscriptions)
                 .GroupBy(e => e.EventTypeAssemblyQualifiedName)
-                .Where(g => g.GroupBy(s => s.Publisher).Count() > 1);
+                .Where(g => g.GroupBy(s => s.Publisher).Count() > 1)
+                .ToArray();
 
             if (eventsWithMultiplePublishers.Any())
             {
@@ -126,11 +133,15 @@ namespace NServiceBus
 
                 if (allowMultiplePublishersSameEvent)
                 {
-                    logger.LogWarning("The following subscriptions with multiple registered publishers are ignored as best practices are not enforced:\r{events}", data);
+                    logger.LogWarning(
+                        "The following subscriptions with multiple registered publishers are ignored as best practices are not enforced:\r{events}",
+                        data);
                 }
                 else
                 {
-                    throw new InvalidOperationException("Events can only be associated with a single publisher, please verify subscriptions for:\r" + data);
+                    throw new InvalidOperationException(
+                        "Events can only be associated with a single publisher, please verify subscriptions for:\r" +
+                        data);
                 }
             }
 
@@ -158,7 +169,8 @@ namespace NServiceBus
                 else
                 {
                     transportTransactionMode = TransportTransactionMode.TransactionScope;
-                    logger.LogInformation("Bridge transaction mode defaulted to TransportTransactionMode.TransactionScope since all transports supports it");
+                    logger.LogInformation(
+                        "Bridge transaction mode defaulted to TransportTransactionMode.TransactionScope since all transports supports it");
                 }
             }
 
