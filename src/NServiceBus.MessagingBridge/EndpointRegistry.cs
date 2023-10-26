@@ -14,7 +14,9 @@ class EndpointRegistry : IEndpointRegistry
     {
         registrations.Add(new ProxyRegistration
         {
-            Endpoint = endpoint, TranportName = targetTransportName, RawEndpoint = startableRawEndpoint
+            Endpoint = endpoint,
+            TranportName = targetTransportName,
+            RawEndpoint = startableRawEndpoint
         });
 
         endpointAddressMappings[endpoint.Name] = endpoint.QueueAddress;
@@ -99,7 +101,9 @@ class EndpointRegistry : IEndpointRegistry
     static string GetClosestMatchForExceptionMessage(string sourceEndpointName, IEnumerable<string> items)
     {
         var calculator = new Levenshtein(sourceEndpointName.ToLower());
-        var nearestMatch = items.MinBy(x => calculator.DistanceFrom(x.ToLower()));
+        var nearestMatch = items
+            .OrderBy(x => calculator.DistanceFrom(x.ToLower()))
+            .FirstOrDefault();
         return nearestMatch ?? "(No mappings registered)";
     }
 
