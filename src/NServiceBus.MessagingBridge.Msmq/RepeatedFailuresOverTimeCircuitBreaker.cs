@@ -43,10 +43,7 @@ namespace NServiceBus.MessagingBridge.Msmq
             return Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
         }
 
-        public void Dispose()
-        {
-            //Injected
-        }
+        public void Dispose() => timer.Dispose();
 
         void CircuitBreakerTriggered(object state)
         {
