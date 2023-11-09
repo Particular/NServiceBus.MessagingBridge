@@ -6,9 +6,9 @@ using NServiceBus;
 using NServiceBus.Transport;
 
 /// <summary>
-/// A dedicated subclass of the MsmqBridgeTransport that enables us to intercept the receive queues for the test.
+/// A dedicated subclass of the MsmqTransport that enables us to intercept the receive queues for the test.
 /// </summary>
-class TestableMsmqTransport : MsmqBridgeTransport
+class TestableMsmqTransport : MsmqTransport
 {
     public string[] ReceiveQueues = Array.Empty<string>();
 
