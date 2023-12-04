@@ -6,7 +6,7 @@ The NServiceBus Messaging Bridge is part of the [Particular Service Platform](ht
 
 ## Official documentation
 
-See the [NserviceBus Messaging Bridge documentation](https://docs.particular.net/nservicebus/bridge) for more details on how to use it.
+See the [NServiceBus Messaging Bridge documentation](https://docs.particular.net/nservicebus/bridge) for more details on how to use it.
 
 ## Contributing
 
