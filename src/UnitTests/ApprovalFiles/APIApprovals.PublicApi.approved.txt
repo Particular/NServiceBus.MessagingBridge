@@ -28,6 +28,10 @@ namespace NServiceBus
         public void HasEndpoint(string endpointName) { }
         public void HasEndpoint(string endpointName, string endpointAddress) { }
     }
+    public static class HostApplicationBuilderExtensions
+    {
+        public static Microsoft.Extensions.Hosting.IHostApplicationBuilder UseNServiceBusBridge(this Microsoft.Extensions.Hosting.IHostApplicationBuilder builder, NServiceBus.BridgeConfiguration bridgeConfiguration) { }
+    }
     public static class HostBuilderExtensions
     {
         public static Microsoft.Extensions.Hosting.IHostBuilder UseNServiceBusBridge(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder, System.Action<NServiceBus.BridgeConfiguration> bridgeConfigurationAction) { }
