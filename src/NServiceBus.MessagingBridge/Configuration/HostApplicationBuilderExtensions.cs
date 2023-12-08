@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.MessagingBridge.Configuration
+﻿namespace NServiceBus
 {
     using System;
     using Microsoft.Extensions.DependencyInjection;

@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Support;
-using NServiceBus.MessagingBridge.Configuration;
 
 public class BridgeComponent<TContext> : IComponentBehavior where TContext : ScenarioContext
 {
