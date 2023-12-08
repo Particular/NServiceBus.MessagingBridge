@@ -17,7 +17,7 @@ namespace NServiceBus
         /// </summary>
         public void AddTransport(BridgeTransport transportConfiguration)
         {
-            Guard.AgainstNull(nameof(transportConfiguration), transportConfiguration);
+            ArgumentNullException.ThrowIfNull(transportConfiguration);
 
             if (transportConfigurations.Any(t => t.Name == transportConfiguration.Name))
             {

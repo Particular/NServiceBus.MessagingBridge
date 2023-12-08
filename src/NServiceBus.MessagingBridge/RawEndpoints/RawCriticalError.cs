@@ -15,8 +15,9 @@ namespace NServiceBus.Raw
         public override void Raise(string errorMessage, Exception exception, CancellationToken cancellationToken = default)
         {
             //Intentionally don't call base.Raise
-            Guard.AgainstNullAndEmpty(nameof(errorMessage), errorMessage);
-            Guard.AgainstNull(nameof(exception), exception);
+            ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage);
+            ArgumentNullException.ThrowIfNull(exception);
+
             LogManager.GetLogger("NServiceBus").Fatal(errorMessage, exception);
 
             lock (endpointCriticalLock)
@@ -38,15 +39,8 @@ namespace NServiceBus.Raw
 
         void RaiseForEndpoint(string errorMessage, Exception exception, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(errorMessage))
-            {
-                throw new ArgumentException($"'{nameof(errorMessage)}' cannot be null or empty.", nameof(errorMessage));
-            }
-
-            if (exception is null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(errorMessage);
+            ArgumentNullException.ThrowIfNull(exception);
 
             _ = Task.Run(() =>
               {

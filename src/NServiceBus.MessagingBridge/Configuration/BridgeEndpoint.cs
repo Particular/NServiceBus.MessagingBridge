@@ -22,8 +22,8 @@
         /// </summary>
         public BridgeEndpoint(string name, string queueAddress)
         {
-            Guard.AgainstNullAndEmpty(nameof(name), name);
-            Guard.AgainstNullAndEmpty(nameof(queueAddress), queueAddress);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(queueAddress);
 
             Name = name;
             QueueAddress = new QueueAddress(queueAddress);
@@ -34,7 +34,7 @@
         /// </summary>
         public void RegisterPublisher<T>(string publisher)
         {
-            Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
+            ArgumentException.ThrowIfNullOrWhiteSpace(publisher);
 
             RegisterPublisher(typeof(T), publisher);
         }
@@ -44,8 +44,8 @@
         /// </summary>
         public void RegisterPublisher(Type eventType, string publisher)
         {
-            Guard.AgainstNull(nameof(eventType), eventType);
-            Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
+            ArgumentNullException.ThrowIfNull(eventType);
+            ArgumentException.ThrowIfNullOrWhiteSpace(publisher);
 
             var fullyQualifiedAssemblyTypeName = eventType.AssemblyQualifiedName;
 
@@ -64,8 +64,8 @@
         /// </summary>
         public void RegisterPublisher(string eventTypeAssemblyQualifiedName, string publisher)
         {
-            Guard.AgainstNullAndEmpty(nameof(eventTypeAssemblyQualifiedName), eventTypeAssemblyQualifiedName);
-            Guard.AgainstNullAndEmpty(nameof(publisher), publisher);
+            ArgumentException.ThrowIfNullOrWhiteSpace(eventTypeAssemblyQualifiedName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(publisher);
 
             try
             {

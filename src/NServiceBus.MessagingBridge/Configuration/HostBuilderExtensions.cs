@@ -16,8 +16,8 @@
         /// </summary>
         public static IHostBuilder UseNServiceBusBridge(this IHostBuilder hostBuilder, Action<BridgeConfiguration> bridgeConfigurationAction)
         {
-            Guard.AgainstNull(nameof(hostBuilder), hostBuilder);
-            Guard.AgainstNull(nameof(bridgeConfigurationAction), bridgeConfigurationAction);
+            ArgumentNullException.ThrowIfNull(hostBuilder);
+            ArgumentNullException.ThrowIfNull(bridgeConfigurationAction);
 
             return hostBuilder.UseNServiceBusBridge((_, rc) => bridgeConfigurationAction(rc));
         }
@@ -27,8 +27,8 @@
         /// </summary>
         public static IHostBuilder UseNServiceBusBridge(this IHostBuilder hostBuilder, Action<HostBuilderContext, BridgeConfiguration> bridgeConfigurationAction)
         {
-            Guard.AgainstNull(nameof(hostBuilder), hostBuilder);
-            Guard.AgainstNull(nameof(bridgeConfigurationAction), bridgeConfigurationAction);
+            ArgumentNullException.ThrowIfNull(hostBuilder);
+            ArgumentNullException.ThrowIfNull(bridgeConfigurationAction);
 
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);

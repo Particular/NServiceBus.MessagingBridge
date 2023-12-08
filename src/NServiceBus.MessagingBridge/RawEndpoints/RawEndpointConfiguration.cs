@@ -49,7 +49,8 @@ namespace NServiceBus.Raw
         /// </summary>
         public void CustomErrorHandlingPolicy(IErrorHandlingPolicy customPolicy)
         {
-            Guard.AgainstNull(nameof(customPolicy), customPolicy);
+            ArgumentNullException.ThrowIfNull(customPolicy);
+
             ErrorHandlingPolicy = customPolicy;
         }
 
@@ -71,7 +72,7 @@ namespace NServiceBus.Raw
         /// </summary>
         public void CriticalErrorAction(Func<ICriticalErrorContext, CancellationToken, Task> criticalErrorAction)
         {
-            Guard.AgainstNull(nameof(criticalErrorAction), criticalErrorAction);
+            ArgumentNullException.ThrowIfNull(criticalErrorAction);
 
             OnCriticalError = criticalErrorAction;
         }
@@ -87,7 +88,7 @@ namespace NServiceBus.Raw
         /// <param name="maxConcurrency">The max concurrency allowed.</param>
         public void LimitMessageProcessingConcurrencyTo(int maxConcurrency)
         {
-            Guard.AgainstNegativeAndZero(nameof(maxConcurrency), maxConcurrency);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxConcurrency);
 
             PushRuntimeSettings = new PushRuntimeSettings(maxConcurrency);
         }
