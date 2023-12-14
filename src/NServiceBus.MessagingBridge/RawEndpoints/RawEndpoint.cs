@@ -1,5 +1,6 @@
 namespace NServiceBus.Raw
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -13,7 +14,8 @@ namespace NServiceBus.Raw
         /// </summary>
         public static Task<IStartableRawEndpoint> Create(RawEndpointConfiguration configuration, CancellationToken cancellationToken = default)
         {
-            Guard.AgainstNull(nameof(configuration), configuration);
+            ArgumentNullException.ThrowIfNull(configuration);
+
             var initializable = configuration.Build();
             return initializable.Initialize(cancellationToken);
         }
@@ -23,7 +25,8 @@ namespace NServiceBus.Raw
         /// </summary>
         public static async Task<IReceivingRawEndpoint> Start(RawEndpointConfiguration configuration, CancellationToken cancellationToken = default)
         {
-            Guard.AgainstNull(nameof(configuration), configuration);
+            ArgumentNullException.ThrowIfNull(configuration);
+
             var initializable = await Create(configuration, cancellationToken).ConfigureAwait(false);
             return await initializable.Start(cancellationToken).ConfigureAwait(false);
         }

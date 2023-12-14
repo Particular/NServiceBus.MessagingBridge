@@ -10,8 +10,7 @@ using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Support;
 
-public class BridgeComponent<TContext> : IComponentBehavior
-    where TContext : ScenarioContext
+public class BridgeComponent<TContext> : IComponentBehavior where TContext : ScenarioContext
 {
     public BridgeComponent(Action<BridgeConfiguration> bridgeConfigurationAction) => this.bridgeConfigurationAction = bridgeConfigurationAction;
 
@@ -36,19 +35,22 @@ public class BridgeComponent<TContext> : IComponentBehavior
 
         public override async Task Start(CancellationToken cancellationToken = default)
         {
-            var hostBuilder = new HostBuilder();
+            var builder = Host.CreateApplicationBuilder();
 
-            hostBuilder.UseNServiceBusBridge(bridgeConfigurationAction)
-                .ConfigureServices((_, serviceCollection) =>
-                {
-                    serviceCollection.AddSingleton(loggerFactory);
-                    serviceCollection.RemoveAll(typeof(IMessageShovel));
-                    serviceCollection.AddTransient<MessageShovel>();
-                    serviceCollection.AddTransient<FakeShovel>();
-                    serviceCollection.AddTransient<IMessageShovel, FakeShovel>();
-                });
+            var bridgeConfiguration = new BridgeConfiguration();
+            bridgeConfigurationAction(bridgeConfiguration);
 
-            host = await hostBuilder.StartAsync(cancellationToken).ConfigureAwait(false);
+            builder.UseNServiceBusBridge(bridgeConfiguration);
+
+            builder.Services.AddSingleton(loggerFactory);
+            builder.Services.RemoveAll(typeof(IMessageShovel));
+            builder.Services.AddTransient<MessageShovel>();
+            builder.Services.AddTransient<FakeShovel>();
+            builder.Services.AddTransient<IMessageShovel, FakeShovel>();
+
+            host = builder.Build();
+
+            await host.StartAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task Stop()

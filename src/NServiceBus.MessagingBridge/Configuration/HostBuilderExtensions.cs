@@ -7,32 +7,28 @@
     using NServiceBus.Logging;
 
     /// <summary>
-    /// Extension methods to configure the bridge for the .NET Core generic host.
+    /// Extension methods to configure the bridge for the .NET generic host.
     /// </summary>
     public static class HostBuilderExtensions
     {
         /// <summary>
-        /// Configures the host to start the bridge
+        /// Configures the host to start the bridge.
         /// </summary>
-        public static IHostBuilder UseNServiceBusBridge(
-            this IHostBuilder hostBuilder,
-            Action<BridgeConfiguration> bridgeConfigurationAction)
+        public static IHostBuilder UseNServiceBusBridge(this IHostBuilder hostBuilder, Action<BridgeConfiguration> bridgeConfigurationAction)
         {
-            Guard.AgainstNull(nameof(hostBuilder), hostBuilder);
-            Guard.AgainstNull(nameof(bridgeConfigurationAction), bridgeConfigurationAction);
+            ArgumentNullException.ThrowIfNull(hostBuilder);
+            ArgumentNullException.ThrowIfNull(bridgeConfigurationAction);
 
             return hostBuilder.UseNServiceBusBridge((_, rc) => bridgeConfigurationAction(rc));
         }
 
         /// <summary>
-        /// Configures the host to start the bridge
+        /// Configures the host to start the bridge.
         /// </summary>
-        public static IHostBuilder UseNServiceBusBridge(
-            this IHostBuilder hostBuilder,
-            Action<HostBuilderContext, BridgeConfiguration> bridgeConfigurationAction)
+        public static IHostBuilder UseNServiceBusBridge(this IHostBuilder hostBuilder, Action<HostBuilderContext, BridgeConfiguration> bridgeConfigurationAction)
         {
-            Guard.AgainstNull(nameof(hostBuilder), hostBuilder);
-            Guard.AgainstNull(nameof(bridgeConfigurationAction), bridgeConfigurationAction);
+            ArgumentNullException.ThrowIfNull(hostBuilder);
+            ArgumentNullException.ThrowIfNull(bridgeConfigurationAction);
 
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);
