@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Raw;
+using ServiceControl.Plugin.Heartbeat.Messages;
 using Transport;
 
 /// <summary>
@@ -15,17 +16,18 @@ using Transport;
 public class ServiceControlHeartbeatSender
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="serviceControlQueue"></param>
     /// <param name="bridgeTransportName"></param>
     /// <param name="transportDefinition"></param>
-    public ServiceControlHeartbeatSender(string serviceControlQueue, string bridgeTransportName, TransportDefinition transportDefinition)
+    /// <param name="hostId"></param>
+    public ServiceControlHeartbeatSender(string serviceControlQueue, string bridgeTransportName, TransportDefinition transportDefinition, Guid hostId)
     {
         this.serviceControlQueue = serviceControlQueue;
         this.transportDefinition = transportDefinition;
         this.bridgeTransportName = bridgeTransportName;
-
+        this.hostId = hostId;
     }
     /// <summary>
     /// SendHeartbeat to ServiceControl
@@ -42,7 +44,10 @@ public class ServiceControlHeartbeatSender
 
         var endpointHeartbeat = new EndpointHeartbeat()
         {
-            //todoo: add values
+            EndpointName = "MessagingBridge",
+            ExecutedAt = DateTime.UtcNow,
+            Host = "Laptop2",
+            HostId = hostId
         };
 
         var headers = new Dictionary<string, string>()
@@ -63,4 +68,5 @@ public class ServiceControlHeartbeatSender
     readonly string serviceControlQueue;
     readonly TransportDefinition transportDefinition;
     readonly string bridgeTransportName;
+    readonly Guid hostId;
 }

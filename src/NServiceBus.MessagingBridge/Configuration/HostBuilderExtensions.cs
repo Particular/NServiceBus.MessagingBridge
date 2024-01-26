@@ -5,6 +5,7 @@
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using NServiceBus.Logging;
+    using NServiceBus.MessagingBridge.Heartbeats;
 
     /// <summary>
     /// Extension methods to configure the bridge for the .NET generic host.
@@ -43,6 +44,7 @@
 
                 serviceCollection.AddSingleton(deferredLoggerFactory);
                 serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
+                serviceCollection.AddSingleton<IHostedService, HeartbeatHostedService>();
                 serviceCollection.AddSingleton<IStartableBridge, StartableBridge>();
                 serviceCollection.AddSingleton<EndpointProxyFactory>();
                 serviceCollection.AddSingleton<SubscriptionManager>();

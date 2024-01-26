@@ -5,6 +5,7 @@
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using NServiceBus.Logging;
+    using NServiceBus.MessagingBridge.Heartbeats;
 
     /// <summary>
     /// Extension methods to configure the bridge for the .NET hosted applications builder.
@@ -25,6 +26,7 @@
             builder.Services.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()));
             builder.Services.AddSingleton(deferredLoggerFactory);
             builder.Services.AddSingleton<IHostedService, BridgeHostedService>();
+            builder.Services.AddSingleton<IHostedService, HeartbeatHostedService>();
             builder.Services.AddSingleton<IStartableBridge, StartableBridge>();
             builder.Services.AddSingleton<EndpointProxyFactory>();
             builder.Services.AddSingleton<SubscriptionManager>();
