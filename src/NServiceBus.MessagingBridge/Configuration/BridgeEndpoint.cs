@@ -85,7 +85,7 @@
 
         internal QueueAddress QueueAddress { get; private set; }
 
-        internal IList<Subscription> Subscriptions { get; } = new List<Subscription>();
+        internal IList<Subscription> Subscriptions { get; } = [];
 
         internal class Subscription
         {

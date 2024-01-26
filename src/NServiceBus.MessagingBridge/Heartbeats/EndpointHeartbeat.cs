@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.MessagingBridge.Heartbeats;
+﻿namespace ServiceControl.Plugin.Heartbeat.Messages;
 
 using System;
 
