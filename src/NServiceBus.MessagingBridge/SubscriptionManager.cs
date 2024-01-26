@@ -86,7 +86,8 @@ class SubscriptionManager
         }
     }
 
-    async Task DispatchWithRetries(IRawEndpoint endpointProxy,
+    async Task DispatchWithRetries(
+        IRawEndpoint endpointProxy,
             TransportOperations transportOperations,
             int retriesLeft,
             CancellationToken cancellationToken)

@@ -13,7 +13,8 @@ namespace NServiceBus.Raw
         /// <summary>
         /// Creates a send-only raw endpoint config.
         /// </summary>
-        public static RawEndpointConfiguration CreateSendOnly(string endpointName, TransportDefinition transportDefinition) => new RawEndpointConfiguration(endpointName, transportDefinition, null, null);
+        public static RawEndpointConfiguration CreateSendOnly(string endpointName, TransportDefinition transportDefinition)
+            => new RawEndpointConfiguration(endpointName, transportDefinition, null, null);
 
         /// <summary>
         /// Creates a regular raw endpoint config.
