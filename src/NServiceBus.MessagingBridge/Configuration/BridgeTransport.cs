@@ -75,6 +75,27 @@
             Endpoints.Add(endpoint);
         }
 
+        /// <summary>
+        /// Sets the ServiceControl queue address.
+        /// </summary>
+        /// <param name="serviceControlQueue">ServiceControl queue address.</param>
+        /// <param name="frequency">The frequency to send heartbeats.</param>
+        /// <param name="timeToLive">The maximum time to live for the heartbeat.</param>
+        public void SendHeartbeatTo(string serviceControlQueue, TimeSpan? frequency = null, TimeSpan? timeToLive = null)
+        {
+            var freq = frequency ?? TimeSpan.FromSeconds(10);
+            var ttl = timeToLive ?? TimeSpan.FromTicks(freq.Ticks * 4);
+
+            HeartbeatConfiguration = new HeartbeatConfiguration
+            {
+                ServiceControlQueue = serviceControlQueue,
+                Frequency = freq,
+                TimeToLive = ttl
+            };
+        }
+
+        internal HeartbeatConfiguration HeartbeatConfiguration { get; private set; } = null;
+
         internal TransportDefinition TransportDefinition { get; private set; }
 
         internal List<BridgeEndpoint> Endpoints { get; private set; }
