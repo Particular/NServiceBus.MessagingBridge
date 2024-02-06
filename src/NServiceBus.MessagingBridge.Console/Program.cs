@@ -3,28 +3,11 @@
 using Microsoft.Extensions.Hosting;
 using NServiceBus;
 
-//const string HostId = "{4701FAF9-39A7-4033-9AA9-D95C0DFC0480}";
-
-//var sender = new NServiceBus.MessagingBridge.Heartbeats.ServiceControlHeartbeatSender
-//    ("Particular.n3-bridge-test",
-//    "bridge",
-//    new RabbitMQTransport(RoutingTopology.Conventional(QueueType.Quorum), "amqp://guest:guest@localhost:5672/n3-bridge-test"),
-//    new Guid(HostId));
-
-//var tokenSource = new CancellationTokenSource(20000);
-
-//while (!tokenSource.Token.IsCancellationRequested)
-//{
-//    await sender.SendHeartbeat(new CancellationToken()).ConfigureAwait(false);
-
-//    await Task.Delay(100).ConfigureAwait(true);
-//}
-
 await Host.CreateDefaultBuilder()
    .UseNServiceBusBridge((ctx, bridgeConfiguration) =>
    {
        var n1 = new BridgeTransport(
-        new SqlServerTransport(@"Data Source=localhost;Initial Catalog=N1;User ID=sa;Password=P@ssword#1;Max Pool Size=100")
+        new SqlServerTransport(@"Data Source=localhost;Initial Catalog=N1;User ID=sa;Password=yourStrong(!)Password;Max Pool Size=100")
         {
             TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive
         })
@@ -53,6 +36,7 @@ await Host.CreateDefaultBuilder()
            AutoCreateQueues = true
        };
 
+       n3.SendHeartbeatTo("Particular.n3-bridge-test", TimeSpan.FromSeconds(10));
        n3.HasEndpoint("N3");
 
        bridgeConfiguration.AddTransport(n1);
