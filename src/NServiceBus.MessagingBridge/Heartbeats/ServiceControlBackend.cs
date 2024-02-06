@@ -3,31 +3,23 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Performance.TimeToBeReceived;
 using Routing;
 using Transport;
-
-public class ServiceControlBackend
+class ServiceControlBackend(string destinationQueue, ReceiveAddresses receiveAddresses)
 {
-    public ServiceControlBackend(string destinationQueue, ReceiveAddresses receiveAddresses)
-    {
-        this.destinationQueue = destinationQueue;
-        this.receiveAddresses = receiveAddresses;
-    }
-
     public Task Send(object messageToSend, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher,
         CancellationToken cancellationToken = default)
     {
-        var body = Serialize(messageToSend);
-        return Send(body, messageToSend.GetType().FullName, timeToBeReceived, dispatcher, cancellationToken);
+        var type = messageToSend.GetType();
+        var body = Serialize(messageToSend, type);
+        return Send(body, type.FullName, timeToBeReceived, dispatcher, cancellationToken);
     }
 
-    internal static byte[] Serialize(object messageToSend)
-    {
-        // return Encoding.UTF8.GetBytes(SimpleJson.SerializeObject(messageToSend, serializerStrategy));
-    }
+    internal static byte[] Serialize(object messageToSend, Type type) => Encoding.UTF8.GetBytes(JsonSerializer.Serialize(messageToSend, type));
 
     Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher,
         CancellationToken cancellationToken)
@@ -54,8 +46,4 @@ public class ServiceControlBackend
     }
 
     readonly string sendIntent = MessageIntent.Send.ToString();
-    string destinationQueue;
-    readonly ReceiveAddresses receiveAddresses; // note that ReceiveAddresses will be null on send-only endpoints
-
-    static IJsonSerializerStrategy serializerStrategy = new MessageSerializationStrategy();
 }

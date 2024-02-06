@@ -14,52 +14,38 @@ using Microsoft.Extensions.Hosting;
 using Raw;
 
 /// <summary>
-/// 
+///
 /// </summary>
 public static class HeartbeatSenderExtensions
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="services"></param>
     /// <returns></returns>
     public static IServiceCollection AddHeartBeatSender(this IServiceCollection services)
     {
-        services.AddHostedService<HeartbeatSenderBackgroundService>();
+        _ = services.AddHostedService<HeartbeatSenderBackgroundService>();
 
         return services;
     }
 }
 
 /// <summary>
-/// 
+///
 /// </summary>
-class HeartbeatSenderBackgroundService : BackgroundService
+class HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBridgeConfiguration) : BackgroundService
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="finalizedBridgeConfiguration"></param>
-    public HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBridgeConfiguration)
-    {
-        this.finalizedBridgeConfiguration = finalizedBridgeConfiguration;
-        heartbeatSenders = [];
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    public override async Task StartAsync(CancellationToken cancellationToken)
+    public override async Task StartAsync(CancellationToken cancellationToken = default)
     {
         var transportConfigurationsWithHeartbeats =
             finalizedBridgeConfiguration
                 .TransportConfigurations
                 .Where(t => t.HeartbeatConfiguration != null);
 
-        foreach(var transportConfiguration in transportConfigurationsWithHeartbeats)
+        foreach (var transportConfiguration in transportConfigurationsWithHeartbeats)
         {
-            var endpointName = "bridge";//MessageBridge.TransportName 
+            var endpointName = "bridge";//MessageBridge.TransportName
 
             var rawEndpointConfiguration =
                 RawEndpointConfiguration.CreateSendOnly(endpointName, transportConfiguration.TransportDefinition);
@@ -68,9 +54,9 @@ class HeartbeatSenderBackgroundService : BackgroundService
 
             var displayName = Environment.MachineName;
 
-            var hostId = DeterministicGuid.Create(displayName,PathUtilities.SanitizedPath(Environment.CommandLine));
+            var hostId = DeterministicGuid.Create(displayName, PathUtilities.SanitizedPath(Environment.CommandLine));
 
-            var hostInformation = new HostInformation(hostId,displayName);
+            var hostInformation = new HostInformation(hostId, displayName);
 
             //receiveAddress is null because the heartbeat endpoint is send only
             var serviceControlBackEnd = new ServiceControlBackend(
@@ -90,12 +76,12 @@ class HeartbeatSenderBackgroundService : BackgroundService
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="cancellationToken"></param>
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        //loop and start HeartbeatServices 
+        //loop and start HeartbeatServices
         foreach (var heartbeatSender in heartbeatSenders)
         {
             await heartbeatSender.Start(cancellationToken).ConfigureAwait(false);
@@ -103,10 +89,10 @@ class HeartbeatSenderBackgroundService : BackgroundService
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="cancellationToken"></param>
-    public override async Task StopAsync(CancellationToken cancellationToken)
+    public override async Task StopAsync(CancellationToken cancellationToken = default)
     {
         foreach (var heartbeatSender in heartbeatSenders)
         {
@@ -114,6 +100,5 @@ class HeartbeatSenderBackgroundService : BackgroundService
         }
     }
 
-    FinalizedBridgeConfiguration finalizedBridgeConfiguration;
-    List<HeartbeatSender> heartbeatSenders;
+    readonly List<HeartbeatSender> heartbeatSenders = [];
 }

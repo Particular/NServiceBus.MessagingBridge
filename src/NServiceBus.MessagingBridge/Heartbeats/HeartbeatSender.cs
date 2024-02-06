@@ -4,34 +4,16 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Hosting;
+using NServiceBus.Logging;
 using ServiceControl.Plugin.Heartbeat.Messages;
 using Transport;
 
 /// <summary>
-/// 
+///
 /// </summary>
-public class HeartbeatSender : IDisposable
+class HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
+    ServiceControlBackend backend, string endpointName, TimeSpan interval, TimeSpan timeToLive) : IDisposable
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="dispatcher"></param>
-    /// <param name="hostInfo"></param>
-    /// <param name="backend"></param>
-    /// <param name="endpointName"></param>
-    /// <param name="interval"></param>
-    /// <param name="timeToLive"></param>
-    public HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
-        ServiceControlBackend backend, string endpointName, TimeSpan interval, TimeSpan timeToLive)
-    {
-        this.dispatcher = dispatcher;
-        this.hostInfo = hostInfo;
-        this.backend = backend;
-        this.endpointName = endpointName;
-        this.interval = interval;
-        this.timeToLive = timeToLive;
-    }
-
     async Task SendHeartbeatsAndSwallowExceptions(CancellationToken cancellationToken)
     {
         Logger.Debug($"Start sending heartbeats every {interval}");
@@ -66,11 +48,11 @@ public class HeartbeatSender : IDisposable
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task Start(CancellationToken cancellationToken)
+    public Task Start(CancellationToken cancellationToken = default)
     {
         stoppingCancelationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
@@ -84,26 +66,18 @@ public class HeartbeatSender : IDisposable
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    public async Task Stop(CancellationToken cancellationToken)
+    public Task Stop(CancellationToken cancellationToken = default)
     {
         stoppingCancelationTokenSource!.Cancel();
+
+        return Task.CompletedTask;
     }
+
+    public void Dispose() => stoppingCancelationTokenSource.Cancel();
 
     CancellationTokenSource stoppingCancelationTokenSource;
     Task sendHeartBeatsTask;
-    readonly IMessageDispatcher dispatcher;
-    readonly HostInformation hostInfo;
-    readonly ServiceControlBackend backend;
-    readonly TimeSpan interval;
-    readonly TimeSpan timeToLive;
-    readonly string endpointName;
+    static readonly ILog Logger = LogManager.GetLogger<HeartbeatSender>();
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public void Dispose() => stoppingCancelationTokenSource.Cancel();
+
 }
