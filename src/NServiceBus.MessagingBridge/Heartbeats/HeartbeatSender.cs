@@ -8,9 +8,6 @@ using NServiceBus.Logging;
 using ServiceControl.Plugin.Heartbeat.Messages;
 using Transport;
 
-/// <summary>
-///
-/// </summary>
 class HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
     ServiceControlBackend backend, string endpointName, TimeSpan interval, TimeSpan timeToLive) : IDisposable
 {
@@ -47,11 +44,6 @@ class HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
         }
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
     public Task Start(CancellationToken cancellationToken = default)
     {
         stoppingCancelationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);

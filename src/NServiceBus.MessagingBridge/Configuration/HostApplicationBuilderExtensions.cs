@@ -23,16 +23,16 @@
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);
 
-            builder.Services.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()));
-            builder.Services.AddSingleton(deferredLoggerFactory);
-            builder.Services.AddSingleton<IHostedService, BridgeHostedService>();
-            builder.Services.AddSingleton<IHostedService, HeartbeatHostedService>();
-            builder.Services.AddSingleton<IStartableBridge, StartableBridge>();
-            builder.Services.AddSingleton<EndpointProxyFactory>();
-            builder.Services.AddSingleton<SubscriptionManager>();
-            builder.Services.AddSingleton<EndpointRegistry>();
-            builder.Services.AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>());
-            builder.Services.AddSingleton<IMessageShovel, MessageShovel>();
+            _ = builder.Services.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()));
+            _ = builder.Services.AddSingleton(deferredLoggerFactory);
+            _ = builder.Services.AddSingleton<IHostedService, BridgeHostedService>();
+            _ = builder.Services.AddSingleton<IHostedService, HeartbeatSenderBackgroundService>();
+            _ = builder.Services.AddSingleton<IStartableBridge, StartableBridge>();
+            _ = builder.Services.AddSingleton<EndpointProxyFactory>();
+            _ = builder.Services.AddSingleton<SubscriptionManager>();
+            _ = builder.Services.AddSingleton<EndpointRegistry>();
+            _ = builder.Services.AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>());
+            _ = builder.Services.AddSingleton<IMessageShovel, MessageShovel>();
 
             return builder;
         }

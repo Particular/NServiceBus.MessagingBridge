@@ -10,29 +10,8 @@ using Raw;
 using ServiceControl.Plugin.Heartbeat.Messages;
 using Transport;
 
-/// <summary>
-/// Used to send Heartbeats to ServiceControl
-/// </summary>
-public class ServiceControlHeartbeatSender
+class ServiceControlHeartbeatSender(string serviceControlQueue, string bridgeTransportName, TransportDefinition transportDefinition, Guid hostId)
 {
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="serviceControlQueue"></param>
-    /// <param name="bridgeTransportName"></param>
-    /// <param name="transportDefinition"></param>
-    /// <param name="hostId"></param>
-    public ServiceControlHeartbeatSender(string serviceControlQueue, string bridgeTransportName, TransportDefinition transportDefinition, Guid hostId)
-    {
-        this.serviceControlQueue = serviceControlQueue;
-        this.transportDefinition = transportDefinition;
-        this.bridgeTransportName = bridgeTransportName;
-        this.hostId = hostId;
-    }
-    /// <summary>
-    /// SendHeartbeat to ServiceControl
-    /// </summary>
-    /// <param name="cancellationToken"></param>
     public async Task SendHeartbeat(CancellationToken cancellationToken = default)
     {
         var rawEndpointConfiguration =
@@ -64,9 +43,4 @@ public class ServiceControlHeartbeatSender
         await targetEndpointDispatcher.Dispatch(outgoingMessage, new TransportTransaction(), cancellationToken)
             .ConfigureAwait(false);
     }
-
-    readonly string serviceControlQueue;
-    readonly TransportDefinition transportDefinition;
-    readonly string bridgeTransportName;
-    readonly Guid hostId;
 }
