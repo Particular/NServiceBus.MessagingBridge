@@ -44,16 +44,53 @@ class HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
         }
     }
 
+    async Task SendEndpointStartupMessageAndSwallowExceptions(DateTime startupTime, TimeSpan delay, bool retry, CancellationToken cancellationToken)
+    {
+        try
+        {
+            Logger.Debug($"Send endpoint startup message");
+
+            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+
+            var message = new RegisterEndpointStartup
+            {
+                HostId = hostInfo.HostId,
+                Host = hostInfo.DisplayName,
+                Endpoint = endpointName,
+                HostDisplayName = hostInfo.DisplayName,
+                HostProperties = hostInfo.Properties,
+                StartedAt = startupTime,
+            };
+
+            await backend.Send(message, timeToLive, dispatcher, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+        {
+            // private token, check is being stopped, log the exception in case the stack trace is ever needed for debugging
+            Logger.Debug("Operation canceled while stopping heartbeat sending.", ex);
+            return;
+        }
+        catch (Exception ex)
+        {
+            if (retry)
+            {
+                Logger.Warn($"Unable to register endpoint startup with ServiceControl. Going to reattempt registration after {registrationRetryInterval}.", ex);
+                await SendEndpointStartupMessageAndSwallowExceptions(startupTime, registrationRetryInterval, false, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                Logger.Warn("Unable to register endpoint startup with ServiceControl.", ex);
+            }
+        }
+    }
+
     public Task Start(CancellationToken cancellationToken = default)
     {
         stoppingCancelationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        sendHeartBeatsTask = SendHeartbeatsAndSwallowExceptions(stoppingCancelationTokenSource.Token);
+        _ = SendEndpointStartupMessageAndSwallowExceptions(DateTime.UtcNow, default, true, stoppingCancelationTokenSource.Token);
 
-        if (sendHeartBeatsTask.IsCompleted)
-        {
-            return sendHeartBeatsTask;
-        }
+        _ = SendHeartbeatsAndSwallowExceptions(stoppingCancelationTokenSource.Token);
 
         return Task.CompletedTask;
     }
@@ -68,8 +105,7 @@ class HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
     public void Dispose() => stoppingCancelationTokenSource.Cancel();
 
     CancellationTokenSource stoppingCancelationTokenSource;
-    Task sendHeartBeatsTask;
+
+    static readonly TimeSpan registrationRetryInterval = TimeSpan.FromMinutes(1);
     static readonly ILog Logger = LogManager.GetLogger<HeartbeatSender>();
-
-
 }
