@@ -4,18 +4,11 @@ using Microsoft.Extensions.Hosting;
 using NServiceBus.Logging;
 using ILoggerFactory = Microsoft.Extensions.Logging.ILoggerFactory;
 
-class BridgeHostedService : IHostedService
+class BridgeHostedService(
+    IStartableBridge startableBridge,
+    ILoggerFactory loggerFactory,
+    DeferredLoggerFactory deferredLoggerFactory) : IHostedService
 {
-    public BridgeHostedService(
-        IStartableBridge startableBridge,
-        ILoggerFactory loggerFactory,
-        DeferredLoggerFactory deferredLoggerFactory)
-    {
-        this.loggerFactory = loggerFactory;
-        this.deferredLoggerFactory = deferredLoggerFactory;
-        this.startableBridge = startableBridge;
-    }
-
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         LogManager.UseFactory(new LoggerFactory(loggerFactory));
@@ -28,8 +21,4 @@ class BridgeHostedService : IHostedService
     public Task StopAsync(CancellationToken cancellationToken = default) => runningBridge.Stop(cancellationToken);
 
     IStoppableBridge runningBridge;
-
-    readonly IStartableBridge startableBridge;
-    readonly DeferredLoggerFactory deferredLoggerFactory;
-    readonly ILoggerFactory loggerFactory;
 }
