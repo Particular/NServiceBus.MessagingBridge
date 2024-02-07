@@ -1,6 +1,6 @@
 ﻿#nullable enable
 
-namespace NServiceBus.MessagingBridge.Heartbeats;
+namespace NServiceBus.MessagingBridge;
 
 using System;
 using System.Buffers;
