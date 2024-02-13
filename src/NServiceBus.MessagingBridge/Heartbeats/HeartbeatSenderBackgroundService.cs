@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 using Hosting;
 using Microsoft.Extensions.Hosting;
 using Raw;
+using Transport;
 
 class HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBridgeConfiguration) : BackgroundService
 {
-
     public override async Task StopAsync(CancellationToken cancellationToken = default)
     {
         foreach (var heartbeatSender in heartbeatSenders)
@@ -25,9 +25,11 @@ class HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBri
     {
         foreach (var transportConfiguration in finalizedBridgeConfiguration.TransportConfigurations)
         {
-            if (transportConfiguration.HeartbeatConfiguration != null)
+            if (transportConfiguration.HeartbeatServiceControlQueue != null)
             {
-                var heartbeatSender = await ConfigureHeartbeatSenderForTransport(transportConfiguration, cancellationToken).ConfigureAwait(false);
+                var heartbeatSender =
+                    await ConfigureHeartbeatSenderForTransport(transportConfiguration, cancellationToken)
+                        .ConfigureAwait(false);
 
                 await heartbeatSender.Start(cancellationToken).ConfigureAwait(false);
 
@@ -36,31 +38,31 @@ class HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBri
         }
     }
 
-    static async Task<HeartbeatSender> ConfigureHeartbeatSenderForTransport(BridgeTransport transportConfiguration, CancellationToken cancellationToken)
+    static async Task<IMessageDispatcher> CreateSendOnlyMessageDispatcher(
+        BridgeTransport bridgeTransportConfiguration,
+        CancellationToken cancellationToken)
     {
-        var endpointName = $"MessagingBridge.{transportConfiguration.Name}"; // MessageBridge.TransportName
+        var endpointName = $"MessagingBridge.{bridgeTransportConfiguration.Name}"; // MessageBridge.TransportName
 
-        var rawEndpointConfiguration = RawEndpointConfiguration.CreateSendOnly(endpointName, transportConfiguration.TransportDefinition);
+        var criticalError = new RawCriticalError(null);
 
-        // If this isn't called, errors are thrown due to missing .Delayed queue for delayed delivery functionality.
-        rawEndpointConfiguration.AutoCreateQueues();
-
-        var sendOnlyHeartbeatEndpoint = await RawEndpoint.Create(rawEndpointConfiguration, cancellationToken).ConfigureAwait(false);
-
-        //receiveAddress is null because the heartbeat endpoint is send only
-        var serviceControlBackEnd = new ServiceControlBackend(
-            transportConfiguration.HeartbeatConfiguration.ServiceControlQueue,
-            receiveAddresses: null);
-
-        var heartBeatSender = new HeartbeatSender(
-            sendOnlyHeartbeatEndpoint,
-            GetHostInformation(),
-            serviceControlBackEnd,
+        var hostSettings = new HostSettings(
             endpointName,
-            transportConfiguration.HeartbeatConfiguration.Frequency,
-            transportConfiguration.HeartbeatConfiguration.TimeToLive);
+            $"NServiceBus.Raw host for {endpointName}",
+            new StartupDiagnosticEntries(),
+            criticalError.Raise,
+            false,
+            null);
 
-        return heartBeatSender;
+        var transportInfrastructure =
+            await bridgeTransportConfiguration.TransportDefinition.Initialize(
+                    hostSettings,
+                    Array.Empty<ReceiveSettings>(),
+                    Array.Empty<string>(),
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+        return transportInfrastructure.Dispatcher;
     }
 
     static HostInformation GetHostInformation()
@@ -69,6 +71,30 @@ class HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBri
         var hostId = DeterministicGuid.Create(displayName, PathUtilities.SanitizedPath(Environment.CommandLine));
 
         return new HostInformation(hostId, displayName);
+    }
+
+    static async Task<HeartbeatSender> ConfigureHeartbeatSenderForTransport(
+        BridgeTransport bridgeTransportConfiguration,
+        CancellationToken cancellationToken)
+    {
+        //receiveAddress is null because the heartbeat endpoint is send only
+        var serviceControlBackEnd = new ServiceControlBackend(
+            bridgeTransportConfiguration.HeartbeatServiceControlQueue,
+            receiveAddresses: null);
+
+        var sendOnlyMessageDispatcher =
+            await CreateSendOnlyMessageDispatcher(bridgeTransportConfiguration, cancellationToken)
+                .ConfigureAwait(false);
+
+        var heartBeatSender = new HeartbeatSender(
+            sendOnlyMessageDispatcher,
+            GetHostInformation(),
+            serviceControlBackEnd,
+            $"MessagingBridge.{bridgeTransportConfiguration.Name}",
+            bridgeTransportConfiguration.HeartbeatFrequency,
+            bridgeTransportConfiguration.HeartbeatTimeToLive);
+
+        return heartBeatSender;
     }
 
     readonly List<HeartbeatSender> heartbeatSenders = [];

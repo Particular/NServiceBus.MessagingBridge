@@ -2,7 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using NServiceBus.Transport;
+    using Transport;
 
     /// <summary>
     /// Configuration options for a specific transport in the bridge
@@ -85,19 +85,20 @@
         {
             var freq = frequency ?? TimeSpan.FromSeconds(10);
             var ttl = timeToLive ?? TimeSpan.FromTicks(freq.Ticks * 4);
-
-            HeartbeatConfiguration = new HeartbeatConfiguration
-            {
-                ServiceControlQueue = serviceControlQueue,
-                Frequency = freq,
-                TimeToLive = ttl
-            };
+            HeartbeatServiceControlQueue = serviceControlQueue;
+            HeartbeatFrequency = freq;
+            HeartbeatTimeToLive = ttl;
         }
 
-        internal HeartbeatConfiguration HeartbeatConfiguration { get; private set; } = null;
+        internal string HeartbeatServiceControlQueue { get; private set; }
+
+        internal TimeSpan HeartbeatFrequency { get; private set; }
+
+        internal TimeSpan HeartbeatTimeToLive { get; private set; }
+
+        internal List<BridgeEndpoint> Endpoints { get; private set; }
 
         internal TransportDefinition TransportDefinition { get; private set; }
 
-        internal List<BridgeEndpoint> Endpoints { get; private set; }
     }
 }
