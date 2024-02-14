@@ -34,23 +34,25 @@
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);
 
-            _ = hostBuilder.ConfigureServices((hostBuilderContext, serviceCollection) =>
+            hostBuilder.ConfigureServices((hostBuilderContext, serviceCollection) =>
             {
                 var bridgeConfiguration = new BridgeConfiguration();
 
                 bridgeConfigurationAction(hostBuilderContext, bridgeConfiguration);
 
-                _ = serviceCollection.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()));
-
-                _ = serviceCollection.AddSingleton(deferredLoggerFactory);
-                _ = serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
-                _ = serviceCollection.AddSingleton<IHostedService, HeartbeatSenderBackgroundService>();
-                _ = serviceCollection.AddSingleton<IStartableBridge, StartableBridge>();
-                _ = serviceCollection.AddSingleton<EndpointProxyFactory>();
-                _ = serviceCollection.AddSingleton<SubscriptionManager>();
-                _ = serviceCollection.AddSingleton<EndpointRegistry>();
-                _ = serviceCollection.AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>());
-                _ = serviceCollection.AddSingleton<IMessageShovel, MessageShovel>();
+                serviceCollection
+                    .AddSingleton(sp =>
+                        bridgeConfiguration.FinalizeConfiguration(
+                            sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
+                    .AddSingleton(deferredLoggerFactory)
+                    .AddSingleton<IHostedService, BridgeHostedService>()
+                    .AddSingleton<IHostedService, HeartbeatSenderBackgroundService>()
+                    .AddSingleton<IStartableBridge, StartableBridge>()
+                    .AddSingleton<EndpointProxyFactory>()
+                    .AddSingleton<SubscriptionManager>()
+                    .AddSingleton<EndpointRegistry>()
+                    .AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>())
+                    .AddSingleton<IMessageShovel, MessageShovel>();
             });
 
             return hostBuilder;
