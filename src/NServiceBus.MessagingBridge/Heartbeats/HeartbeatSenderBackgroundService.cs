@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Configuration;
 using Hosting;
 using Microsoft.Extensions.Hosting;
 using Raw;
@@ -25,7 +26,7 @@ class HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBri
     {
         foreach (var transportConfiguration in finalizedBridgeConfiguration.TransportConfigurations)
         {
-            if (transportConfiguration.HeartbeatServiceControlQueue != null)
+            if (transportConfiguration.Heartbeats.ServiceControlQueue != null)
             {
                 var heartbeatSender =
                     await ConfigureHeartbeatSenderForTransport(transportConfiguration, cancellationToken)
@@ -79,7 +80,7 @@ class HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBri
     {
         //receiveAddress is null because the heartbeat endpoint is send only
         var serviceControlBackEnd = new ServiceControlBackend(
-            bridgeTransportConfiguration.HeartbeatServiceControlQueue,
+            bridgeTransportConfiguration.Heartbeats.ServiceControlQueue,
             receiveAddresses: null);
 
         var sendOnlyMessageDispatcher =
@@ -91,8 +92,8 @@ class HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBri
             GetHostInformation(),
             serviceControlBackEnd,
             $"MessagingBridge.{bridgeTransportConfiguration.Name}",
-            bridgeTransportConfiguration.HeartbeatFrequency,
-            bridgeTransportConfiguration.HeartbeatTimeToLive);
+            bridgeTransportConfiguration.Heartbeats.Frequency,
+            bridgeTransportConfiguration.Heartbeats.TimeToLive);
 
         return heartBeatSender;
     }

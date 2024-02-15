@@ -19,7 +19,7 @@ class ServiceControlBackend(string destinationQueue, ReceiveAddresses receiveAdd
         return Send(body, type.FullName, timeToBeReceived, dispatcher, cancellationToken);
     }
 
-    internal static byte[] Serialize(object messageToSend, Type type) => Encoding.UTF8.GetBytes(JsonSerializer.Serialize(messageToSend, type));
+    static byte[] Serialize(object messageToSend, Type type) => Encoding.UTF8.GetBytes(JsonSerializer.Serialize(messageToSend, type));
 
     Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher,
         CancellationToken cancellationToken)
