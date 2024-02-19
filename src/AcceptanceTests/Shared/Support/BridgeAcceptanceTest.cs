@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NServiceBus.AcceptanceTesting;
 using NServiceBus.Transport;
 using NUnit.Framework;
 
