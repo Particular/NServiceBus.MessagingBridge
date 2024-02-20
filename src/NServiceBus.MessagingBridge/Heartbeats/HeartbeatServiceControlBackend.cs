@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.MessagingBridge.Heartbeats;
+﻿namespace NServiceBus;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Performance.TimeToBeReceived;
 using Routing;
 using Transport;
-class ServiceControlBackend(string destinationQueue, ReceiveAddresses receiveAddresses)
+class HeartbeatServiceControlBackend(string destinationQueue, ReceiveAddresses receiveAddresses)
 {
     public Task Send(object messageToSend, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher,
         CancellationToken cancellationToken = default)

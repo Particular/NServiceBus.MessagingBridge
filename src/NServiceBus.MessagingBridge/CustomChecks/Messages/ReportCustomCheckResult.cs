@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.MessagingBridge.CustomChecks.Messages;
+﻿namespace NServiceBus;
 
 using System;
 

@@ -1,15 +1,20 @@
-﻿namespace NServiceBus.MessagingBridge.Heartbeats;
+﻿namespace NServiceBus;
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Hosting;
-using NServiceBus.Logging;
+using Logging;
 using ServiceControl.Plugin.Heartbeat.Messages;
 using Transport;
 
-class HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
-    ServiceControlBackend backend, string endpointName, TimeSpan interval, TimeSpan timeToLive) : IDisposable
+class HeartbeatSender(
+    IMessageDispatcher dispatcher,
+    HostInformation hostInfo,
+    HeartbeatServiceControlBackend backend,
+    string endpointName,
+    TimeSpan interval,
+    TimeSpan timeToLive) : IDisposable
 {
     async Task SendHeartbeatsAndSwallowExceptions(CancellationToken cancellationToken)
     {

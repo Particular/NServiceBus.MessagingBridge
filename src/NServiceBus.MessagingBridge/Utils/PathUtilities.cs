@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.MessagingBridge.Heartbeats;
+﻿namespace NServiceBus;
 
 using System;
 

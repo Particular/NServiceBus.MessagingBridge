@@ -1,6 +1,6 @@
 ﻿#nullable enable
 
-namespace NServiceBus.MessagingBridge;
+namespace NServiceBus;
 
 using System;
 using System.Buffers;

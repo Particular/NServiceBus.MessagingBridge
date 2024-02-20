@@ -1,12 +1,11 @@
 ﻿
 #nullable enable
-namespace NServiceBus.MessagingBridge.Heartbeats;
+namespace NServiceBus;
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Configuration;
 using Hosting;
 using Microsoft.Extensions.Hosting;
 using Raw;
@@ -79,7 +78,7 @@ class HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBri
         CancellationToken cancellationToken)
     {
         //receiveAddress is null because the heartbeat endpoint is send only
-        var serviceControlBackEnd = new ServiceControlBackend(
+        var serviceControlBackEnd = new HeartbeatServiceControlBackend(
             bridgeTransportConfiguration.Heartbeats.ServiceControlQueue,
             receiveAddresses: null);
 

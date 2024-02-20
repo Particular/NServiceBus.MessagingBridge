@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.MessagingBridge.CustomChecks;
+﻿namespace NServiceBus;
 
 using System.Threading.Tasks;
 

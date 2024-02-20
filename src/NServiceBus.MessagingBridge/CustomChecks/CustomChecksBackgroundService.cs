@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.MessagingBridge.CustomChecks;
+﻿namespace NServiceBus;
 
 using System;
 using System.Collections.Generic;
@@ -6,21 +6,24 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Configuration;
-using Heartbeats;
 using Hosting;
-using Messages;
 using Microsoft.Extensions.Hosting;
 using Raw;
 using Transport;
 
 [SuppressMessage("Code",
     "PS0003:A parameter of type CancellationToken on a non-private delegate or method should be optional")]
-class CustomChecksBackgroundService(
-    FinalizedBridgeConfiguration bridgeConfiguration,
-    IEnumerable<ICustomCheck> customChecks)
+class CustomChecksBackgroundService
     : BackgroundService
 {
+    public CustomChecksBackgroundService(
+        FinalizedBridgeConfiguration bridgeConfiguration,
+        IEnumerable<ICustomCheck> customChecks)
+    {
+        this.bridgeConfiguration = bridgeConfiguration;
+        this.customChecks = customChecks.ToList();
+    }
+
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         if (!customChecks.Any())
@@ -56,7 +59,7 @@ class CustomChecksBackgroundService(
                     bridgeTransportConfiguration.CustomChecks.TimeToLive ?? TimeSpan.FromSeconds(30);
 
                 var serviceControlBackend =
-                    new ServiceControlBackend(
+                    new CustomCheckServiceControlBackend(
                         bridgeTransportConfiguration.CustomChecks.ServiceControlQueue,
                         sendOnlyMessageDispatcher,
                         timeToLive);
@@ -82,10 +85,10 @@ class CustomChecksBackgroundService(
 
         timerPeriodicChecks = new List<TimerBasedPeriodicCheck>(customChecks.Count);
 
-        foreach (var check in customChecks)
+        foreach (var customCheck in customChecks)
         {
             var timerBasedPeriodicCheck = new TimerBasedPeriodicCheck(
-                check,
+                customCheck,
                 sendOnlyMessageDispatchers);
 
             timerBasedPeriodicCheck.Start();
@@ -129,6 +132,7 @@ class CustomChecksBackgroundService(
         return transportInfrastructure.Dispatcher;
     }
 
-    List<ICustomCheck> customChecks = customChecks.ToList();
+    FinalizedBridgeConfiguration bridgeConfiguration;
+    List<ICustomCheck> customChecks;
     List<TimerBasedPeriodicCheck> timerPeriodicChecks;
 }

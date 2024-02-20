@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.MessagingBridge.CustomChecks;
+﻿namespace NServiceBus;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using Performance.TimeToBeReceived;
 using Routing;
 using Transport;
 
-class ServiceControlBackend(string destinationQueue, IMessageDispatcher messageDispatcher, TimeSpan timeToBeReceived)
+class CustomCheckServiceControlBackend(string destinationQueue, IMessageDispatcher messageDispatcher, TimeSpan timeToBeReceived)
 {
     public Task Send(object messageToSend, CancellationToken cancellationToken = default)
     {
