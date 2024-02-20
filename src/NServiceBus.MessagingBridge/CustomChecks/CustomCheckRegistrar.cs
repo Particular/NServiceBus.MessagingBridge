@@ -13,7 +13,8 @@ static class CustomCheckRegistrar
             .Types
             .Where(type =>
                 (type.IsAssignableFrom(typeof(ICustomCheck)) || type.IsSubclassOf(typeof(CustomCheck)))
-                && !type.Name.Equals("ICustomCheck"));
+                && !type.Name.Equals("ICustomCheck")
+                && !type.Name.Equals("CustomCheck"));
 
         foreach (var customCheck in customChecks)
         {

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Hosting;
 using Microsoft.Extensions.Hosting;
 using Raw;
+using ServiceControl.Plugin.CustomChecks.Messages;
 using Transport;
 
 [SuppressMessage("Code",

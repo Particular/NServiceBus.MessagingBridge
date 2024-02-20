@@ -1,4 +1,4 @@
-﻿namespace NServiceBus;
+﻿namespace ServiceControl.Plugin.CustomChecks.Messages;
 
 using System;
 

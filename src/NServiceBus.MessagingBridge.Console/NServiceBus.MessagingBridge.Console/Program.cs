@@ -25,9 +25,9 @@ var app = Host.CreateDefaultBuilder()
             AutoCreateQueues = true
         };
 
-        n1.SendHeartbeatTo("error");
+        n1.SendHeartbeatTo("Particular.N1.Sql");
 
-        n1.ReportCustomChecksTo("error");
+        n1.ReportCustomChecksTo("Particular.N1.Sql");
 
         n1.HasEndpoint("N1");
 
@@ -41,9 +41,9 @@ var app = Host.CreateDefaultBuilder()
             AutoCreateQueues = true
         };
 
-        n2.SendHeartbeatTo("error");
+        n2.SendHeartbeatTo("Particular.N2.Sql");
 
-        n2.ReportCustomChecksTo("error");
+        n2.ReportCustomChecksTo("Particular.N2.Sql");
 
         n2.HasEndpoint("N2");
 
