@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Performance.TimeToBeReceived;
 using Routing;
 using Transport;
+
 class ServiceControlBackend(string destinationQueue, ReceiveAddresses receiveAddresses)
 {
     public Task Send(object messageToSend, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher,
@@ -19,9 +20,13 @@ class ServiceControlBackend(string destinationQueue, ReceiveAddresses receiveAdd
         return Send(body, type.FullName, timeToBeReceived, dispatcher, cancellationToken);
     }
 
-    internal static byte[] Serialize(object messageToSend, Type type) => Encoding.UTF8.GetBytes(JsonSerializer.Serialize(messageToSend, type));
+    internal static byte[] Serialize(object messageToSend, Type type) =>
+        Encoding.UTF8.GetBytes(JsonSerializer.Serialize(messageToSend, type));
 
-    Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher,
+    Task Send(byte[] body,
+        string messageType,
+        TimeSpan timeToBeReceived,
+        IMessageDispatcher dispatcher,
         CancellationToken cancellationToken)
     {
         var headers = new Dictionary<string, string>
@@ -37,11 +42,14 @@ class ServiceControlBackend(string destinationQueue, ReceiveAddresses receiveAdd
         }
 
         var outgoingMessage = new OutgoingMessage(Guid.NewGuid().ToString(), headers, body);
+
         var properties = new DispatchProperties
         {
             DiscardIfNotReceivedBefore = new DiscardIfNotReceivedBefore(timeToBeReceived)
         };
+
         var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(destinationQueue), properties);
+
         return dispatcher.Dispatch(new TransportOperations(operation), new TransportTransaction(), cancellationToken);
     }
 

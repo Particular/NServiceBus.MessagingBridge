@@ -9,6 +9,7 @@ static class PathUtilities
         if (commandLine.StartsWith('"'))
         {
             var nextIndex = commandLine.IndexOf('"', 1);
+
             if (nextIndex == -1)
             {
                 throw new FormatException("The provided path is in an invalid format");
@@ -18,6 +19,7 @@ static class PathUtilities
         }
 
         var firstSpace = commandLine.IndexOf(' ');
+
         if (firstSpace == -1)
         {
             return commandLine;

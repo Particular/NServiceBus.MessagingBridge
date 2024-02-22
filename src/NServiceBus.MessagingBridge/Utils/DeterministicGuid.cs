@@ -14,10 +14,13 @@ static class DeterministicGuid
     public static Guid Create(string data)
     {
         const int MaxStackLimit = 256;
+
         var encoding = Encoding.UTF8;
+
         var maxByteCount = encoding.GetMaxByteCount(data.Length);
 
         byte[]? sharedBuffer = null;
+
         var stringBufferSpan = maxByteCount <= MaxStackLimit ?
             stackalloc byte[MaxStackLimit] :
             sharedBuffer = ArrayPool<byte>.Shared.Rent(maxByteCount);
@@ -25,6 +28,7 @@ static class DeterministicGuid
         try
         {
             var numberOfBytesWritten = encoding.GetBytes(data, stringBufferSpan);
+
             Span<byte> hashBytes = stackalloc byte[16];
 
             _ = MD5.HashData(stringBufferSpan[..numberOfBytesWritten], hashBytes);

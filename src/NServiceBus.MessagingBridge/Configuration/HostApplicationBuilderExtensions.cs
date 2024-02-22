@@ -23,7 +23,9 @@
             var deferredLoggerFactory = new DeferredLoggerFactory();
             LogManager.UseFactory(deferredLoggerFactory);
 
-            _ = builder.Services.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
+            _ = builder.Services
+                    .AddSingleton(sp =>
+                        bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
                     .AddSingleton(deferredLoggerFactory)
                     .AddSingleton<IHostedService, BridgeHostedService>()
                     .AddSingleton<IHostedService, HeartbeatSenderBackgroundService>()

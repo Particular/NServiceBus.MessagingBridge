@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Hosting;
-using NServiceBus.Logging;
+using Logging;
 using ServiceControl.Plugin.Heartbeat.Messages;
 using Transport;
 
@@ -44,7 +44,11 @@ class HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
         }
     }
 
-    async Task SendEndpointStartupMessageAndSwallowExceptions(DateTime startupTime, TimeSpan delay, bool retry, CancellationToken cancellationToken)
+    async Task SendEndpointStartupMessageAndSwallowExceptions(
+        DateTime startupTime,
+        TimeSpan delay,
+        bool retry,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -68,14 +72,20 @@ class HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
         {
             // private token, check is being stopped, log the exception in case the stack trace is ever needed for debugging
             Logger.Debug("Operation canceled while stopping heartbeat sending.", ex);
-            return;
         }
         catch (Exception ex)
         {
             if (retry)
             {
-                Logger.Warn($"Unable to register endpoint startup with ServiceControl. Going to reattempt registration after {registrationRetryInterval}.", ex);
-                await SendEndpointStartupMessageAndSwallowExceptions(startupTime, registrationRetryInterval, false, cancellationToken).ConfigureAwait(false);
+
+                Logger.Warn($"Unable to register endpoint startup with ServiceControl." +
+                            $" Going to reattempt registration after {registrationRetryInterval}.", ex);
+
+                await SendEndpointStartupMessageAndSwallowExceptions(
+                    startupTime,
+                    registrationRetryInterval,
+                    false, cancellationToken)
+                    .ConfigureAwait(false);
             }
             else
             {
@@ -88,7 +98,11 @@ class HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
     {
         stoppingCancelationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        _ = SendEndpointStartupMessageAndSwallowExceptions(DateTime.UtcNow, default, true, stoppingCancelationTokenSource.Token);
+        _ = SendEndpointStartupMessageAndSwallowExceptions(
+                DateTime.UtcNow,
+                default,
+                true,
+                stoppingCancelationTokenSource.Token);
 
         _ = SendHeartbeatsAndSwallowExceptions(stoppingCancelationTokenSource.Token);
 
