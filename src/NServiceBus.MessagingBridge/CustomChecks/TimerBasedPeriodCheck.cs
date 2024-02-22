@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Logging;
 
 class TimerBasedPeriodicCheck(
-    ICustomCheck check,
-    IEnumerable<Func<
+        ICustomCheck check,
+        IEnumerable<Func<
         ICustomCheck,
         CheckResult,
         CancellationToken,

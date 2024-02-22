@@ -2,7 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using NServiceBus.Transport;
+    using Transport;
 
     /// <summary>
     /// Configuration options for a specific endpoint in the bridge
