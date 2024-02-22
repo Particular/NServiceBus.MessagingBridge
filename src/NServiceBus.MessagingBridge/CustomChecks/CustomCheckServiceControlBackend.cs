@@ -39,5 +39,5 @@ class CustomCheckServiceControlBackend(string destinationQueue, IMessageDispatch
             cancellationToken);
     }
 
-    IMessageDispatcher messageSender = messageDispatcher;
+    readonly IMessageDispatcher messageSender = messageDispatcher;
 }
