@@ -1,38 +1,40 @@
-﻿namespace NServiceBus
+﻿namespace NServiceBus;
+
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Logging;
+
+/// <summary>
+/// Extension methods to configure the bridge for the .NET hosted applications builder.
+/// </summary>
+public static class HostApplicationBuilderExtensions
 {
-    using System;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Hosting;
-    using Microsoft.Extensions.Logging;
-    using NServiceBus.Logging;
-
     /// <summary>
-    /// Extension methods to configure the bridge for the .NET hosted applications builder.
+    /// Configures the host to start the bridge.
     /// </summary>
-    public static class HostApplicationBuilderExtensions
+    public static IHostApplicationBuilder UseNServiceBusBridge(this IHostApplicationBuilder builder,
+        BridgeConfiguration bridgeConfiguration)
     {
-        /// <summary>
-        /// Configures the host to start the bridge.
-        /// </summary>
-        public static IHostApplicationBuilder UseNServiceBusBridge(this IHostApplicationBuilder builder, BridgeConfiguration bridgeConfiguration)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-            ArgumentNullException.ThrowIfNull(bridgeConfiguration);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(bridgeConfiguration);
 
-            var deferredLoggerFactory = new DeferredLoggerFactory();
-            LogManager.UseFactory(deferredLoggerFactory);
+        var deferredLoggerFactory = new DeferredLoggerFactory();
+        LogManager.UseFactory(deferredLoggerFactory);
 
-            builder.Services.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()));
-            builder.Services.AddSingleton(deferredLoggerFactory);
-            builder.Services.AddSingleton<IHostedService, BridgeHostedService>();
-            builder.Services.AddSingleton<IStartableBridge, StartableBridge>();
-            builder.Services.AddSingleton<EndpointProxyFactory>();
-            builder.Services.AddSingleton<SubscriptionManager>();
-            builder.Services.AddSingleton<EndpointRegistry>();
-            builder.Services.AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>());
-            builder.Services.AddSingleton<IMessageShovel, MessageShovel>();
+        _ = builder.Services.AddSingleton(sp =>
+                bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
+            .AddSingleton(deferredLoggerFactory)
+            .AddHostedService<BridgeHostedService>()
+            .AddSingleton<IStartableBridge, StartableBridge>()
+            .AddSingleton<EndpointProxyFactory>()
+            .AddSingleton<SubscriptionManager>()
+            .AddSingleton<EndpointRegistry>()
+            .AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>())
+            .AddSingleton<IMessageShovel, MessageShovel>()
+            .AddHostedService<HeartbeatSenderBackgroundService>();
 
-            return builder;
-        }
+        return builder;
     }
 }
