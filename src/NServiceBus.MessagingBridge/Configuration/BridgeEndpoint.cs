@@ -2,7 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using NServiceBus.Transport;
+    using Transport;
 
     /// <summary>
     /// Configuration options for a specific endpoint in the bridge
@@ -85,7 +85,7 @@
 
         internal QueueAddress QueueAddress { get; private set; }
 
-        internal IList<Subscription> Subscriptions { get; } = new List<Subscription>();
+        internal IList<Subscription> Subscriptions { get; } = [];
 
         internal class Subscription
         {

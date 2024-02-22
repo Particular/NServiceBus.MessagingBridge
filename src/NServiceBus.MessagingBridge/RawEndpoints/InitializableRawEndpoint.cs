@@ -5,10 +5,8 @@ namespace NServiceBus.Raw
     using System.Threading;
     using System.Threading.Tasks;
 
-    class InitializableRawEndpoint
+    class InitializableRawEndpoint(RawEndpointConfiguration rawEndpointConfiguration)
     {
-        public InitializableRawEndpoint(RawEndpointConfiguration rawEndpointConfiguration) => this.rawEndpointConfiguration = rawEndpointConfiguration;
-
         public async Task<IStartableRawEndpoint> Initialize(CancellationToken cancellationToken = default)
         {
             var criticalError = new RawCriticalError(rawEndpointConfiguration.OnCriticalError);
@@ -50,7 +48,5 @@ namespace NServiceBus.Raw
                 criticalError);
             return startableEndpoint;
         }
-
-        readonly RawEndpointConfiguration rawEndpointConfiguration;
     }
 }

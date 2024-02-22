@@ -13,7 +13,10 @@ namespace NServiceBus.Raw
         /// <summary>
         /// Creates a send-only raw endpoint config.
         /// </summary>
-        public static RawEndpointConfiguration CreateSendOnly(string endpointName, TransportDefinition transportDefinition) => new RawEndpointConfiguration(endpointName, transportDefinition, null, null);
+        public static RawEndpointConfiguration CreateSendOnly(
+            string endpointName,
+            TransportDefinition transportDefinition)
+            => new(endpointName, transportDefinition, null, null);
 
         /// <summary>
         /// Creates a regular raw endpoint config.
@@ -21,9 +24,10 @@ namespace NServiceBus.Raw
         public static RawEndpointConfiguration Create(
             string endpointName,
             TransportDefinition transportDefinition,
-            Func<MessageContext, IMessageDispatcher, CancellationToken, Task> onMessage,
-            string poisonMessageQueue) =>
-            new RawEndpointConfiguration(endpointName, transportDefinition, onMessage, poisonMessageQueue);
+            Func<MessageContext,
+                IMessageDispatcher,
+                CancellationToken, Task> onMessage,
+            string poisonMessageQueue) => new(endpointName, transportDefinition, onMessage, poisonMessageQueue);
 
         RawEndpointConfiguration(
             string endpointName,

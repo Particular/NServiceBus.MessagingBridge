@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using NServiceBus;
+﻿namespace NServiceBus;
+
+using System.Collections.Generic;
 
 class FinalizedBridgeConfiguration
 {
