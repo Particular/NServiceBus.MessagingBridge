@@ -40,7 +40,9 @@
 
                 bridgeConfigurationAction(hostBuilderContext, bridgeConfiguration);
 
-                _ = serviceCollection.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
+                _ = serviceCollection
+                        .AddSingleton(sp =>
+                            bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
                         .AddSingleton(deferredLoggerFactory)
                         .AddSingleton<IHostedService, BridgeHostedService>()
                         .AddSingleton<IHostedService, HeartbeatSenderBackgroundService>()
