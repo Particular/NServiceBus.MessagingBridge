@@ -8,8 +8,13 @@ using Logging;
 using ServiceControl.Plugin.Heartbeat.Messages;
 using Transport;
 
-class HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo,
-    ServiceControlBackend backend, string endpointName, TimeSpan interval, TimeSpan timeToLive) : IDisposable
+class HeartbeatSender(
+    IMessageDispatcher dispatcher,
+    HostInformation hostInfo,
+    ServiceControlBackend backend,
+    string endpointName,
+    TimeSpan interval,
+    TimeSpan timeToLive) : IDisposable
 {
     async Task SendHeartbeatsAndSwallowExceptions(CancellationToken cancellationToken)
     {

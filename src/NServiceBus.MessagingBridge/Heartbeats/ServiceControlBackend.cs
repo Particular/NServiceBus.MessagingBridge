@@ -12,7 +12,10 @@ using Transport;
 
 class ServiceControlBackend(string destinationQueue, ReceiveAddresses receiveAddresses)
 {
-    public Task Send(object messageToSend, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher,
+    public Task Send(
+        object messageToSend,
+        TimeSpan timeToBeReceived,
+        IMessageDispatcher dispatcher,
         CancellationToken cancellationToken = default)
     {
         var type = messageToSend.GetType();
