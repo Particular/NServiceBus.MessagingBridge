@@ -48,14 +48,15 @@
                     return bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>());
                 });
 
-                serviceCollection.AddSingleton(deferredLoggerFactory);
-                serviceCollection.AddSingleton<IHostedService, BridgeHostedService>();
-                serviceCollection.AddSingleton<IStartableBridge, StartableBridge>();
-                serviceCollection.AddSingleton<EndpointProxyFactory>();
-                serviceCollection.AddSingleton<SubscriptionManager>();
-                serviceCollection.AddSingleton<EndpointRegistry>();
-                serviceCollection.AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>());
-                serviceCollection.AddTransient<IMessageShovel, MessageShovel>();
+                serviceCollection.AddSingleton(deferredLoggerFactory)
+                    .AddHostedService<BridgeHostedService>()
+                    .AddSingleton<IStartableBridge, StartableBridge>()
+                    .AddSingleton<EndpointProxyFactory>()
+                    .AddSingleton<SubscriptionManager>()
+                    .AddSingleton<EndpointRegistry>()
+                    .AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>())
+                    .AddTransient<IMessageShovel, MessageShovel>()
+                    .AddHostedService<HeartbeatSenderBackgroundService>();
             });
 
             return hostBuilder;
