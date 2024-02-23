@@ -11,15 +11,17 @@
 
     class CustomCheckServiceControlBackend
     {
-        public Task Send(object messageToSend, CancellationToken cancellationToken = default)
+        public Task Send(object messageToSend, TimeSpan? timeToLive = null,
+            CancellationToken cancellationToken = default)
         {
             var body = Serialize(messageToSend);
-            return Send(body, messageToSend.GetType().FullName, cancellationToken);
+
+            return Send(body, messageToSend.GetType().FullName, timeToLive, cancellationToken);
         }
 
         static byte[] Serialize(object messageToSend) => JsonSerializer.SerializeToUtf8Bytes(messageToSend);
 
-        Task Send(byte[] body, string messageType, CancellationToken cancellationToken)
+        Task Send(byte[] body, string messageType, TimeSpan? timeToBeReceived, CancellationToken cancellationToken)
         {
             var headers = new Dictionary<string, string>
             {
@@ -29,24 +31,29 @@
             };
 
             var outgoingMessage = new OutgoingMessage(Guid.NewGuid().ToString(), headers, body);
-            var dispatchProperties = new DispatchProperties
+
+            var dispatchProperties = new DispatchProperties();
+
+            if (timeToBeReceived != null)
             {
-                DiscardIfNotReceivedBefore = new DiscardIfNotReceivedBefore(timeToBeReceived)
-            };
+                dispatchProperties.DiscardIfNotReceivedBefore = new DiscardIfNotReceivedBefore(timeToBeReceived.Value);
+            }
+
             var operation =
                 new TransportOperation(outgoingMessage, new UnicastAddressTag(destinationQueue), dispatchProperties);
+
             return messageSender?.Dispatch(new TransportOperations(operation), new TransportTransaction(),
                 cancellationToken);
         }
 
         readonly IMessageDispatcher messageSender;
-        readonly string destinationQueue;
-        readonly TimeSpan timeToBeReceived;
 
-        public CustomCheckServiceControlBackend(string destinationQueue, IMessageDispatcher messageDispatcher, TimeSpan timeToBeReceived)
+        readonly string destinationQueue;
+
+        public CustomCheckServiceControlBackend(string destinationQueue, IMessageDispatcher messageDispatcher)
         {
-            this.timeToBeReceived = timeToBeReceived;
             messageSender = messageDispatcher;
+
             this.destinationQueue = destinationQueue;
         }
     }
