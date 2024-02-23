@@ -8,7 +8,6 @@
     using Microsoft.Extensions.Hosting;
     using Raw;
     using Transport;
-    using Utils;
 
     class HeartbeatSenderBackgroundService : BackgroundService
     {
