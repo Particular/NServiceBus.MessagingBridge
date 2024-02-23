@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
-using NServiceBus;
-
-class FinalizedBridgeConfiguration
+﻿namespace NServiceBus
 {
-    public FinalizedBridgeConfiguration(IReadOnlyCollection<BridgeTransport> transportConfigurations)
-        => TransportConfigurations = transportConfigurations;
+    using System.Collections.Generic;
 
-    public IReadOnlyCollection<BridgeTransport> TransportConfigurations { get; }
+    class FinalizedBridgeConfiguration
+    {
+        public FinalizedBridgeConfiguration(IReadOnlyCollection<BridgeTransport> transportConfigurations)
+            => TransportConfigurations = transportConfigurations;
+
+        public IReadOnlyCollection<BridgeTransport> TransportConfigurations { get; }
+    }
 }
