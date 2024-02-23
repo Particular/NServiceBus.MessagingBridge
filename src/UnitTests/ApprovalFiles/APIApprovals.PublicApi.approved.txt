@@ -27,11 +27,37 @@ namespace NServiceBus
         public void HasEndpoint(NServiceBus.BridgeEndpoint endpoint) { }
         public void HasEndpoint(string endpointName) { }
         public void HasEndpoint(string endpointName, string endpointAddress) { }
+        public void ReportCustomChecksTo(string serviceControlQueue, System.TimeSpan? timeToLive = default) { }
+        public void ReportCustomChecksTo(string serviceControlQueue, System.TimeSpan? timeToLive = default, params System.Type[] customCheckTypes) { }
         public void SendHeartbeatTo(string serviceControlQueue, System.TimeSpan? frequency = default, System.TimeSpan? timeToLive = default) { }
+    }
+    public class CheckResult
+    {
+        public static NServiceBus.CheckResult Pass;
+        public CheckResult() { }
+        public string FailureReason { get; set; }
+        public bool HasFailed { get; set; }
+        public static NServiceBus.CheckResult Failed(string reason) { }
+        public static System.Threading.Tasks.Task<NServiceBus.CheckResult> op_Implicit(NServiceBus.CheckResult result) { }
+    }
+    public abstract class CustomCheck : NServiceBus.ICustomCheck
+    {
+        protected CustomCheck(string id, string category, System.TimeSpan? repeatAfter = default) { }
+        public string Category { get; }
+        public string Id { get; }
+        public System.TimeSpan? Interval { get; }
+        public abstract System.Threading.Tasks.Task<NServiceBus.CheckResult> PerformCheck(System.Threading.CancellationToken cancellationToken = default);
     }
     public static class HostBuilderExtensions
     {
         public static Microsoft.Extensions.Hosting.IHostBuilder UseNServiceBusBridge(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder, System.Action<NServiceBus.BridgeConfiguration> bridgeConfigurationAction) { }
         public static Microsoft.Extensions.Hosting.IHostBuilder UseNServiceBusBridge(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder, System.Action<Microsoft.Extensions.Hosting.HostBuilderContext, NServiceBus.BridgeConfiguration> bridgeConfigurationAction) { }
+    }
+    public interface ICustomCheck
+    {
+        string Category { get; }
+        string Id { get; }
+        System.TimeSpan? Interval { get; }
+        System.Threading.Tasks.Task<NServiceBus.CheckResult> PerformCheck(System.Threading.CancellationToken cancellationToken = default);
     }
 }
