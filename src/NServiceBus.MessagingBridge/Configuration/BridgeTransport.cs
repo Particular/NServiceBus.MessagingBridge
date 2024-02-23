@@ -2,7 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using NServiceBus.Transport;
+    using Transport;
 
     /// <summary>
     /// Configuration options for a specific transport in the bridge
@@ -22,6 +22,7 @@
             ErrorQueue = "bridge.error";
             AutoCreateQueues = false;
             Concurrency = Math.Max(2, Environment.ProcessorCount);
+            Heartbeats = new HeartbeatConfiguration();
         }
 
         /// <summary>
@@ -74,6 +75,23 @@
 
             Endpoints.Add(endpoint);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="serviceControlQueue"></param>
+        /// <param name="frequency"></param>
+        /// <param name="timeToLive"></param>
+        public void SendHeartbeatTo(string serviceControlQueue, TimeSpan? frequency = null, TimeSpan? timeToLive = null)
+        {
+            var freq = frequency ?? TimeSpan.FromSeconds(10);
+            var ttl = timeToLive ?? TimeSpan.FromTicks(freq.Ticks * 4);
+            Heartbeats.ServiceControlQueue = serviceControlQueue;
+            Heartbeats.Frequency = freq;
+            Heartbeats.TimeToLive = ttl;
+        }
+
+        internal HeartbeatConfiguration Heartbeats { get; }
 
         internal TransportDefinition TransportDefinition { get; private set; }
 
