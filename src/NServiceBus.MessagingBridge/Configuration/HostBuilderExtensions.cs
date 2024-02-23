@@ -56,7 +56,9 @@
                     .AddSingleton<EndpointRegistry>()
                     .AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>())
                     .AddTransient<IMessageShovel, MessageShovel>()
-                    .AddHostedService<HeartbeatSenderBackgroundService>();
+                    .AddHostedService<HeartbeatSenderBackgroundService>()
+                    .AddHostedService<CustomChecksBackgroundService>()
+                    .AddCustomChecks();
             });
 
             return hostBuilder;

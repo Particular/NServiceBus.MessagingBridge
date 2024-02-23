@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Transport;
 
     /// <summary>
@@ -23,6 +24,7 @@
             AutoCreateQueues = false;
             Concurrency = Math.Max(2, Environment.ProcessorCount);
             Heartbeats = new HeartbeatConfiguration();
+            CustomChecks = new CustomChecksConfiguration();
         }
 
         /// <summary>
@@ -91,10 +93,53 @@
             Heartbeats.TimeToLive = ttl;
         }
 
+        /// <summary>
+        /// Sets the ServiceControl queue address.
+        /// </summary>
+        /// <param name="serviceControlQueue">ServiceControl queue address.</param>
+        /// <param name="timeToLive">The maximum time to live for the custom check report messages. Defaults to 4 times the check interval.</param>
+        public void ReportCustomChecksTo(string serviceControlQueue, TimeSpan? timeToLive = null)
+        {
+            CustomChecks.ServiceControlQueue =
+                CustomChecks.ServiceControlQueue
+                ?? serviceControlQueue
+                ?? throw new ArgumentException(serviceControlQueue);
+
+            CustomChecks.TimeToLive = timeToLive;
+        }
+
+        /// <summary>
+        /// Sets the ServiceControl queue address.
+        /// </summary>
+        /// <param name="serviceControlQueue">ServiceControl queue address.</param>
+        /// <param name="timeToLive">The maximum time to live for the custom check report messages. Defaults to 4 times the check interval.</param>
+        /// <param name="customCheckTypes">Specific types of CustomChecks that should be run on this transport. By default all CustomChecks will be run on this transports if nothing is set here.8</param>
+        public void ReportCustomChecksTo(string serviceControlQueue, TimeSpan? timeToLive = null,
+            params Type[] customCheckTypes)
+        {
+            CustomChecks.ServiceControlQueue =
+                CustomChecks.ServiceControlQueue
+                ?? serviceControlQueue
+                ?? throw new ArgumentException(serviceControlQueue);
+
+            CustomChecks.TimeToLive = timeToLive;
+
+            if (!customCheckTypes.Any())
+            {
+                //AssemblyScan
+            }
+            else
+            {
+                CustomChecks.CustomCheckTypes = customCheckTypes;
+            }
+        }
+
         internal HeartbeatConfiguration Heartbeats { get; }
 
-        internal TransportDefinition TransportDefinition { get; private set; }
+        internal CustomChecksConfiguration CustomChecks { get; }
 
-        internal List<BridgeEndpoint> Endpoints { get; private set; }
+        internal List<BridgeEndpoint> Endpoints { get; }
+
+        internal TransportDefinition TransportDefinition { get; private set; }
     }
 }
