@@ -56,14 +56,10 @@ class CustomChecksBackgroundService
                     await CreateSendOnlyMessageDispatcher(bridgeTransportConfiguration, stoppingToken)
                         .ConfigureAwait(false);
 
-                var timeToLive =
-                    bridgeTransportConfiguration.CustomChecks.TimeToLive ?? TimeSpan.FromSeconds(30);
-
                 var serviceControlBackend =
                     new CustomCheckServiceControlBackend(
                         bridgeTransportConfiguration.CustomChecks.ServiceControlQueue,
-                        sendOnlyMessageDispatcher,
-                        timeToLive);
+                        sendOnlyMessageDispatcher);
 
                 sendOnlyMessageDispatchers.Add(async (check, checkResult, cancellationToken) =>
                 {
@@ -79,7 +75,14 @@ class CustomChecksBackgroundService
                         HostId = hostInfo.HostId
                     };
 
-                    await serviceControlBackend.Send(message, cancellationToken).ConfigureAwait(false);
+                    var timeToLive = bridgeTransportConfiguration.CustomChecks.TimeToLive;
+
+                    if (timeToLive == null && check.Interval.HasValue)
+                    {
+                        timeToLive = check.Interval.Value * 4;
+                    }
+
+                    await serviceControlBackend.Send(message, timeToLive, cancellationToken).ConfigureAwait(false);
                 });
             }
         }
