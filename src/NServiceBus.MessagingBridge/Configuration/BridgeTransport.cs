@@ -78,7 +78,7 @@
         }
 
         /// <summary>
-        /// 
+        /// Sets the ServiceControl queue address.
         /// </summary>
         /// <param name="serviceControlQueue"></param>
         /// <param name="frequency"></param>
