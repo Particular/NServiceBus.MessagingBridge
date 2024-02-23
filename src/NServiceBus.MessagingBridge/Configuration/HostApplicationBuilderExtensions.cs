@@ -33,7 +33,9 @@ public static class HostApplicationBuilderExtensions
             .AddSingleton<EndpointRegistry>()
             .AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>())
             .AddSingleton<IMessageShovel, MessageShovel>()
-            .AddHostedService<HeartbeatSenderBackgroundService>();
+            .AddHostedService<HeartbeatSenderBackgroundService>()
+            .AddHostedService<CustomChecksBackgroundService>()
+            .AddCustomChecks();
 
         return builder;
     }
