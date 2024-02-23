@@ -28,7 +28,6 @@ namespace NServiceBus
         public void HasEndpoint(string endpointName) { }
         public void HasEndpoint(string endpointName, string endpointAddress) { }
         public void ReportCustomChecksTo(string serviceControlQueue, System.TimeSpan? timeToLive = default) { }
-        public void ReportCustomChecksTo(string serviceControlQueue, System.TimeSpan? timeToLive = default, params System.Type[] customCheckTypes) { }
         public void SendHeartbeatTo(string serviceControlQueue, System.TimeSpan? frequency = default, System.TimeSpan? timeToLive = default) { }
     }
     public class CheckResult
