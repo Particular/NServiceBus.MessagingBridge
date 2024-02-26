@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="9.0.0-alpha.9" />
-    <PackageReference Include="NServiceBus.Transport.Msmq.Sources" Version="3.0.0-alpha.2" PrivateAssets="All" />
+    <PackageReference Include="NServiceBus" Version="9.0.0" />
+    <PackageReference Include="NServiceBus.Transport.Msmq.Sources" Version="3.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
