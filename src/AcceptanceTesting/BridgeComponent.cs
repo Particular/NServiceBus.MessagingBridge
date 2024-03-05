@@ -57,7 +57,7 @@ public class BridgeComponent<TContext> : IComponentBehavior where TContext : Sce
         {
             if (host != null)
             {
-                await host.StopAsync().ConfigureAwait(false);
+                await host.StopAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 

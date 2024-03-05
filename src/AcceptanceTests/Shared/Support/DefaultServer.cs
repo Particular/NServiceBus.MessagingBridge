@@ -15,6 +15,7 @@ public class DefaultServer : IEndpointSetupTemplate
 
         configuration.TypesToIncludeInScan(endpointConfiguration.GetTypesScopedByTestClass());
         configuration.EnableInstallers();
+        configuration.UseSerialization<SystemJsonSerializer>();
 
         var recoverability = configuration.Recoverability();
         recoverability.Delayed(delayed => delayed.NumberOfRetries(0));

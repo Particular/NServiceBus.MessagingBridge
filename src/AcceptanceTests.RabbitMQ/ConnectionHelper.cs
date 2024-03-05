@@ -17,7 +17,6 @@ public class ConnectionHelper
         var factory = new ConnectionFactory
         {
             AutomaticRecoveryEnabled = true,
-            UseBackgroundThreadsForIO = true,
             HostName = connectionStringParser.HostName,
             UserName = connectionStringParser.UserName ?? "guest",
             Password = connectionStringParser.Password ?? "guest",
