@@ -6,11 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AcceptanceTesting\AcceptanceTesting.csproj" />
-    <ProjectReference Include="..\NServiceBus.MessagingBridge\NServiceBus.MessagingBridge.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,11 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\NServiceBus.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="9.0.0" />
+    <PackageReference Include="NServiceBus" Version="[9.0.0, 10.0.0)" />
     <PackageReference Include="NServiceBus.Transport.Msmq.Sources" Version="3.0.0" PrivateAssets="All" />
   </ItemGroup>
 
@@ -14,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="AcceptanceTests.Msmq" />
+    <InternalsVisibleTo Include="AcceptanceTests.Msmq" Key="$(NServiceBusTestsKey)"/>
   </ItemGroup>
 
 </Project>

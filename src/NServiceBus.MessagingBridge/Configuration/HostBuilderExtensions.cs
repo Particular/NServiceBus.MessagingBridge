@@ -1,10 +1,10 @@
 ﻿namespace NServiceBus;
 
 using System;
+using Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Logging;
 
 /// <summary>
 /// Extension methods to configure the bridge for the .NET generic host.
@@ -14,8 +14,7 @@ public static class HostBuilderExtensions
     /// <summary>
     /// Configures the host to start the bridge.
     /// </summary>
-    public static IHostBuilder UseNServiceBusBridge(this IHostBuilder hostBuilder,
-        Action<BridgeConfiguration> bridgeConfigurationAction)
+    public static IHostBuilder UseNServiceBusBridge(this IHostBuilder hostBuilder, Action<BridgeConfiguration> bridgeConfigurationAction)
     {
         ArgumentNullException.ThrowIfNull(hostBuilder);
         ArgumentNullException.ThrowIfNull(bridgeConfigurationAction);
@@ -26,8 +25,7 @@ public static class HostBuilderExtensions
     /// <summary>
     /// Configures the host to start the bridge.
     /// </summary>
-    public static IHostBuilder UseNServiceBusBridge(this IHostBuilder hostBuilder,
-        Action<HostBuilderContext, BridgeConfiguration> bridgeConfigurationAction)
+    public static IHostBuilder UseNServiceBusBridge(this IHostBuilder hostBuilder, Action<HostBuilderContext, BridgeConfiguration> bridgeConfigurationAction)
     {
         ArgumentNullException.ThrowIfNull(hostBuilder);
         ArgumentNullException.ThrowIfNull(bridgeConfigurationAction);
@@ -41,8 +39,7 @@ public static class HostBuilderExtensions
 
             bridgeConfigurationAction(hostBuilderContext, bridgeConfiguration);
 
-            serviceCollection.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(
-                    sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
+            serviceCollection.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
                 .AddSingleton(deferredLoggerFactory)
                 .AddHostedService<BridgeHostedService>()
                 .AddSingleton<IStartableBridge, StartableBridge>()
