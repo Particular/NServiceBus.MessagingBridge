@@ -17,8 +17,4 @@
     <InternalsVisibleTo Include="AcceptanceTests.Msmq" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="Particular.Analyzers" Version="2.0.0" />
-  </ItemGroup>
-
 </Project>
