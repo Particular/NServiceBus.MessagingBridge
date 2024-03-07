@@ -99,10 +99,12 @@
         /// <param name="timeToLive">The maximum time to live for the custom check report messages. Defaults to 4 times the check interval.</param>
         public void ReportCustomChecksTo(string serviceControlQueue, TimeSpan? timeToLive = null)
         {
-            CustomChecks.ServiceControlQueue =
-                CustomChecks.ServiceControlQueue
-                ?? serviceControlQueue
-                ?? throw new ArgumentException(serviceControlQueue);
+            if (string.IsNullOrWhiteSpace(serviceControlQueue))
+            {
+                throw new ArgumentNullException(nameof(serviceControlQueue));
+            }
+
+            CustomChecks.ServiceControlQueue = serviceControlQueue;
 
             CustomChecks.TimeToLive = timeToLive;
         }
