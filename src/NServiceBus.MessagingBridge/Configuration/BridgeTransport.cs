@@ -85,10 +85,7 @@ public class BridgeTransport
     /// <param name="timeToLive">The maximum time to live for the heartbeat.</param>
     public void SendHeartbeatTo(string serviceControlQueue, TimeSpan? frequency = null, TimeSpan? timeToLive = null)
     {
-        if (string.IsNullOrWhiteSpace(serviceControlQueue))
-        {
-            throw new ArgumentException(serviceControlQueue);
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(serviceControlQueue);
 
         var freq = frequency ?? TimeSpan.FromSeconds(10);
         var ttl = timeToLive ?? TimeSpan.FromTicks(freq.Ticks * 4);
@@ -104,13 +101,9 @@ public class BridgeTransport
     /// <param name="timeToLive">The maximum time to live for the custom check report messages. Defaults to 4 times the check interval.</param>
     public void ReportCustomChecksTo(string serviceControlQueue, TimeSpan? timeToLive = null)
     {
-        if (string.IsNullOrWhiteSpace(serviceControlQueue))
-        {
-            throw new ArgumentException(serviceControlQueue);
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(serviceControlQueue);
 
         CustomChecks.ServiceControlQueue = serviceControlQueue;
-
         CustomChecks.TimeToLive = timeToLive;
     }
 
