@@ -1,10 +1,10 @@
 ﻿namespace NServiceBus;
 
 using System;
+using Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Logging;
 
 /// <summary>
 /// Extension methods to configure the bridge for the .NET hosted applications builder.
@@ -14,8 +14,7 @@ public static class HostApplicationBuilderExtensions
     /// <summary>
     /// Configures the host to start the bridge.
     /// </summary>
-    public static IHostApplicationBuilder UseNServiceBusBridge(this IHostApplicationBuilder builder,
-        BridgeConfiguration bridgeConfiguration)
+    public static IHostApplicationBuilder UseNServiceBusBridge(this IHostApplicationBuilder builder, BridgeConfiguration bridgeConfiguration)
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(bridgeConfiguration);
@@ -23,8 +22,7 @@ public static class HostApplicationBuilderExtensions
         var deferredLoggerFactory = new DeferredLoggerFactory();
         LogManager.UseFactory(deferredLoggerFactory);
 
-        _ = builder.Services.AddSingleton(sp =>
-                bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
+        _ = builder.Services.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
             .AddSingleton(deferredLoggerFactory)
             .AddHostedService<BridgeHostedService>()
             .AddSingleton<IStartableBridge, StartableBridge>()

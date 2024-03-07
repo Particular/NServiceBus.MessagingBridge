@@ -32,13 +32,10 @@
             headers[ExceptionInfoStackTrace] = e.ToString();
             headers[TimeOfFailure] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
 
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (e.Data == null)
-            // ReSharper disable HeuristicUnreachableCode
             {
                 return;
             }
-            // ReSharper restore HeuristicUnreachableCode
 
             foreach (DictionaryEntry entry in e.Data)
             {

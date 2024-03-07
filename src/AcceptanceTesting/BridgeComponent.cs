@@ -53,11 +53,20 @@ public class BridgeComponent<TContext> : IComponentBehavior where TContext : Sce
             await host.StartAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public override async Task Stop()
+        public override async Task Stop(CancellationToken cancellationToken = default)
         {
-            if (host != null)
+            if (host is null)
             {
-                await host.StopAsync().ConfigureAwait(false);
+                return;
+            }
+
+            try
+            {
+                await host.StopAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                host.Dispose();
             }
         }
 

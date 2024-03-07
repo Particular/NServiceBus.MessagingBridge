@@ -41,7 +41,6 @@ class EndpointRegistry : IEndpointRegistry
 
             targetEndpointAddressMappings[transportAddress] = registration.RawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
 
-
             targetEndpointDispatchers[registration.Endpoint.Name] = new TargetEndpointDispatcher(
                 targetTransport.Name,
                 proxyEndpoint,

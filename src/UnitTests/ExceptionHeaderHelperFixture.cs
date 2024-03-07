@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NServiceBus.Logging;
 using NServiceBus.Raw;
 using NUnit.Framework;
 

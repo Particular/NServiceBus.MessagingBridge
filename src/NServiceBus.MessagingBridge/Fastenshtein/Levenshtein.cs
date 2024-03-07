@@ -29,7 +29,7 @@ class Levenshtein
     public int StoredLength => storedValue.Length;
 
     /// <summary>
-    /// Compares a value to the stored value. 
+    /// Compares a value to the stored value.
     /// Not thread safe.
     /// </summary>
     /// <returns>Difference. 0 complete match.</returns>
@@ -77,7 +77,7 @@ class Levenshtein
                     ++currentCost;
                 }
 
-                /* 
+                /*
                  * Improvement on the older versions.
                  * Swapping the variables here results in a performance improvement for modern intel CPU’s, but I have no idea why?
                  */

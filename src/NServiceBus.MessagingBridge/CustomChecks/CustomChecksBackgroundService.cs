@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,10 +11,7 @@ using Raw;
 using ServiceControl.Plugin.CustomChecks.Messages;
 using Transport;
 
-[SuppressMessage("Code",
-    "PS0003:A parameter of type CancellationToken on a non-private delegate or method should be optional")]
-class CustomChecksBackgroundService
-    : BackgroundService
+class CustomChecksBackgroundService : BackgroundService
 {
     public CustomChecksBackgroundService(
         FinalizedBridgeConfiguration bridgeConfiguration,
@@ -25,7 +21,7 @@ class CustomChecksBackgroundService
         this.customChecks = customChecks.ToList();
     }
 
-    public override async Task StopAsync(CancellationToken cancellationToken)
+    public override async Task StopAsync(CancellationToken cancellationToken = default)
     {
         if (!customChecks.Any())
         {
@@ -36,7 +32,7 @@ class CustomChecksBackgroundService
     }
 
 #pragma warning disable PS0017
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken = default)
 #pragma warning restore PS0017
     {
         if (!customChecks.Any())
