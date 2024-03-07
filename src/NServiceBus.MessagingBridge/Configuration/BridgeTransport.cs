@@ -101,7 +101,7 @@
         {
             if (string.IsNullOrWhiteSpace(serviceControlQueue))
             {
-                throw new ArgumentException($"{serviceControlQueue} cannot be null or whitespace");
+                throw new ArgumentNullException(nameof(serviceControlQueue));
             }
 
             CustomChecks.ServiceControlQueue = serviceControlQueue;
