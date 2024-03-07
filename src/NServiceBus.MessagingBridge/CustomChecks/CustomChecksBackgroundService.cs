@@ -50,7 +50,7 @@ class CustomChecksBackgroundService
 
         foreach (var bridgeTransportConfiguration in bridgeConfiguration.TransportConfigurations)
         {
-            if (bridgeTransportConfiguration.CustomChecks != null)
+            if (bridgeTransportConfiguration.CustomChecks.ServiceControlQueue != null)
             {
                 var sendOnlyMessageDispatcher =
                     await CreateSendOnlyMessageDispatcher(bridgeTransportConfiguration, stoppingToken)
