@@ -57,7 +57,7 @@ jobs:
           enable-AzPSSession: true
       - name: Install SQL Server
         if: matrix.transport == 'SqlServer'
-        uses: Particular/install-sql-server-action@v1.0.2
+        uses: Particular/install-sql-server-action@v1.1.0
         with:
           connection-string-env-var: SqlServerTransportConnectionString
           catalog: nservicebus
