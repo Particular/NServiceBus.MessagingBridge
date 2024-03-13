@@ -8,7 +8,7 @@
     <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.0.0" />
     <PackageReference Include="NServiceBus.Transport.SqlServer" Version="7.0.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\AcceptanceTesting\AcceptanceTesting.csproj" />
     <ProjectReference Include="..\NServiceBus.Transport.Bridge\NServiceBus.Transport.Bridge.csproj" />
