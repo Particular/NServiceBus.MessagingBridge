@@ -94,7 +94,7 @@ jobs:
           tag: RabbitMQTransportBridge
       - name: Setup Azure Storage Account
         if: matrix.transport == 'AzureStorageQueue'
-        uses: Particular/setup-azurestorage-action@v1.2.0
+        uses: Particular/setup-azurestorage-action@v1.2.1
         with:
           connection-string-name: AzureStorageQueueTransport_ConnectionString
           tag: ASQTransport
