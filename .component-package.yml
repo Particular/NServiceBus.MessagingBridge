@@ -1,0 +1,4 @@
+ComponentType: Other
+ComponentPackages:
+  - Name: NServiceBus.MessagingBridge
+  - Name: NServiceBus.MessagingBridge.Msmq
