@@ -93,6 +93,8 @@ jobs:
         with:
           connection-string-name: RabbitMQTransport_ConnectionString
           tag: RabbitMQTransportBridge
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Setup Azure Storage Account
         if: matrix.transport == 'AzureStorageQueue'
         uses: Particular/setup-azurestorage-action@v2.0.0
