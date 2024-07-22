@@ -89,10 +89,12 @@ jobs:
           echo "AWS_REGION=${{ secrets.AWS_REGION }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
       - name: Setup RabbitMQ
         if: matrix.transport == 'RabbitMQ'
-        uses: Particular/setup-rabbitmq-action@v1.5.0
+        uses: Particular/setup-rabbitmq-action@v1.6.0
         with:
           connection-string-name: RabbitMQTransport_ConnectionString
           tag: RabbitMQTransportBridge
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Setup Azure Storage Account
         if: matrix.transport == 'AzureStorageQueue'
         uses: Particular/setup-azurestorage-action@v2.0.0
