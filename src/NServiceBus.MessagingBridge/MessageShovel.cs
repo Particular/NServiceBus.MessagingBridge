@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -66,7 +66,7 @@ sealed class MessageShovel : IMessageShovel
                 // This is a regular message sent between the endpoints on different sides of the bridge.
                 // The ReplyToAddress is transformed to allow for replies to be delivered
                 messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
+                TransformRegularMessageReplyToAddress(transferContext, messageToSend, targetEndpointRegistry);
             }
 
             await targetEndpointDispatcher.Dispatch(
@@ -95,6 +95,28 @@ sealed class MessageShovel : IMessageShovel
     static bool IsErrorMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey(FaultsHeaderKeys.FailedQ);
 
     static bool IsRetryMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.Retry.UniqueMessageId");
+
+    void TransformRegularMessageReplyToAddress(
+        TransferContext transferContext,
+        OutgoingMessage messageToSend,
+        IEndpointRegistry targetEndpointRegistry)
+    {
+        if (!messageToSend.Headers.TryGetValue(Headers.ReplyToAddress, out var headerValue))
+        {
+            return;
+        }
+
+        //If the bridge is transferring a messages that was sent by an endpoint to itself e.g. via SendLocal,
+        //then the ReplyToAddress value should be transformed to physical address of the source endpoint on the target side
+        if (headerValue == transferContext.MessageToTransfer.ReceiveAddress)
+        {
+            messageToSend.Headers[Headers.ReplyToAddress] = targetEndpointRegistry.GetEndpointAddress(transferContext.SourceEndpointName);
+        }
+        else
+        {
+            messageToSend.Headers[Headers.ReplyToAddress] = targetEndpointRegistry.TranslateToTargetAddress(headerValue);
+        }
+    }
 
     static void TransformAddressHeader(
         OutgoingMessage messageToSend,
