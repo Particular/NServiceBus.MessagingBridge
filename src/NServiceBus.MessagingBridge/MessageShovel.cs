@@ -96,7 +96,7 @@ sealed class MessageShovel : IMessageShovel
 
     static bool IsRetryMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.Retry.UniqueMessageId");
 
-    void TransformRegularMessageReplyToAddress(
+    static void TransformRegularMessageReplyToAddress(
         TransferContext transferContext,
         OutgoingMessage messageToSend,
         IEndpointRegistry targetEndpointRegistry)
