@@ -106,7 +106,7 @@ sealed class MessageShovel : IMessageShovel
             return;
         }
 
-        //If the bridge is transferring a messages that was sent by an endpoint to itself e.g. via SendLocal,
+        //If the bridge is transferring a message that was sent by an endpoint to itself e.g. via SendLocal,
         //then the ReplyToAddress value should be transformed to physical address of the source endpoint on the target side
         if (headerValue == transferContext.MessageToTransfer.ReceiveAddress)
         {
