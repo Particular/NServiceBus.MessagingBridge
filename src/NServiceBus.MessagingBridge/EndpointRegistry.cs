@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
 
 class EndpointRegistry : IEndpointRegistry
 {
-    public EndpointRegistry(ILogger<EndpointRegistry> logger) => this.logger = logger;
-
     public void RegisterDispatcher(
         BridgeEndpoint endpoint,
         string targetTransportName,
@@ -63,17 +60,14 @@ class EndpointRegistry : IEndpointRegistry
         throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    public bool TryTranslateToTargetAddress(string sourceAddress, out (string targetAddress, string nearestMatch) result)
+    public bool TryTranslateToTargetAddress(string sourceAddress, out string bestMatch)
     {
-        if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out result.targetAddress))
+        if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out bestMatch))
         {
-            result.nearestMatch = result.targetAddress;
             return true;
         }
 
-        logger.LogWarning($"Could not translate {sourceAddress} address. Consider using `.HasEndpoint()` method to add missing endpoint declaration.");
-
-        result.nearestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
+        bestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
         return false;
     }
 
@@ -104,7 +98,6 @@ class EndpointRegistry : IEndpointRegistry
     readonly Dictionary<string, string> targetEndpointAddressMappings = [];
     readonly Dictionary<string, string> endpointAddressMappings = [];
     readonly List<ProxyRegistration> registrations = [];
-    readonly ILogger<EndpointRegistry> logger;
 
     public class ProxyRegistration
     {
