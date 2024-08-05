@@ -1,12 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
 
 class EndpointRegistry : IEndpointRegistry
 {
+    public EndpointRegistry(ILogger<EndpointRegistry> logger) => this.logger = logger;
+
     public void RegisterDispatcher(
         BridgeEndpoint endpoint,
         string targetTransportName,
@@ -60,16 +63,18 @@ class EndpointRegistry : IEndpointRegistry
         throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    public string TranslateToTargetAddress(string sourceAddress)
+    public bool TryTranslateToTargetAddress(string sourceAddress, out (string targetAddress, string nearestMatch) result)
     {
-        if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out var targetAddress))
+        if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out result.targetAddress))
         {
-            return targetAddress;
+            result.nearestMatch = result.targetAddress;
+            return true;
         }
 
-        var nearestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
+        logger.LogWarning($"Could not translate {sourceAddress} address. Consider using `.HasEndpoint()` method to add missing endpoint declaration.");
 
-        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        result.nearestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
+        return false;
     }
 
     public string GetEndpointAddress(string endpointName)
