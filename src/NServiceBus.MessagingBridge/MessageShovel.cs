@@ -35,8 +35,13 @@ sealed class MessageShovel : IMessageShovel
                 //This is a failed message forwarded to ServiceControl. We need to transform the FailedQ header so that ServiceControl returns the message
                 //to the correct queue/transport on the other side
 
-                //We _do not_ transform the ReplyToAddress header
                 TransformAddressHeader(messageToSend, targetEndpointRegistry, FaultsHeaderKeys.FailedQ);
+
+                //Try to translate the ReplyToAddress, this is needed when e.g.:
+                // 1. An endpoint is migrated to the ServiceControl side before this messages is retried
+                // 2. An endpoint has physical instances on both sides (migration phase) and when retried
+                //    this message can be processed either on one or the other side of the bridge
+                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, bestEffort: true);
             }
             else if (IsAuditMessage(messageToSend))
             {
@@ -45,10 +50,11 @@ sealed class MessageShovel : IMessageShovel
             }
             else if (IsRetryMessage(messageToSend))
             {
-                //This is a message retried from ServiceControl. Its ReplyToAddress header has been preserved (as stated above) so we don't need to transform it back
-
                 //Transform the retry ack queue address
                 TransformAddressHeader(messageToSend, targetEndpointRegistry, "ServiceControl.Retry.AcknowledgementQueue");
+
+                //This is a message retried from ServiceControl. We try to translate its ReplyToAddress.
+                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, bestEffort: true);
             }
             else
             {
@@ -100,23 +106,29 @@ sealed class MessageShovel : IMessageShovel
         }
         else
         {
-            messageToSend.Headers[Headers.ReplyToAddress] = targetEndpointRegistry.TranslateToTargetAddress(headerValue);
+            TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
         }
     }
 
     void TransformAddressHeader(
         OutgoingMessage messageToSend,
-        IEndpointRegistry targetEndpointRegistry,
-        string headerKey)
+        IEndpointRegistry endpointRegistry,
+        string addressHeaderKey,
+        bool bestEffort = false)
     {
-        if (!messageToSend.Headers.TryGetValue(headerKey, out var headerValue))
+        if (!messageToSend.Headers.TryGetValue(addressHeaderKey, out var sourceAddress))
         {
             return;
         }
 
-        var targetSpecificReplyToAddress = targetEndpointRegistry.TranslateToTargetAddress(headerValue);
-
-        messageToSend.Headers[headerKey] = targetSpecificReplyToAddress;
+        if (endpointRegistry.TryTranslateToTargetAddress(sourceAddress, out (string targetAddress, string nearestMatch) translation))
+        {
+            messageToSend.Headers[addressHeaderKey] = translation.targetAddress;
+        }
+        else if (bestEffort == false)
+        {
+            throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {translation.nearestMatch}");
+        }
     }
 
     readonly ILogger<MessageShovel> logger;
