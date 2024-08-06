@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using NServiceBus;
@@ -55,15 +55,16 @@ class EndpointRegistry : IEndpointRegistry
         throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    public bool TryTranslateToTargetAddress(string sourceAddress, out string bestMatch)
+    public string TranslateToTargetAddress(string sourceAddress)
     {
-        if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out bestMatch))
+        if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out var targetAddress))
         {
-            return true;
+            return targetAddress;
         }
 
-        bestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
-        return false;
+        var nearestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
+
+        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string GetEndpointAddress(string endpointName)
