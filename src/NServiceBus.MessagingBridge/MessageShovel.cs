@@ -52,7 +52,7 @@ sealed class MessageShovel : IMessageShovel
                 // 1. An endpoint is migrated to the ServiceControl side before this messages is retried
                 // 2. An endpoint has physical instances on both sides (migration phase) and when retried
                 //    this message can be processed either on one or the other side of the bridge
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
+                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, bestEffort: true);
             }
             else if (IsAuditMessage(messageToSend))
             {
@@ -65,7 +65,7 @@ sealed class MessageShovel : IMessageShovel
                 TransformAddressHeader(messageToSend, targetEndpointRegistry, "ServiceControl.Retry.AcknowledgementQueue");
 
                 //This is a message retried from ServiceControl. We try to translate its ReplyToAddress.
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
+                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, bestEffort: true);
             }
             else
             {
@@ -102,7 +102,7 @@ sealed class MessageShovel : IMessageShovel
 
     static bool IsRetryMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.Retry.UniqueMessageId");
 
-    void TransformRegularMessageReplyToAddress(
+    static void TransformRegularMessageReplyToAddress(
         TransferContext transferContext,
         OutgoingMessage messageToSend,
         IEndpointRegistry targetEndpointRegistry)
@@ -124,28 +124,24 @@ sealed class MessageShovel : IMessageShovel
         }
     }
 
-    void TransformAddressHeader(
+    static void TransformAddressHeader(
         OutgoingMessage messageToSend,
         IEndpointRegistry endpointRegistry,
         string addressHeaderKey,
-        bool throwOnError = true)
+        bool bestEffort = false)
     {
         if (!messageToSend.Headers.TryGetValue(addressHeaderKey, out var sourceAddress))
         {
             return;
         }
 
-        if (endpointRegistry.TryTranslateToTargetAddress(sourceAddress, out string bestMatch))
+        if (endpointRegistry.TryTranslateToTargetAddress(sourceAddress, out (string targetAddress, string nearestMatch) translation))
         {
-            messageToSend.Headers[addressHeaderKey] = bestMatch;
+            messageToSend.Headers[addressHeaderKey] = translation.targetAddress;
         }
-        else if (throwOnError == false)
+        else if (bestEffort == false)
         {
-            logger.LogWarning($"Could not translate {sourceAddress} address. Consider using `.HasEndpoint()` method to add missing endpoint declaration.");
-        }
-        else
-        {
-            throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {bestMatch}");
+            throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {translation.nearestMatch}");
         }
     }
 
