@@ -2,7 +2,7 @@
 {
     TargetEndpointDispatcher GetTargetEndpointDispatcher(string sourceEndpointName);
 
-    bool TryTranslateToTargetAddress(string sourceAddress, out string bestMatch);
+    bool TryTranslateToTargetAddress(string sourceAddress, out (string targetAddress, string nearestMatch) result);
 
     string GetEndpointAddress(string endpointName);
 }
