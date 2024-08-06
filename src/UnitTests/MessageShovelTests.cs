@@ -194,11 +194,11 @@ public class MessageShovelTests
             return new TargetEndpointDispatcher(targetTransport, rawEndpoint, targetEndpoint.QueueAddress.ToString());
         }
 
-        public bool TryTranslateToTargetAddress(string sourceAddress, out string bestMatch)
+        public bool TryTranslateToTargetAddress(string sourceAddress, out (string targetAddress, string nearestMatch) translation)
         {
             var result = sourceAddress.Split('@').First();
 
-            bestMatch = result;
+            translation.nearestMatch = translation.targetAddress = result;
             return true;
         }
 
