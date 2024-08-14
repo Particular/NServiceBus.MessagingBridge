@@ -29,7 +29,7 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
                     .Done(c => c.SendingEndpointGotResponse)
                     .Run();
 
-        Assert.IsTrue(ctx.SendingEndpointGotResponse);
+        Assert.That(ctx.SendingEndpointGotResponse, Is.True);
     }
 
     public class Context : ScenarioContext

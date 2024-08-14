@@ -43,10 +43,10 @@ public class Retry : BridgeAcceptanceTest
             .Done(c => c.GotRetrySuccessfullAck && c.MessageAudited)
             .Run();
 
-        Assert.IsTrue(ctx.MessageFailed);
-        Assert.IsTrue(ctx.RetryDelivered);
-        Assert.IsTrue(ctx.GotRetrySuccessfullAck);
-        Assert.IsTrue(ctx.MessageAudited);
+        Assert.That(ctx.MessageFailed, Is.True);
+        Assert.That(ctx.RetryDelivered, Is.True);
+        Assert.That(ctx.GotRetrySuccessfullAck, Is.True);
+        Assert.That(ctx.MessageAudited, Is.True);
 
         foreach (var header in ctx.FailedMessageHeaders)
         {

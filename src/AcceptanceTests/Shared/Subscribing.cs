@@ -33,7 +33,7 @@ class Subscribing : BridgeAcceptanceTest
             .Done(c => c.SubscriberGotEvent)
             .Run();
 
-        Assert.IsTrue(context.SubscriberGotEvent);
+        Assert.That(context.SubscriberGotEvent, Is.True);
     }
 
     public class Context : ScenarioContext
