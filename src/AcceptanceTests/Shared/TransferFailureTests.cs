@@ -37,10 +37,13 @@ public class TransferFailureTests : BridgeAcceptanceTest
             .Done(c => c.MessageFailed)
             .Run();
 
-        Assert.That(ctx.MessageFailed, Is.True, "Message did not fail");
-        Assert.That(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
-            Is.True,
-            $"Failed message headers does not contain {FailedQHeader}");
+        Assert.Multiple(() =>
+        {
+            Assert.That(ctx.MessageFailed, Is.True, "Message did not fail");
+            Assert.That(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
+                Is.True,
+                $"Failed message headers does not contain {FailedQHeader}");
+        });
     }
 
     [Test]
@@ -69,10 +72,13 @@ public class TransferFailureTests : BridgeAcceptanceTest
             .Done(c => c.MessageFailed)
             .Run();
 
-        Assert.That(ctx.MessageFailed, Is.True, "Message did not fail");
-        Assert.That(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
-            Is.True,
-            $"Failed message headers does not contain {FailedQHeader}");
+        Assert.Multiple(() =>
+        {
+            Assert.That(ctx.MessageFailed, Is.True, "Message did not fail");
+            Assert.That(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
+                Is.True,
+                $"Failed message headers does not contain {FailedQHeader}");
+        });
     }
 
     public class Sender : EndpointConfigurationBuilder
