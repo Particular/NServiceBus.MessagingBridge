@@ -41,7 +41,7 @@ public class Audit : BridgeAcceptanceTest
         {
             if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
             {
-                Assert.AreEqual(header.Value, receivedHeaderValue,
+                Assert.That(receivedHeaderValue, Is.EqualTo(header.Value),
                     $"{header.Key} is not the same on processed message and audit message.");
             }
         }
