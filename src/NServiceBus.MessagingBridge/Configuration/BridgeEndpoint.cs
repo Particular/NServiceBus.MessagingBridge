@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Transport;
 
     /// <summary>
@@ -26,7 +27,21 @@
             ArgumentException.ThrowIfNullOrWhiteSpace(queueAddress);
 
             Name = name;
-            QueueAddress = new QueueAddress(queueAddress);
+
+            if (queueAddress.Count(w => w == '@') == 1)
+            {
+                Dictionary<string, string> properties = [];
+                var queueAddressSplit = queueAddress.Split('@');
+
+                properties.Add("queue", queueAddressSplit[0]);
+                properties.Add("machine", queueAddressSplit[1]);
+
+                QueueAddress = new QueueAddress(queueAddressSplit[0], properties: properties);
+            }
+            else
+            {
+                QueueAddress = new QueueAddress(queueAddress);
+            }
         }
 
         /// <summary>
