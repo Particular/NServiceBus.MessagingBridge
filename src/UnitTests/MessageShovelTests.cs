@@ -17,7 +17,7 @@ public class MessageShovelTests
     {
         var transferDetails = await Transfer(replyToAddress: "SendingEndpointReplyAddress@MyMachine");
 
-        Assert.AreEqual("SendingEndpointReplyAddress", transferDetails.OutgoingOperation.Message.Headers[Headers.ReplyToAddress]);
+        Assert.That(transferDetails.OutgoingOperation.Message.Headers[Headers.ReplyToAddress], Is.EqualTo("SendingEndpointReplyAddress"));
     }
 
     [Test]
@@ -25,7 +25,7 @@ public class MessageShovelTests
     {
         var transferDetails = await Transfer(failedQueueAddress: "error@MyMachine");
 
-        Assert.AreEqual("error", transferDetails.OutgoingOperation.Message.Headers[FaultsHeaderKeys.FailedQ]);
+        Assert.That(transferDetails.OutgoingOperation.Message.Headers[FaultsHeaderKeys.FailedQ], Is.EqualTo("error"));
     }
 
     [Test]
@@ -33,7 +33,7 @@ public class MessageShovelTests
     {
         var transferDetails = await Transfer(retryAckQueueAddress: "error@MyMachine");
 
-        Assert.AreEqual("error", transferDetails.OutgoingOperation.Message.Headers["ServiceControl.Retry.AcknowledgementQueue"]);
+        Assert.That(transferDetails.OutgoingOperation.Message.Headers["ServiceControl.Retry.AcknowledgementQueue"], Is.EqualTo("error"));
     }
 
     [Test]
@@ -41,7 +41,7 @@ public class MessageShovelTests
     {
         var transferDetails = await Transfer(retryAckQueueAddress: "error@MyMachine", isAuditMessage: true);
 
-        Assert.AreEqual("error@MyMachine", transferDetails.OutgoingOperation.Message.Headers["ServiceControl.Retry.AcknowledgementQueue"]);
+        Assert.That(transferDetails.OutgoingOperation.Message.Headers["ServiceControl.Retry.AcknowledgementQueue"], Is.EqualTo("error@MyMachine"));
     }
 
     [Test]
@@ -59,7 +59,7 @@ public class MessageShovelTests
     {
         var transferDetails = await Transfer();
 
-        Assert.AreEqual("SourceTransport->TargetTransport", transferDetails.OutgoingOperation.Message.Headers[BridgeHeaders.Transfer]);
+        Assert.That(transferDetails.OutgoingOperation.Message.Headers[BridgeHeaders.Transfer], Is.EqualTo("SourceTransport->TargetTransport"));
     }
 
     [Test]
@@ -71,13 +71,13 @@ public class MessageShovelTests
             transportTransaction: transportTransaction,
             passTransportTransaction: false);
 
-        Assert.AreNotSame(transportTransaction, transferWithoutTransaction.TransportTransaction);
+        Assert.That(transferWithoutTransaction.TransportTransaction, Is.Not.SameAs(transportTransaction));
 
         var transferWithTransaction = await Transfer(
              transportTransaction: transportTransaction,
              passTransportTransaction: true);
 
-        Assert.AreSame(transportTransaction, transferWithTransaction.TransportTransaction);
+        Assert.That(transferWithTransaction.TransportTransaction, Is.SameAs(transportTransaction));
     }
 
     [Test]
@@ -87,7 +87,7 @@ public class MessageShovelTests
 
         var transferDetails = await Transfer(targetAddress: targetEndpointAddress);
 
-        Assert.AreEqual(targetEndpointAddress, transferDetails.OutgoingOperation.Destination);
+        Assert.That(transferDetails.OutgoingOperation.Destination, Is.EqualTo(targetEndpointAddress));
     }
 
     static async Task<TransferDetails> Transfer(

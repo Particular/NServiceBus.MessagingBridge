@@ -35,7 +35,7 @@ class Publishing_custom_address : BridgeAcceptanceTest
                 }))
             .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEvent)
-            .Run();
+            .Run().ConfigureAwait(false);
 
         Assert.That(context.SubscriberGotEvent, Is.True);
     }

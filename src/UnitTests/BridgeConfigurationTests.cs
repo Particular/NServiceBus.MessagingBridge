@@ -17,7 +17,7 @@ public class BridgeConfigurationTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
-        StringAssert.Contains("At least two", ex.Message);
+        Assert.That(ex.Message, Does.Contain("At least two"));
     }
 
     [Test]
@@ -30,8 +30,8 @@ public class BridgeConfigurationTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
-        StringAssert.Contains("At least one", ex.Message);
-        StringAssert.Contains("some, someother", ex.Message);
+        Assert.That(ex.Message, Does.Contain("At least one"));
+        Assert.That(ex.Message, Does.Contain("some, someother"));
     }
 
     [Test]
@@ -64,9 +64,9 @@ public class BridgeConfigurationTests
         configuration.AddTransport(someOtherTransport);
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
-        StringAssert.Contains("It is not allowed to register the bridge error queue as an endpoint, please change the error queue or remove the endpoint mapping", ex.Message);
-        StringAssert.Contains(bridgeErrorQueue, ex.Message);
-        StringAssert.Contains(transport.Name, ex.Message);
+        Assert.That(ex.Message, Does.Contain("It is not allowed to register the bridge error queue as an endpoint, please change the error queue or remove the endpoint mapping"));
+        Assert.That(ex.Message, Does.Contain(bridgeErrorQueue));
+        Assert.That(ex.Message, Does.Contain(transport.Name));
     }
 
     [Test]
@@ -74,7 +74,7 @@ public class BridgeConfigurationTests
     {
         var transport = new BridgeTransport(new SomeTransport());
 
-        Assert.AreEqual(Math.Max(2, Environment.ProcessorCount), transport.Concurrency);
+        Assert.That(transport.Concurrency, Is.EqualTo(Math.Max(2, Environment.ProcessorCount)));
     }
 
     [Test]
@@ -95,8 +95,8 @@ public class BridgeConfigurationTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
-        StringAssert.Contains("Endpoints can only be associated with a single transport", ex.Message);
-        StringAssert.Contains(duplicatedEndpointName, ex.Message);
+        Assert.That(ex.Message, Does.Contain("Endpoints can only be associated with a single transport"));
+        Assert.That(ex.Message, Does.Contain(duplicatedEndpointName));
     }
 
     [Test]
@@ -119,9 +119,9 @@ public class BridgeConfigurationTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
-        StringAssert.Contains("The following events have a publisher configured that is unknown", ex.Message);
-        StringAssert.Contains(typeof(MyEvent).FullName, ex.Message);
-        StringAssert.Contains("NotThePublisher", ex.Message);
+        Assert.That(ex.Message, Does.Contain("The following events have a publisher configured that is unknown"));
+        Assert.That(ex.Message, Does.Contain(typeof(MyEvent).FullName));
+        Assert.That(ex.Message, Does.Contain("NotThePublisher"));
     }
 
     [Test]
@@ -150,10 +150,10 @@ public class BridgeConfigurationTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
-        StringAssert.Contains("Events can only be associated with a single publisher", ex.Message);
-        StringAssert.Contains(typeof(MyEvent).FullName, ex.Message);
-        StringAssert.Contains("Publisher", ex.Message);
-        StringAssert.Contains("OtherEndpoint", ex.Message);
+        Assert.That(ex.Message, Does.Contain("Events can only be associated with a single publisher"));
+        Assert.That(ex.Message, Does.Contain(typeof(MyEvent).FullName));
+        Assert.That(ex.Message, Does.Contain("Publisher"));
+        Assert.That(ex.Message, Does.Contain("OtherEndpoint"));
     }
 
     [Test]
@@ -225,11 +225,11 @@ public class BridgeConfigurationTests
 
         var finalizedConfiguration = FinalizeConfiguration(configuration);
 
-        Assert.AreEqual("EndpointWithDefaultAddress", finalizedConfiguration.TransportConfigurations
-            .Single(t => t.Name == transportWithDefaultAddress.Name).Endpoints.Single().QueueAddress.ToString());
+        Assert.That(finalizedConfiguration.TransportConfigurations
+            .Single(t => t.Name == transportWithDefaultAddress.Name).Endpoints.Single().QueueAddress.ToString(), Is.EqualTo("EndpointWithDefaultAddress"));
 
-        Assert.AreEqual(customAddress, finalizedConfiguration.TransportConfigurations
-            .Single(t => t.Name == transportWithCustomAddress.Name).Endpoints.Single().QueueAddress.ToString());
+        Assert.That(finalizedConfiguration.TransportConfigurations
+            .Single(t => t.Name == transportWithCustomAddress.Name).Endpoints.Single().QueueAddress.ToString(), Is.EqualTo(customAddress));
     }
 
     [Test]
