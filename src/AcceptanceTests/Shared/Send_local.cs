@@ -28,7 +28,7 @@ public class Send_local : BridgeAcceptanceTest
                     .Done(c => c.MessageReceived)
                     .Run();
 
-        Assert.IsTrue(ctx.MessageReceived);
+        Assert.That(ctx.MessageReceived, Is.True);
     }
 
     public class Context : ScenarioContext

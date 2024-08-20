@@ -31,9 +31,9 @@ public class ExceptionHeaderHelperFixture
         {
             ExceptionHeaderHelper.SetExceptionHeaders(headers, outer);
 
-            Assert.AreEqual(10000, headers["NServiceBus.MessagingBridge.ExceptionInfo.Message"].Length, "Message");
-            Assert.AreEqual(16384, headers["NServiceBus.MessagingBridge.ExceptionInfo.StackTrace"].Length, "Stacktrace");
-            Assert.AreEqual(20000, headers["NServiceBus.MessagingBridge.ExceptionInfo.Data.b"].Length, "b");
+            Assert.That(headers["NServiceBus.MessagingBridge.ExceptionInfo.Message"].Length, Is.EqualTo(10000), "Message");
+            Assert.That(headers["NServiceBus.MessagingBridge.ExceptionInfo.StackTrace"].Length, Is.EqualTo(16384), "Stacktrace");
+            Assert.That(headers["NServiceBus.MessagingBridge.ExceptionInfo.Data.b"].Length, Is.EqualTo(20000), "b");
         }
     }
 }

@@ -27,7 +27,7 @@ public class Request_reply : BridgeAcceptanceTest
                     .Done(c => c.SendingEndpointGotResponse)
                     .Run();
 
-        Assert.IsTrue(ctx.SendingEndpointGotResponse);
+        Assert.That(ctx.SendingEndpointGotResponse, Is.True);
     }
 
     public class Context : ScenarioContext
