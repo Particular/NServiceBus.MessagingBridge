@@ -57,7 +57,7 @@ public class Separate_instances : BridgeAcceptanceTest
                 bridgeConfiguration.RunInReceiveOnlyTransactionMode();
             })
             .Done(c => c.SubscriberGotEvent)
-            .Run().ConfigureAwait(false);
+            .Run();
 
         Assert.That(context.SubscriberGotEvent, Is.True);
     }
