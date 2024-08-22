@@ -42,7 +42,7 @@ namespace NServiceBus
         /// </summary>
         public void TranslateReplyToAddressForFailedMessages() => translateReplyToAddressForFailedMessages = true;
 
-        internal IFinalizedBridgeConfiguration FinalizeConfiguration(ILogger<BridgeConfiguration> logger)
+        internal FinalizedBridgeConfiguration FinalizeConfiguration(ILogger<BridgeConfiguration> logger)
         {
             if (transportConfigurations.Count < 2)
             {

@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-class FinalizedBridgeConfiguration : IFinalizedBridgeConfiguration
+class FinalizedBridgeConfiguration
 {
     public FinalizedBridgeConfiguration(IReadOnlyCollection<BridgeTransport> transportConfigurations, bool translateReplyToAddressForFailedMessages)
     {

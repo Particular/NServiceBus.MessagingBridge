@@ -14,7 +14,7 @@ using Transport;
 class CustomChecksBackgroundService : BackgroundService
 {
     public CustomChecksBackgroundService(
-        IFinalizedBridgeConfiguration bridgeConfiguration,
+        FinalizedBridgeConfiguration bridgeConfiguration,
         IEnumerable<ICustomCheck> customChecks)
     {
         this.bridgeConfiguration = bridgeConfiguration;
@@ -132,7 +132,7 @@ class CustomChecksBackgroundService : BackgroundService
         return transportInfrastructure.Dispatcher;
     }
 
-    IFinalizedBridgeConfiguration bridgeConfiguration;
+    FinalizedBridgeConfiguration bridgeConfiguration;
     List<ICustomCheck> customChecks;
     List<TimerBasedPeriodicCheck> timerPeriodicChecks;
 }

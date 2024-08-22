@@ -11,7 +11,7 @@ sealed class MessageShovel : IMessageShovel
     public MessageShovel(
         ILogger<MessageShovel> logger,
         IEndpointRegistry targetEndpointRegistry,
-        IFinalizedBridgeConfiguration finalizedBridgeConfiguration)
+        FinalizedBridgeConfiguration finalizedBridgeConfiguration)
     {
         this.logger = logger;
         this.targetEndpointRegistry = targetEndpointRegistry;
@@ -72,6 +72,13 @@ sealed class MessageShovel : IMessageShovel
                     TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
                 }
             }
+            else if (IsRetryEditedMessage(messageToSend))
+            {
+                // This is a retry message that has been edited going from one side of the bridge to another
+                // The ReplyToAddress is transformed to allow for replies to be delivered
+                messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
+                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, !translateReplyToAddressForFailedMessages);
+            }
             else
             {
                 // This is a regular message sent between the endpoints on different sides of the bridge.
@@ -126,8 +133,7 @@ sealed class MessageShovel : IMessageShovel
         }
         else
         {
-            bool throwOnError = !(translateReplyToAddressForFailedMessages && IsRetryEditedMessage(messageToSend));
-            TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError);
+            TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
         }
     }
 

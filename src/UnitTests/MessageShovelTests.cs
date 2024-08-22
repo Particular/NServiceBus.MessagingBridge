@@ -97,7 +97,8 @@ public class MessageShovelTests
         string retryAckQueueAddress = null,
         bool isAuditMessage = false,
         TransportTransaction transportTransaction = null,
-        bool passTransportTransaction = false)
+        bool passTransportTransaction = false,
+        bool translateReplyToAddressForFailedMessages = false)
     {
         var logger = new NullLogger<MessageShovel>();
         var headers = new Dictionary<string, string>();
@@ -130,7 +131,7 @@ public class MessageShovelTests
 
         var targetEndpoint = new BridgeEndpoint("TargetEndpoint", targetAddress);
         var dispatcherRegistry = new FakeTargetEndpointRegistry("TargetTransport", targetEndpoint);
-        var shovel = new MessageShovel(logger, dispatcherRegistry, new FakeFinalizedBridgeConfiguration());
+        var shovel = new MessageShovel(logger, dispatcherRegistry, new FinalizedBridgeConfiguration(null, translateReplyToAddressForFailedMessages));
         var messageContext = new MessageContext(
             "some-id",
             headers,
@@ -148,13 +149,6 @@ public class MessageShovelTests
         await shovel.TransferMessage(transferContext, CancellationToken.None);
 
         return dispatcherRegistry.TransferDetails;
-    }
-
-    class FakeFinalizedBridgeConfiguration : IFinalizedBridgeConfiguration
-    {
-        public IReadOnlyCollection<BridgeTransport> TransportConfigurations => throw new NotImplementedException();
-
-        public bool TranslateReplyToAddressForFailedMessages => false;
     }
 
     class FakeRawEndpoint : IStoppableRawEndpoint, IRawEndpoint
