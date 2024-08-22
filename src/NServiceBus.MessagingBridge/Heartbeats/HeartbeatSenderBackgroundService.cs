@@ -11,7 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Raw;
 using Transport;
 
-class HeartbeatSenderBackgroundService(FinalizedBridgeConfiguration finalizedBridgeConfiguration) : BackgroundService
+class HeartbeatSenderBackgroundService(IFinalizedBridgeConfiguration finalizedBridgeConfiguration) : BackgroundService
 {
     public override async Task StopAsync(CancellationToken cancellationToken = default)
     {

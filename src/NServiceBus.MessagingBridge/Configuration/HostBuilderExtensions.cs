@@ -47,7 +47,7 @@ public static class HostBuilderExtensions
                 .AddSingleton<SubscriptionManager>()
                 .AddSingleton<EndpointRegistry>()
                 .AddSingleton<IEndpointRegistry>(sp => sp.GetRequiredService<EndpointRegistry>())
-                .AddSingleton<IMessageShovel>(sp => new MessageShovel(sp.GetRequiredService<ILogger<MessageShovel>>(), sp.GetRequiredService<EndpointRegistry>(), sp.GetRequiredService<FinalizedBridgeConfiguration>().TranslateReplyToAddressForFailedMessages))
+                .AddSingleton<IMessageShovel, MessageShovel>()
                 .AddHostedService<HeartbeatSenderBackgroundService>()
                 .AddHostedService<CustomChecksBackgroundService>()
                 .AddCustomChecks();

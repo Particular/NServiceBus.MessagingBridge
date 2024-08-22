@@ -305,7 +305,7 @@ public class BridgeConfigurationTests
     {
     }
 
-    FinalizedBridgeConfiguration FinalizeConfiguration(BridgeConfiguration bridgeConfiguration)
+    IFinalizedBridgeConfiguration FinalizeConfiguration(BridgeConfiguration bridgeConfiguration)
     {
         return bridgeConfiguration.FinalizeConfiguration(logger);
     }

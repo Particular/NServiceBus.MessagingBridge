@@ -10,7 +10,7 @@ using Raw;
 class StartableBridge : IStartableBridge
 {
     public StartableBridge(
-        FinalizedBridgeConfiguration configuration,
+        IFinalizedBridgeConfiguration configuration,
         EndpointProxyFactory endpointProxyFactory,
         EndpointRegistry endpointRegistry,
         SubscriptionManager subscriptionManager,
@@ -78,7 +78,7 @@ class StartableBridge : IStartableBridge
         return new RunningBridge(stoppableEndpointProxies);
     }
 
-    readonly FinalizedBridgeConfiguration configuration;
+    readonly IFinalizedBridgeConfiguration configuration;
     readonly EndpointProxyFactory endpointProxyFactory;
     readonly EndpointRegistry endpointRegistry;
     readonly SubscriptionManager subscriptionManager;

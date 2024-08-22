@@ -11,11 +11,11 @@ sealed class MessageShovel : IMessageShovel
     public MessageShovel(
         ILogger<MessageShovel> logger,
         IEndpointRegistry targetEndpointRegistry,
-        bool translateReplyToAddressForFailedMessages)
+        IFinalizedBridgeConfiguration finalizedBridgeConfiguration)
     {
         this.logger = logger;
         this.targetEndpointRegistry = targetEndpointRegistry;
-        this.translateReplyToAddressForFailedMessages = translateReplyToAddressForFailedMessages;
+        translateReplyToAddressForFailedMessages = finalizedBridgeConfiguration.TranslateReplyToAddressForFailedMessages;
     }
 
     public async Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)

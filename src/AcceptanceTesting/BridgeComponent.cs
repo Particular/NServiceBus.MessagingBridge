@@ -44,7 +44,7 @@ public class BridgeComponent<TContext> : IComponentBehavior where TContext : Sce
 
             builder.Services.AddSingleton(loggerFactory);
             builder.Services.RemoveAll(typeof(IMessageShovel));
-            builder.Services.AddTransient(sp => new MessageShovel(sp.GetRequiredService<ILogger<MessageShovel>>(), sp.GetRequiredService<EndpointRegistry>(), sp.GetRequiredService<FinalizedBridgeConfiguration>().TranslateReplyToAddressForFailedMessages));
+            builder.Services.AddTransient<MessageShovel>();
             builder.Services.AddTransient<FakeShovel>();
             builder.Services.AddTransient<IMessageShovel, FakeShovel>();
 
