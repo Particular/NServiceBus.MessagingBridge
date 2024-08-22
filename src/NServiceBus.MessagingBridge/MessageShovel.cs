@@ -52,7 +52,7 @@ sealed class MessageShovel : IMessageShovel
 
                 if (translateReplyToAddressForFailedMessages)
                 {
-                    //Try to translate the ReplyToAddress, this is needed when an endpoint is migrated to the ServiceControl side before this messages is retries
+                    //Try to translate the ReplyToAddress, this is needed when an endpoint is migrated to the ServiceControl side before this message is retried
                     TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
                 }
             }
