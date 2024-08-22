@@ -97,7 +97,8 @@ public class MessageShovelTests
         string retryAckQueueAddress = null,
         bool isAuditMessage = false,
         TransportTransaction transportTransaction = null,
-        bool passTransportTransaction = false)
+        bool passTransportTransaction = false,
+        bool translateReplyToAddressForFailedMessages = false)
     {
         var logger = new NullLogger<MessageShovel>();
         var headers = new Dictionary<string, string>();
@@ -130,7 +131,7 @@ public class MessageShovelTests
 
         var targetEndpoint = new BridgeEndpoint("TargetEndpoint", targetAddress);
         var dispatcherRegistry = new FakeTargetEndpointRegistry("TargetTransport", targetEndpoint);
-        var shovel = new MessageShovel(logger, dispatcherRegistry);
+        var shovel = new MessageShovel(logger, dispatcherRegistry, translateReplyToAddressForFailedMessages);
         var messageContext = new MessageContext(
             "some-id",
             headers,
@@ -194,9 +195,12 @@ public class MessageShovelTests
             return new TargetEndpointDispatcher(targetTransport, rawEndpoint, targetEndpoint.QueueAddress.ToString());
         }
 
-        public string TranslateToTargetAddress(string sourceAddress)
+        public bool TryTranslateToTargetAddress(string sourceAddress, out string bestMatch)
         {
-            return sourceAddress.Split('@').First();
+            var result = sourceAddress.Split('@').First();
+
+            bestMatch = result;
+            return true;
         }
 
         public string GetEndpointAddress(string endpointName) => throw new NotImplementedException();
