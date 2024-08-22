@@ -38,9 +38,12 @@ public class Retry : BridgeAcceptanceTest
             .Done(c => c.GotRetrySuccessfullAck)
             .Run();
 
-        Assert.IsTrue(ctx.MessageFailed);
-        Assert.IsTrue(ctx.RetryDelivered);
-        Assert.IsTrue(ctx.GotRetrySuccessfullAck);
+        Assert.Multiple(() =>
+        {
+            Assert.That(ctx.MessageFailed, Is.True);
+            Assert.That(ctx.RetryDelivered, Is.True);
+            Assert.That(ctx.GotRetrySuccessfullAck, Is.True);
+        });
 
         foreach (var header in ctx.FailedMessageHeaders)
         {
@@ -48,13 +51,13 @@ public class Retry : BridgeAcceptanceTest
             {
                 if (header.Key == Headers.ReplyToAddress)
                 {
-                    Assert.IsTrue(receivedHeaderValue.Contains(nameof(ProcessingEndpoint), StringComparison.InvariantCultureIgnoreCase),
+                    Assert.That(receivedHeaderValue.Contains(nameof(ProcessingEndpoint), StringComparison.InvariantCultureIgnoreCase), Is.True,
                         $"The ReplyToAddress received by ServiceControl ({TransportBeingTested} physical address) should contain the logical name of the endpoint.");
                 }
                 else
                 {
-                    Assert.AreEqual(header.Value, receivedHeaderValue,
-                        $"{header.Key} is not the same on processed message and message sent to the error queue");
+                    Assert.That(receivedHeaderValue, Is.EqualTo(header.Value),
+                    $"{header.Key} is not the same on processed message and message sent to the error queue");
                 }
             }
         }
@@ -103,7 +106,7 @@ public class Retry : BridgeAcceptanceTest
             i.Message.Contains("address. Consider using `.HasEndpoint()`"));
 
         //There is only one warning here because the ServiceControl testing fake does not properly set the ReplyToAddress header value
-        Assert.AreEqual(1, translationFailureLogs.Count(),
+        Assert.That(translationFailureLogs.Count(), Is.EqualTo(1),
             "Bridge should log warnings when ReplyToAddress cannot be translated for failed message and retry.");
     }
 
