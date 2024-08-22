@@ -104,8 +104,9 @@ sealed class MessageShovel : IMessageShovel
     static bool IsAuditMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey(Headers.ProcessingEnded);
 
     static bool IsErrorMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey(FaultsHeaderKeys.FailedQ);
+    static bool IsRetryMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.Retry.UniqueMessageId");
 
-    static bool IsRetryMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.Retry.UniqueMessageId") || messageToSend.Headers.ContainsKey("ServiceControl.EditOf");
+    static bool IsRetryEditedMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.EditOf");
 
     void TransformRegularMessageReplyToAddress(
         TransferContext transferContext,
@@ -125,7 +126,8 @@ sealed class MessageShovel : IMessageShovel
         }
         else
         {
-            TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
+            bool throwOnError = !(translateReplyToAddressForFailedMessages && IsRetryEditedMessage(messageToSend));
+            TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError);
         }
     }
 
