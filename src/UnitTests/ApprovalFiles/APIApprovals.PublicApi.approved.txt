@@ -8,6 +8,7 @@ namespace NServiceBus
         public void AddTransport(NServiceBus.BridgeTransport transportConfiguration) { }
         public void DoNotEnforceBestPractices() { }
         public void RunInReceiveOnlyTransactionMode() { }
+        public void TranslateReplyToAddressForFailedMessages() { }
     }
     public class BridgeEndpoint
     {

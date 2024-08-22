@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.Faults;
-using NServiceBus.Logging;
 using NServiceBus.Pipeline;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
@@ -84,6 +83,7 @@ public class Retry : BridgeAcceptanceTest
             .WithEndpoint<FakeSCError>()
             .WithBridge(bridgeConfiguration =>
             {
+                bridgeConfiguration.TranslateReplyToAddressForFailedMessages();
                 var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
                 {
                     Name = "DefaultTestingTransport"

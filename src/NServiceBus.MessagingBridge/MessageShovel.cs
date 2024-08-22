@@ -10,10 +10,12 @@ sealed class MessageShovel : IMessageShovel
 {
     public MessageShovel(
         ILogger<MessageShovel> logger,
-        IEndpointRegistry targetEndpointRegistry)
+        IEndpointRegistry targetEndpointRegistry,
+        bool translateReplyToAddressForFailedMessages)
     {
         this.logger = logger;
         this.targetEndpointRegistry = targetEndpointRegistry;
+        this.translateReplyToAddressForFailedMessages = translateReplyToAddressForFailedMessages;
     }
 
     public async Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
@@ -48,11 +50,11 @@ sealed class MessageShovel : IMessageShovel
 
                 TransformAddressHeader(messageToSend, targetEndpointRegistry, FaultsHeaderKeys.FailedQ);
 
-                //Try to translate the ReplyToAddress, this is needed when e.g.:
-                // 1. An endpoint is migrated to the ServiceControl side before this messages is retried
-                // 2. An endpoint has physical instances on both sides (migration phase) and when retried
-                //    this message can be processed either on one or the other side of the bridge
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
+                if (translateReplyToAddressForFailedMessages)
+                {
+                    //Try to translate the ReplyToAddress, this is needed when an endpoint is migrated to the ServiceControl side before this messages is retries
+                    TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
+                }
             }
             else if (IsAuditMessage(messageToSend))
             {
@@ -64,8 +66,11 @@ sealed class MessageShovel : IMessageShovel
                 //Transform the retry ack queue address
                 TransformAddressHeader(messageToSend, targetEndpointRegistry, "ServiceControl.Retry.AcknowledgementQueue");
 
-                //This is a message retried from ServiceControl. We try to translate its ReplyToAddress.
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
+                if (translateReplyToAddressForFailedMessages)
+                {
+                    //This is a message retried from ServiceControl. We try to translate its ReplyToAddress.
+                    TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
+                }
             }
             else
             {
@@ -151,4 +156,5 @@ sealed class MessageShovel : IMessageShovel
 
     readonly ILogger<MessageShovel> logger;
     readonly IEndpointRegistry targetEndpointRegistry;
+    readonly bool translateReplyToAddressForFailedMessages;
 }
