@@ -50,7 +50,7 @@ public class MessageShovelTests
         //send only endpoints doesn't attach a reply to address
         var transferDetails = await Transfer(replyToAddress: null);
 
-        Assert.NotNull(transferDetails.OutgoingOperation);
+        Assert.That(transferDetails.OutgoingOperation, Is.Not.Null);
     }
 
 
