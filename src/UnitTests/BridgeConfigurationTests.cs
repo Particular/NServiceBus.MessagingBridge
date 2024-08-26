@@ -41,7 +41,7 @@ public class BridgeConfigurationTests
 
         transport.HasEndpoint("SomeEndpoint");
 
-        Assert.False(transport.AutoCreateQueues);
+        Assert.That(transport.AutoCreateQueues, Is.False);
     }
 
     [Test]
@@ -183,9 +183,9 @@ public class BridgeConfigurationTests
 
         FinalizeConfiguration(configuration);
 
-        Assert.Contains(
-            "The following subscriptions with multiple registered publishers are ignored as best practices are not enforced:\r- BridgeConfigurationTests+MyEvent, UnitTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b50674d1e0c6ce54, registered publishers: Publisher, OtherEndpoint\r",
-            logger.logEntries);
+        Assert.That(
+            logger.logEntries,
+            Does.Contain("The following subscriptions with multiple registered publishers are ignored as best practices are not enforced:\r- BridgeConfigurationTests+MyEvent, UnitTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b50674d1e0c6ce54, registered publishers: Publisher, OtherEndpoint\r"));
     }
 
     [Test]
@@ -250,8 +250,8 @@ public class BridgeConfigurationTests
 
         var finalizedConfiguration = FinalizeConfiguration(configuration);
 
-        Assert.False(finalizedConfiguration.TransportConfigurations.Any(tc => tc.TransportDefinition
-            .TransportTransactionMode != TransportTransactionMode.TransactionScope));
+        Assert.That(finalizedConfiguration.TransportConfigurations.Any(tc => tc.TransportDefinition
+            .TransportTransactionMode != TransportTransactionMode.TransactionScope), Is.False);
     }
 
     [Test]
@@ -272,8 +272,8 @@ public class BridgeConfigurationTests
 
         var finalizedConfiguration = FinalizeConfiguration(configuration);
 
-        Assert.False(finalizedConfiguration.TransportConfigurations.Any(tc => tc.TransportDefinition
-            .TransportTransactionMode != TransportTransactionMode.ReceiveOnly));
+        Assert.That(finalizedConfiguration.TransportConfigurations.Any(tc => tc.TransportDefinition
+            .TransportTransactionMode != TransportTransactionMode.ReceiveOnly), Is.False);
     }
 
     [Test]
@@ -296,8 +296,8 @@ public class BridgeConfigurationTests
 
         var finalizedConfiguration = FinalizeConfiguration(configuration);
 
-        Assert.False(finalizedConfiguration.TransportConfigurations.Any(tc => tc.TransportDefinition
-            .TransportTransactionMode != TransportTransactionMode.ReceiveOnly));
+        Assert.That(finalizedConfiguration.TransportConfigurations.Any(tc => tc.TransportDefinition
+            .TransportTransactionMode != TransportTransactionMode.ReceiveOnly), Is.False);
     }
 
     [Test, Ignore("There is currently no way to know if the default was changed by the user")]
