@@ -24,7 +24,7 @@ public class Remote_addresses : BridgeAcceptanceTest
 
                         var replyReceivingEndpointName =
                             Conventions.EndpointNamingConvention(typeof(ReplyReceivingEndpoint));
-                        var replyReceivingEndpoint = new BridgeEndpoint(replyReceivingEndpointName, replyReceivingEndpointName + "@localhost");
+                        var replyReceivingEndpoint = new BridgeEndpoint(replyReceivingEndpointName, replyReceivingEndpointName + "@someserver");
 
                         bridgeTransport.HasEndpoint(replyReceivingEndpoint);
 
