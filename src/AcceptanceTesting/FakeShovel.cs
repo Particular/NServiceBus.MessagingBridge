@@ -10,16 +10,10 @@
         public const string FailureHeader = "FakeShovelFailure";
     }
 
-    class FakeShovel : IMessageShovel
+    class FakeShovel(MessageShovel shovel, ILogger<MessageShovel> logger) : IMessageShovel
     {
-        readonly IMessageShovel messageShovel;
-        readonly ILogger logger;
-
-        public FakeShovel(MessageShovel shovel, ILogger logger)
-        {
-            messageShovel = shovel;
-            this.logger = logger;
-        }
+        readonly IMessageShovel messageShovel = shovel;
+        readonly ILogger logger = logger;
 
         public Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
         {
