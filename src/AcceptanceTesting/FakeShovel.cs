@@ -4,29 +4,29 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
+    using NUnit.Framework;
 
     public class FakeShovelHeader
     {
         public const string FailureHeader = "FakeShovelFailure";
     }
 
-    class FakeShovel(MessageShovel shovel, ILogger<MessageShovel> logger) : IMessageShovel
+    class FakeShovel(MessageShovel shovel) : IMessageShovel
     {
         readonly IMessageShovel messageShovel = shovel;
-        readonly ILogger logger = logger;
 
-        public Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
+        public async Task TransferMessage(TransferContext transferContext,
+            CancellationToken cancellationToken = default)
         {
+            var messageContext = transferContext.MessageToTransfer;
+            if (messageContext.Headers.ContainsKey(FakeShovelHeader.FailureHeader))
+            {
+                throw new Exception("Incoming message has `FakeShovelFailure` header to test infrastructure failures");
+            }
+
             try
             {
-                var messageContext = transferContext.MessageToTransfer;
-                if (messageContext.Headers.ContainsKey(FakeShovelHeader.FailureHeader))
-                {
-                    throw new Exception(
-                        "Incoming message has `FakeShovelFailure` header to test infrastructure failures");
-                }
-
-                return messageShovel.TransferMessage(transferContext, cancellationToken);
+                await messageShovel.TransferMessage(transferContext, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex.IsCausedBy(cancellationToken))
             {
@@ -34,8 +34,7 @@
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to transfer message", e);
-                throw;
+                Assert.Fail("Message shoveling failed: " + e.Message);
             }
         }
     }
