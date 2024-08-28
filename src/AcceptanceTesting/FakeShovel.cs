@@ -34,6 +34,10 @@
 
                 return messageShovel.TransferMessage(transferContext, cancellationToken);
             }
+            catch (Exception ex) when (ex.IsCausedBy(cancellationToken))
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 logger.LogError("Failed to transfer message", e);
