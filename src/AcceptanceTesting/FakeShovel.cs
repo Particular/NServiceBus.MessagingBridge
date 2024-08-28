@@ -3,6 +3,7 @@
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
 
     public class FakeShovelHeader
     {
@@ -11,23 +12,33 @@
 
     class FakeShovel : IMessageShovel
     {
-
         readonly IMessageShovel messageShovel;
+        readonly ILogger logger;
 
-        public FakeShovel(MessageShovel shovel)
+        public FakeShovel(MessageShovel shovel, ILogger logger)
         {
             messageShovel = shovel;
+            this.logger = logger;
         }
 
         public Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
         {
-            var messageContext = transferContext.MessageToTransfer;
-            if (messageContext.Headers.ContainsKey(FakeShovelHeader.FailureHeader))
+            try
             {
-                throw new Exception("Incoming message has `FakeShovelFailure` header to test infrastructure failures");
-            }
+                var messageContext = transferContext.MessageToTransfer;
+                if (messageContext.Headers.ContainsKey(FakeShovelHeader.FailureHeader))
+                {
+                    throw new Exception(
+                        "Incoming message has `FakeShovelFailure` header to test infrastructure failures");
+                }
 
-            return messageShovel.TransferMessage(transferContext, cancellationToken);
+                return messageShovel.TransferMessage(transferContext, cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError("Failed to transfer message", e);
+                throw;
+            }
         }
     }
 }
