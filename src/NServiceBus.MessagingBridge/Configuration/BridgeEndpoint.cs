@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using Transport;
 
     /// <summary>
     /// Configuration options for a specific endpoint in the bridge
@@ -26,7 +25,7 @@
             ArgumentException.ThrowIfNullOrWhiteSpace(queueAddress);
 
             Name = name;
-            QueueAddress = new QueueAddress(queueAddress);
+            QueueAddress = queueAddress;
         }
 
         /// <summary>
@@ -53,7 +52,8 @@
 
             if (fullyQualifiedAssemblyTypeName?.EndsWith(NeutralSuffix) == true)
             {
-                fullyQualifiedAssemblyTypeName = fullyQualifiedAssemblyTypeName.Substring(0, fullyQualifiedAssemblyTypeName.Length - NeutralSuffix.Length);
+                fullyQualifiedAssemblyTypeName = fullyQualifiedAssemblyTypeName.Substring(0,
+                    fullyQualifiedAssemblyTypeName.Length - NeutralSuffix.Length);
             }
 
             RegisterPublisher(fullyQualifiedAssemblyTypeName, publisher);
@@ -77,13 +77,14 @@
             }
             catch
             {
-                throw new ArgumentException("The event type assembly qualified name is invalid", eventTypeAssemblyQualifiedName);
+                throw new ArgumentException("The event type assembly qualified name is invalid",
+                    eventTypeAssemblyQualifiedName);
             }
         }
 
         internal string Name { get; private set; }
 
-        internal QueueAddress QueueAddress { get; private set; }
+        internal string QueueAddress { get; private set; }
 
         internal IList<Subscription> Subscriptions { get; } = [];
 

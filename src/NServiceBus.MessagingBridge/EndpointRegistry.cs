@@ -35,16 +35,14 @@ class EndpointRegistry : IEndpointRegistry
                 .First(r => r.TranportName == targetTransport.Name)
             .RawEndpoint;
 
-            var transportAddress = proxyEndpoint.ToTransportAddress(endpoint.QueueAddress);
+            endpointAddressMappings[registration.Endpoint.Name] = endpoint.QueueAddress;
 
-            endpointAddressMappings[registration.Endpoint.Name] = transportAddress;
-
-            targetEndpointAddressMappings[transportAddress] = registration.RawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
+            targetEndpointAddressMappings[endpoint.QueueAddress] = registration.RawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
 
             targetEndpointDispatchers[registration.Endpoint.Name] = new TargetEndpointDispatcher(
                 targetTransport.Name,
                 proxyEndpoint,
-                transportAddress);
+                endpoint.QueueAddress);
         }
     }
 
