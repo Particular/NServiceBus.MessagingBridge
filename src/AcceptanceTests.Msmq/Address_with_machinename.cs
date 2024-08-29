@@ -2,25 +2,24 @@
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
-using NServiceBus.Transport;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-public class Remote_addresses : BridgeAcceptanceTest
+public class Address_with_machinename : BridgeAcceptanceTest
 {
     [Test]
-    public async Task Should_get_the_reply()
+    public async Task Should_get_the_message()
     {
         var ctx = await Scenario.Define<Context>()
             .WithEndpoint<SendingEndpoint>(c => c
                 .When(cc => cc.EndpointsStarted, (b, _) => b.Send(new MyMessage())))
-            .WithEndpoint<RemoteEndpoint>()
+            .WithEndpoint<ReceivingEndpoint>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
 
                 var receivingEndpointName =
-                    Conventions.EndpointNamingConvention(typeof(RemoteEndpoint));
+                    Conventions.EndpointNamingConvention(typeof(ReceivingEndpoint));
 
                 var receivingEndpoint =
                     new BridgeEndpoint(receivingEndpointName, receivingEndpointName + "@localhost");
@@ -37,37 +36,26 @@ public class Remote_addresses : BridgeAcceptanceTest
         Assert.That(ctx.ReceivingEndpointGotMessage, Is.True);
     }
 
-    public class Context : ScenarioContext
+    class Context : ScenarioContext
     {
         public bool ReceivingEndpointGotMessage { get; set; }
     }
 
-    public class SendingEndpoint : EndpointConfigurationBuilder
+    class SendingEndpoint : EndpointConfigurationBuilder
     {
-        public SendingEndpoint()
-        {
+        public SendingEndpoint() =>
             EndpointSetup<DefaultTestServer>(c =>
             {
-                c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(RemoteEndpoint));
+                c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReceivingEndpoint));
             });
-        }
     }
 
-    public class RemoteEndpoint : EndpointConfigurationBuilder
+    class ReceivingEndpoint : EndpointConfigurationBuilder
     {
-        public RemoteEndpoint()
-        {
-            EndpointSetup<DefaultServer>();
-        }
+        public ReceivingEndpoint() => EndpointSetup<DefaultServer>();
 
-        public class MessageHandler : IHandleMessages<MyMessage>
+        public class MessageHandler(Context testContext) : IHandleMessages<MyMessage>
         {
-            readonly Context testContext;
-
-            public MessageHandler(Context context)
-            {
-                testContext = context;
-            }
             public Task Handle(MyMessage message, IMessageHandlerContext context)
             {
                 testContext.ReceivingEndpointGotMessage = true;
