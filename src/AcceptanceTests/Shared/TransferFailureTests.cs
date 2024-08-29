@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using AcceptanceTesting;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
+using NServiceBus.Logging;
 using NUnit.Framework;
 
 public class TransferFailureTests : BridgeAcceptanceTest
@@ -39,6 +41,10 @@ public class TransferFailureTests : BridgeAcceptanceTest
 
         Assert.Multiple(() =>
         {
+            Assert.That(ctx.Logs.Any(l => l.Message.Contains("Failed to shovel message for endpoint") && l.Level == LogLevel.Warn), Is.True,
+                "Transfer retries should be logged");
+            Assert.That(ctx.Logs.Any(l => l.Message.Contains("Failed to shovel message for endpoint") && l.Level == LogLevel.Error), Is.True,
+                "Transfer failures should be logged");
             Assert.That(ctx.MessageFailed, Is.True, "Message did not fail");
             Assert.That(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
                 Is.True,
