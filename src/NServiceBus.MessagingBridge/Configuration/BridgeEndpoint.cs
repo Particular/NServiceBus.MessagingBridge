@@ -55,8 +55,7 @@
 
             if (fullyQualifiedAssemblyTypeName?.EndsWith(NeutralSuffix) == true)
             {
-                fullyQualifiedAssemblyTypeName = fullyQualifiedAssemblyTypeName.Substring(0,
-                    fullyQualifiedAssemblyTypeName.Length - NeutralSuffix.Length);
+                fullyQualifiedAssemblyTypeName = fullyQualifiedAssemblyTypeName.Substring(0, fullyQualifiedAssemblyTypeName.Length - NeutralSuffix.Length);
             }
 
             RegisterPublisher(fullyQualifiedAssemblyTypeName, publisher);
@@ -80,8 +79,7 @@
             }
             catch
             {
-                throw new ArgumentException("The event type assembly qualified name is invalid",
-                    eventTypeAssemblyQualifiedName);
+                throw new ArgumentException("The event type assembly qualified name is invalid", eventTypeAssemblyQualifiedName);
             }
         }
 
