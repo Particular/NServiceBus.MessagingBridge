@@ -33,10 +33,11 @@ class EndpointRegistry : IEndpointRegistry
             // we just need to be able to send messages to that transport
             var proxyEndpoint = registrations
                 .First(r => r.TranportName == targetTransport.Name)
-            .RawEndpoint;
+                .RawEndpoint;
 
             var queueAddress = new QueueAddress(endpoint.Name);
-            var transportAddress = proxyEndpoint.ToTransportAddress(queueAddress);
+
+            var transportAddress = endpoint.QueueAddress ?? proxyEndpoint.ToTransportAddress(queueAddress);
 
             endpointAddressMappings[registration.Endpoint.Name] = transportAddress;
 
@@ -45,7 +46,7 @@ class EndpointRegistry : IEndpointRegistry
             targetEndpointDispatchers[registration.Endpoint.Name] = new TargetEndpointDispatcher(
                 targetTransport.Name,
                 proxyEndpoint,
-                endpoint.QueueAddress);
+                transportAddress);
         }
     }
 
@@ -58,7 +59,8 @@ class EndpointRegistry : IEndpointRegistry
 
         var nearestMatch = GetClosestMatchForExceptionMessage(sourceEndpointName, targetEndpointDispatchers.Keys);
 
-        throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        throw new Exception(
+            $"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string TranslateToTargetAddress(string sourceAddress)
@@ -70,7 +72,8 @@ class EndpointRegistry : IEndpointRegistry
 
         var nearestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
 
-        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        throw new Exception(
+            $"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string GetEndpointAddress(string endpointName)
@@ -82,7 +85,8 @@ class EndpointRegistry : IEndpointRegistry
 
         var nearestMatch = GetClosestMatchForExceptionMessage(endpointName, endpointAddressMappings.Keys);
 
-        throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        throw new Exception(
+            $"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     static string GetClosestMatchForExceptionMessage(string sourceEndpointName, IEnumerable<string> items)

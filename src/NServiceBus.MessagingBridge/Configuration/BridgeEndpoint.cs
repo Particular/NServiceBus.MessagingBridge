@@ -11,8 +11,11 @@
         /// <summary>
         /// Initializes an endpoint in the bridge with the given name
         /// </summary>
-        public BridgeEndpoint(string name) : this(name, name)
+        public BridgeEndpoint(string name)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            Name = name;
         }
 
         /// <summary>
