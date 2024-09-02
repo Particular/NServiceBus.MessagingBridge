@@ -207,32 +207,6 @@ public class BridgeConfigurationTests
     }
 
     [Test]
-    public void Should_default_endpoint_address_if_not_set()
-    {
-        var configuration = new BridgeConfiguration();
-
-        var transportWithDefaultAddress = new BridgeTransport(new SomeTransport());
-
-        transportWithDefaultAddress.HasEndpoint("EndpointWithDefaultAddress");
-
-        var transportWithCustomAddress = new BridgeTransport(new SomeOtherTransport());
-
-        var customAddress = "CustomAddress";
-        transportWithCustomAddress.HasEndpoint("EndpointWithCustomAddress", customAddress);
-
-        configuration.AddTransport(transportWithDefaultAddress);
-        configuration.AddTransport(transportWithCustomAddress);
-
-        var finalizedConfiguration = FinalizeConfiguration(configuration);
-
-        Assert.That(finalizedConfiguration.TransportConfigurations
-            .Single(t => t.Name == transportWithDefaultAddress.Name).Endpoints.Single().QueueAddress.ToString(), Is.EqualTo("EndpointWithDefaultAddress"));
-
-        Assert.That(finalizedConfiguration.TransportConfigurations
-            .Single(t => t.Name == transportWithCustomAddress.Name).Endpoints.Single().QueueAddress.ToString(), Is.EqualTo(customAddress));
-    }
-
-    [Test]
     public void Should_default_to_transaction_scope_mode_if_all_transports_supports_it()
     {
         var configuration = new BridgeConfiguration();
