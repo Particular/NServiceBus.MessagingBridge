@@ -1,27 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
 
-class EndpointRegistry : IEndpointRegistry
+class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<StartableBridge> logger) : IEndpointRegistry
 {
-    public void RegisterDispatcher(
-        BridgeEndpoint endpoint,
-        string targetTransportName,
-        IStartableRawEndpoint rawEndpoint)
+    public async Task ApplyMappings(IReadOnlyCollection<BridgeTransport> transportConfigurations, CancellationToken cancellationToken = default)
     {
-        registrations.Add(new ProxyRegistration
+        // create required proxy endpoints on all transports
+        foreach (var transportConfiguration in transportConfigurations)
         {
-            Endpoint = endpoint,
-            TranportName = targetTransportName,
-            RawEndpoint = rawEndpoint
-        });
-    }
+            logger.LogInformation("Creating proxies for transport {name}", transportConfiguration.Name);
 
-    public void ApplyMappings(IReadOnlyCollection<BridgeTransport> transportConfigurations)
-    {
+            // get all endpoints that we need to proxy in this transport, ie all that don't exist this transport.
+            var endpoints = transportConfigurations.Where(s => s != transportConfiguration).SelectMany(s => s.Endpoints);
+
+            // create the proxy and subscribe it to configured events
+            foreach (var endpointToSimulate in endpoints)
+            {
+                var startableEndpointProxy = await endpointProxyFactory.CreateProxy(
+                   endpointToSimulate,
+                   transportConfiguration,
+                   cancellationToken)
+                .ConfigureAwait(false);
+
+                logger.LogInformation("Proxy for endpoint {endpoint} created on {transport}", endpointToSimulate.Name, transportConfiguration.Name);
+
+                registrations.Add(new ProxyRegistration
+                {
+                    Endpoint = endpointToSimulate,
+                    TranportName = transportConfiguration.Name,
+                    RawEndpoint = startableEndpointProxy
+                });
+            }
+        }
+
         foreach (var registration in registrations)
         {
             var endpoint = registration.Endpoint;
