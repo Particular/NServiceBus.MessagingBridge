@@ -9,12 +9,17 @@
         public const string FailureHeader = "FakeShovelFailure";
     }
 
-    class FakeShovel(MessageShovel shovel) : IMessageShovel
+    class FakeShovel : IMessageShovel
     {
-        readonly IMessageShovel messageShovel = shovel;
 
-        public Task TransferMessage(TransferContext transferContext,
-            CancellationToken cancellationToken = default)
+        readonly IMessageShovel messageShovel;
+
+        public FakeShovel(MessageShovel shovel)
+        {
+            messageShovel = shovel;
+        }
+
+        public Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
         {
             var messageContext = transferContext.MessageToTransfer;
             if (messageContext.Headers.ContainsKey(FakeShovelHeader.FailureHeader))

@@ -61,8 +61,7 @@ class EndpointRegistry : IEndpointRegistry
 
         var nearestMatch = GetClosestMatchForExceptionMessage(sourceEndpointName, targetEndpointDispatchers.Keys);
 
-        throw new Exception(
-            $"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string TranslateToTargetAddress(string sourceAddress)
@@ -74,8 +73,7 @@ class EndpointRegistry : IEndpointRegistry
 
         var nearestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
 
-        throw new Exception(
-            $"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     public string GetEndpointAddress(string endpointName)
@@ -87,8 +85,7 @@ class EndpointRegistry : IEndpointRegistry
 
         var nearestMatch = GetClosestMatchForExceptionMessage(endpointName, endpointAddressMappings.Keys);
 
-        throw new Exception(
-            $"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
     static string GetClosestMatchForExceptionMessage(string sourceEndpointName, IEnumerable<string> items)
