@@ -3,21 +3,53 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
 using NServiceBus;
 using NServiceBus.Faults;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
 using NUnit.Framework;
+using UnitTests;
 
 public class MessageShovelTests
 {
     [Test]
-    public async Task Should_transform_reply_to_address()
+    public async Task Should_transform_reply_to_address_for_normal_messages()
     {
         var transferDetails = await Transfer(replyToAddress: "SendingEndpointReplyAddress@MyMachine");
 
         Assert.AreEqual("SendingEndpointReplyAddress", transferDetails.OutgoingOperation.Message.Headers[Headers.ReplyToAddress]);
+    }
+
+    [Test]
+    public async Task Should_transform_reply_to_address_for_retry_messages_if_translateReplyToAddressForFailedMessages_turned_on()
+    {
+        var transferDetails = await Transfer(replyToAddress: "SendingEndpointReplyAddress@MyMachine", retryAckQueueAddress: "error@MyMachine", translateReplyToAddressForFailedMessages: true);
+
+        Assert.That(transferDetails.OutgoingOperation.Message.Headers[Headers.ReplyToAddress], Is.EqualTo("SendingEndpointReplyAddress"));
+    }
+
+    [Test]
+    public async Task Should_not_transform_reply_to_address_for_retry_messages_if_translateReplyToAddressForFailedMessages_turned_off()
+    {
+        var transferDetails = await Transfer(replyToAddress: "SendingEndpointReplyAddress@MyMachine", retryAckQueueAddress: "error@MyMachine");
+
+        Assert.That(transferDetails.OutgoingOperation.Message.Headers[Headers.ReplyToAddress], Is.EqualTo("SendingEndpointReplyAddress@MyMachine"));
+    }
+
+    [Test]
+    public async Task Should_transform_reply_to_address_for_error_messages_if_translateReplyToAddressForFailedMessages_turned_on()
+    {
+        var transferDetails = await Transfer(replyToAddress: "SendingEndpointReplyAddress@MyMachine", failedQueueAddress: "error@MyMachine", translateReplyToAddressForFailedMessages: true);
+
+        Assert.That(transferDetails.OutgoingOperation.Message.Headers[Headers.ReplyToAddress], Is.EqualTo("SendingEndpointReplyAddress"));
+    }
+
+    [Test]
+    public async Task Should_not_transform_reply_to_address_for_error_messages_if_translateReplyToAddressForFailedMessages_turned_off()
+    {
+        var transferDetails = await Transfer(replyToAddress: "SendingEndpointReplyAddress@MyMachine", failedQueueAddress: "error@MyMachine");
+
+        Assert.That(transferDetails.OutgoingOperation.Message.Headers[Headers.ReplyToAddress], Is.EqualTo("SendingEndpointReplyAddress@MyMachine"));
     }
 
     [Test]
@@ -90,16 +122,38 @@ public class MessageShovelTests
         Assert.AreEqual(targetEndpointAddress, transferDetails.OutgoingOperation.Destination);
     }
 
-    static async Task<TransferDetails> Transfer(
+    [Test]
+    public async Task Should_not_throw_transform_reply_to_address_error_for_edited_retries_if_translateReplyToAddressForFailedMessages_turned_on()
+    {
+        var unknownQueue = "some-unknwon-queue";
+        await Transfer(replyToAddress: unknownQueue, isEditedRetryMessage: true, translateReplyToAddressForFailedMessages: true, findMatchOnTryTranslateAddress: false);
+
+        Assert.That(logger.logEntries.Contains($"Could not translate {unknownQueue} address. Consider using `.HasEndpoint()` method to add missing endpoint declaration."), Is.True);
+    }
+
+    [Test]
+    public void Should_throw_transform_reply_to_address_error_for_edited_retries_if_translateReplyToAddressForFailedMessages_turned_off()
+    {
+        var unknownQueue = "some-unknwon-queue";
+
+        var ex = Assert.ThrowsAsync<Exception>(async () => await Transfer(replyToAddress: unknownQueue, isEditedRetryMessage: true, findMatchOnTryTranslateAddress: false));
+
+        Assert.That(ex.InnerException.Message, Does.Contain("No target address mapping could be found for source address:"));
+        Assert.That(ex.InnerException.Message, Does.Contain(unknownQueue));
+    }
+
+    async Task<TransferDetails> Transfer(
         string targetAddress = null,
         string replyToAddress = null,
         string failedQueueAddress = null,
         string retryAckQueueAddress = null,
         bool isAuditMessage = false,
         TransportTransaction transportTransaction = null,
-        bool passTransportTransaction = false)
+        bool passTransportTransaction = false,
+        bool translateReplyToAddressForFailedMessages = false,
+        bool isEditedRetryMessage = false,
+        bool findMatchOnTryTranslateAddress = true)
     {
-        var logger = new NullLogger<MessageShovel>();
         var headers = new Dictionary<string, string>();
 
         if (string.IsNullOrEmpty(targetAddress))
@@ -128,9 +182,14 @@ public class MessageShovelTests
             headers.Add(Headers.ProcessingEnded, DateTime.UtcNow.ToString());
         }
 
+        if (isEditedRetryMessage)
+        {
+            headers.Add("ServiceControl.EditOf", Guid.NewGuid().ToString());
+        }
+
         var targetEndpoint = new BridgeEndpoint("TargetEndpoint", targetAddress);
-        var dispatcherRegistry = new FakeTargetEndpointRegistry("TargetTransport", targetEndpoint);
-        var shovel = new MessageShovel(logger, dispatcherRegistry);
+        var dispatcherRegistry = new FakeTargetEndpointRegistry("TargetTransport", targetEndpoint, findMatchOnTryTranslateAddress);
+        var shovel = new MessageShovel(logger, dispatcherRegistry, new FinalizedBridgeConfiguration(null, translateReplyToAddressForFailedMessages));
         var messageContext = new MessageContext(
             "some-id",
             headers,
@@ -182,10 +241,11 @@ public class MessageShovelTests
 
     class FakeTargetEndpointRegistry : IEndpointRegistry
     {
-        public FakeTargetEndpointRegistry(string targetTransport, BridgeEndpoint targetEndpoint)
+        public FakeTargetEndpointRegistry(string targetTransport, BridgeEndpoint targetEndpoint, bool tryTranslateToTargetFindsAMatch = true)
         {
             this.targetTransport = targetTransport;
             this.targetEndpoint = targetEndpoint;
+            this.tryTranslateToTargetFindsAMatch = tryTranslateToTargetFindsAMatch;
             rawEndpoint = new FakeRawEndpoint(targetEndpoint.Name);
         }
 
@@ -194,9 +254,12 @@ public class MessageShovelTests
             return new TargetEndpointDispatcher(targetTransport, rawEndpoint, targetEndpoint.QueueAddress);
         }
 
-        public string TranslateToTargetAddress(string sourceAddress)
+        public bool TryTranslateToTargetAddress(string sourceAddress, out string bestMatch)
         {
-            return sourceAddress.Split('@').First();
+            var result = sourceAddress.Split('@').First();
+
+            bestMatch = result;
+            return tryTranslateToTargetFindsAMatch;
         }
 
         public string GetEndpointAddress(string endpointName) => throw new NotImplementedException();
@@ -204,6 +267,7 @@ public class MessageShovelTests
         readonly string targetTransport;
         readonly BridgeEndpoint targetEndpoint;
         readonly FakeRawEndpoint rawEndpoint;
+        readonly bool tryTranslateToTargetFindsAMatch;
 
         public TransferDetails TransferDetails => rawEndpoint.TransferDetails;
     }
@@ -213,4 +277,6 @@ public class MessageShovelTests
         public UnicastTransportOperation OutgoingOperation { get; set; }
         public TransportTransaction TransportTransaction { get; set; }
     }
+
+    readonly FakeLogger<MessageShovel> logger = new();
 }
