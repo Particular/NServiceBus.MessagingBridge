@@ -67,6 +67,14 @@ class EndpointRegistry : IEndpointRegistry
             return true;
         }
 
+        // For messages coming from duplicate endpoints running on the "proxy" side of the bridge,
+        // the address does not need to be translated since it will already be correct
+        if (targetEndpointAddressMappings.Values.Contains(sourceAddress))
+        {
+            bestMatch = sourceAddress;
+            return true;
+        }
+
         bestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
         return false;
     }
