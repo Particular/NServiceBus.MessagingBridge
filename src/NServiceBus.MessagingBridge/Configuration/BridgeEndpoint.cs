@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using Transport;
 
     /// <summary>
     /// Configuration options for a specific endpoint in the bridge
@@ -12,8 +11,11 @@
         /// <summary>
         /// Initializes an endpoint in the bridge with the given name
         /// </summary>
-        public BridgeEndpoint(string name) : this(name, name)
+        public BridgeEndpoint(string name)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            Name = name;
         }
 
         /// <summary>
@@ -26,7 +28,7 @@
             ArgumentException.ThrowIfNullOrWhiteSpace(queueAddress);
 
             Name = name;
-            QueueAddress = new QueueAddress(queueAddress);
+            QueueAddress = queueAddress;
         }
 
         /// <summary>
@@ -83,7 +85,7 @@
 
         internal string Name { get; private set; }
 
-        internal QueueAddress QueueAddress { get; private set; }
+        internal string QueueAddress { get; private set; }
 
         internal IList<Subscription> Subscriptions { get; } = [];
 

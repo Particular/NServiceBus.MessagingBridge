@@ -1,17 +1,13 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 using NServiceBus.AcceptanceTesting;
+using NUnit.Framework;
 
-public class ScenarioContextLogger : ILogger
+public class ScenarioContextLogger(string categoryName, ScenarioContext scenarioContext) : ILogger
 {
-    public ScenarioContextLogger(string categoryName, ScenarioContext scenarioContext)
-    {
-        this.categoryName = categoryName;
-        this.scenarioContext = scenarioContext;
-    }
-
     public IDisposable BeginScope<TState>(TState state) => throw new NotImplementedException();
     public bool IsEnabled(LogLevel logLevel) => true;
+
     public void Log<TState>(
         LogLevel logLevel,
         EventId eventId,
@@ -19,9 +15,13 @@ public class ScenarioContextLogger : ILogger
         Exception exception,
         Func<TState, Exception, string> formatter)
     {
-        scenarioContext.AddTrace($"{categoryName}: {formatter(state, exception)} - {exception}");
-    }
+        var log = $"{categoryName}: {formatter(state, exception)} - {exception}";
 
-    readonly string categoryName;
-    readonly ScenarioContext scenarioContext;
+        if (logLevel >= LogLevel.Warning)
+        {
+            TestContext.WriteLine(log);
+        }
+
+        scenarioContext.AddTrace(log);
+    }
 }

@@ -33,13 +33,17 @@ class EndpointRegistry : IEndpointRegistry
             // we just need to be able to send messages to that transport
             var proxyEndpoint = registrations
                 .First(r => r.TranportName == targetTransport.Name)
-            .RawEndpoint;
+                .RawEndpoint;
 
-            var transportAddress = proxyEndpoint.ToTransportAddress(endpoint.QueueAddress);
+            //This value represents in fact the endpoint's name. It is wrapped in the QueueAddress class only because
+            //the ToTransportAddress API expects it.
+            var endpointName = new QueueAddress(endpoint.Name);
+
+            var transportAddress = endpoint.QueueAddress ?? proxyEndpoint.ToTransportAddress(endpointName);
 
             endpointAddressMappings[registration.Endpoint.Name] = transportAddress;
 
-            targetEndpointAddressMappings[transportAddress] = registration.RawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
+            targetEndpointAddressMappings[transportAddress] = registration.RawEndpoint.ToTransportAddress(endpointName);
 
             targetEndpointDispatchers[registration.Endpoint.Name] = new TargetEndpointDispatcher(
                 targetTransport.Name,
