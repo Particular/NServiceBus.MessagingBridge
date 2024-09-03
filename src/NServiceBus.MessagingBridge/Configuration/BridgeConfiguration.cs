@@ -37,6 +37,11 @@ namespace NServiceBus
         /// </summary>
         public void DoNotEnforceBestPractices() => allowMultiplePublishersSameEvent = true;
 
+        /// <summary>
+        /// Enable ReplyTo address translation on the bridge, which allows seamless retry of messages when endpoints move from one side of the bridge to another
+        /// </summary>
+        public void TranslateReplyToAddressForFailedMessages() => translateReplyToAddressForFailedMessages = true;
+
         internal FinalizedBridgeConfiguration FinalizeConfiguration(ILogger<BridgeConfiguration> logger)
         {
             if (transportConfigurations.Count < 2)
@@ -165,11 +170,12 @@ namespace NServiceBus
                 transportConfiguration.TransportDefinition.TransportTransactionMode = transportTransactionMode;
             }
 
-            return new FinalizedBridgeConfiguration(transportConfigurations);
+            return new FinalizedBridgeConfiguration(transportConfigurations, translateReplyToAddressForFailedMessages);
         }
 
         bool runInReceiveOnlyTransactionMode;
         bool allowMultiplePublishersSameEvent;
+        bool translateReplyToAddressForFailedMessages;
 
         readonly List<BridgeTransport> transportConfigurations = [];
     }
