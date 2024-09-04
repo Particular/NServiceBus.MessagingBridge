@@ -8,6 +8,7 @@ using Logging;
 using ServiceControl.Plugin.Heartbeat.Messages;
 using Transport;
 
+[Janitor.SkipWeaving]
 class HeartbeatSender(
     IMessageDispatcher dispatcher,
     HostInformation hostInfo,
