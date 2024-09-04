@@ -55,16 +55,15 @@ class EndpointRegistry : IEndpointRegistry
         throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    public string TranslateToTargetAddress(string sourceAddress)
+    public bool TryTranslateToTargetAddress(string sourceAddress, out string bestMatch)
     {
-        if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out var targetAddress))
+        if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out bestMatch))
         {
-            return targetAddress;
+            return true;
         }
 
-        var nearestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
-
-        throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
+        bestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
+        return false;
     }
 
     public string GetEndpointAddress(string endpointName)

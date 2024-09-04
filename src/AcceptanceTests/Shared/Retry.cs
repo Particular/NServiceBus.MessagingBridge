@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
-using NServiceBus.AcceptanceTesting.Customization;
 using NServiceBus.Faults;
 using NServiceBus.Pipeline;
 using NUnit.Framework;
@@ -12,8 +12,9 @@ using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
 public class Retry : BridgeAcceptanceTest
 {
-    [Test]
-    public async Task Should_work()
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task Should_work(bool translateReplyToAdressForFailedMessages)
     {
         var ctx = await Scenario.Define<Context>()
             .WithEndpoint<ProcessingEndpoint>(builder =>
@@ -22,40 +23,105 @@ public class Retry : BridgeAcceptanceTest
                 builder.When(c => c.EndpointsStarted, (session, _) => session.SendLocal(new FaultyMessage()));
             })
             .WithEndpoint<FakeSCError>()
-            .WithEndpoint<FakeSCAudit>()
             .WithBridge(bridgeConfiguration =>
             {
+                if (translateReplyToAdressForFailedMessages)
+                {
+                    bridgeConfiguration.TranslateReplyToAddressForFailedMessages();
+                }
                 var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
                 {
                     Name = "DefaultTestingTransport"
                 };
                 bridgeTransport.AddTestEndpoint<FakeSCError>();
-                bridgeTransport.AddTestEndpoint<FakeSCAudit>();
                 bridgeConfiguration.AddTransport(bridgeTransport);
 
-                var processingEndpoint =
-                    new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(ProcessingEndpoint)));
-
                 var theOtherTransport = new TestableBridgeTransport(TransportBeingTested);
-                theOtherTransport.HasEndpoint(processingEndpoint);
+                theOtherTransport.AddTestEndpoint<ProcessingEndpoint>();
                 bridgeConfiguration.AddTransport(theOtherTransport);
             })
-            .Done(c => c.GotRetrySuccessfullAck && c.MessageAudited)
+            .Done(c => c.GotRetrySuccessfullAck)
             .Run();
 
-        Assert.IsTrue(ctx.MessageFailed);
-        Assert.IsTrue(ctx.RetryDelivered);
-        Assert.IsTrue(ctx.GotRetrySuccessfullAck);
-        Assert.IsTrue(ctx.MessageAudited);
+        Assert.Multiple(() =>
+        {
+            Assert.That(ctx.MessageFailed, Is.True);
+            Assert.That(ctx.RetryDelivered, Is.True);
+            Assert.That(ctx.GotRetrySuccessfullAck, Is.True);
+        });
 
         foreach (var header in ctx.FailedMessageHeaders)
         {
             if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
             {
-                Assert.AreEqual(header.Value, receivedHeaderValue,
+                if (translateReplyToAdressForFailedMessages && header.Key == Headers.ReplyToAddress)
+                {
+                    Assert.That(receivedHeaderValue.ToLower().Contains(nameof(ProcessingEndpoint).ToLower()), Is.True,
+                        $"The ReplyToAddress received by ServiceControl ({TransportBeingTested} physical address) should contain the logical name of the endpoint.");
+                }
+                else
+                {
+                    Assert.That(receivedHeaderValue, Is.EqualTo(header.Value),
                     $"{header.Key} is not the same on processed message and message sent to the error queue");
+                }
             }
         }
+    }
+
+    [Test]
+    public async Task Should_log_warn_when_best_effort_ReplyToAddress_fails()
+    {
+        var ctx = await Scenario.Define<Context>()
+            .WithEndpoint<SendingEndpoint>(builder =>
+            {
+                builder.DoNotFailOnErrorMessages();
+                builder.When(c => c.EndpointsStarted, (session, _) => session.Send(new FaultyMessage()));
+            })
+            .WithEndpoint<ProcessingEndpoint>(builder =>
+            {
+                builder.DoNotFailOnErrorMessages();
+                builder.When(c => c.EndpointsStarted, (session, _) =>
+                {
+                    var options = new SendOptions();
+                    options.RouteToThisEndpoint();
+                    options.SetHeader(Headers.ReplyToAddress, "address-not-declared-in-the-bridge");
+                    return session.Send(new FaultyMessage(), options);
+                });
+            })
+            .WithEndpoint<FakeSCError>()
+            .WithBridge(bridgeConfiguration =>
+            {
+                bridgeConfiguration.TranslateReplyToAddressForFailedMessages();
+                var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
+                {
+                    Name = "DefaultTestingTransport"
+                };
+                bridgeTransport.AddTestEndpoint<FakeSCError>();
+                bridgeConfiguration.AddTransport(bridgeTransport);
+
+                var theOtherTransport = new TestableBridgeTransport(TransportBeingTested);
+                theOtherTransport.AddTestEndpoint<ProcessingEndpoint>();
+                bridgeConfiguration.AddTransport(theOtherTransport);
+            })
+            .Done(c => c.GotRetrySuccessfullAck)
+            .Run();
+
+        var translationFailureLogs = ctx.Logs.ToArray().Where(i =>
+            i.Message.Contains("Could not translate") &&
+            i.Message.Contains("address. Consider using `.HasEndpoint()`"));
+
+        //There is only one warning here because the ServiceControl testing fake does not properly set the ReplyToAddress header value
+        Assert.That(translationFailureLogs.Count(), Is.EqualTo(1),
+            "Bridge should log warnings when ReplyToAddress cannot be translated for failed message and retry.");
+    }
+
+    public class SendingEndpoint : EndpointConfigurationBuilder
+    {
+        public SendingEndpoint() => EndpointSetup<DefaultServer>(c =>
+        {
+            c.SendFailedMessagesTo(Conventions.EndpointNamingConvention(typeof(FakeSCError)));
+            c.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), Conventions.EndpointNamingConvention(typeof(ProcessingEndpoint)));
+        });
     }
 
     public class ProcessingEndpoint : EndpointConfigurationBuilder
@@ -63,7 +129,6 @@ public class Retry : BridgeAcceptanceTest
         public ProcessingEndpoint() => EndpointSetup<DefaultServer>(c =>
         {
             c.SendFailedMessagesTo(Conventions.EndpointNamingConvention(typeof(FakeSCError)));
-            c.AuditProcessedMessagesTo(Conventions.EndpointNamingConvention(typeof(FakeSCAudit)));
         });
 
         public class MessageHandler : IHandleMessages<FaultyMessage>
@@ -138,35 +203,13 @@ public class Retry : BridgeAcceptanceTest
         }
     }
 
-    public class FakeSCAudit : EndpointConfigurationBuilder
-    {
-        public FakeSCAudit() => EndpointSetup<DefaultTestServer>();
-
-        class FailedMessageHander : IHandleMessages<FaultyMessage>
-        {
-            public FailedMessageHander(Context context) => testContext = context;
-
-            public Task Handle(FaultyMessage message, IMessageHandlerContext context)
-            {
-                testContext.MessageAudited = true;
-
-                return Task.CompletedTask;
-            }
-
-            readonly Context testContext;
-        }
-    }
-
     public class Context : ScenarioContext
     {
-        public bool SubscriberSubscribed { get; set; }
         public bool MessageFailed { get; set; }
         public IReadOnlyDictionary<string, string> ReceivedMessageHeaders { get; set; }
         public IReadOnlyDictionary<string, string> FailedMessageHeaders { get; set; }
-        public IReadOnlyDictionary<string, string> AuditMessageHeaders { get; set; }
         public bool RetryDelivered { get; set; }
         public bool GotRetrySuccessfullAck { get; set; }
-        public bool MessageAudited { get; set; }
     }
 
     public class FaultyMessage : IMessage
