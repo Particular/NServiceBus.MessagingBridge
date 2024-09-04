@@ -56,7 +56,7 @@ public class Retry : BridgeAcceptanceTest
             {
                 if (translateReplyToAdressForFailedMessages && header.Key == Headers.ReplyToAddress)
                 {
-                    Assert.That(receivedHeaderValue.Contains(nameof(ProcessingEndpoint)), Is.True,
+                    Assert.That(receivedHeaderValue.ToLower().Contains(nameof(ProcessingEndpoint).ToLower()), Is.True,
                         $"The ReplyToAddress received by ServiceControl ({TransportBeingTested} physical address) should contain the logical name of the endpoint.");
                 }
                 else
