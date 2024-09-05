@@ -9,9 +9,8 @@ namespace NServiceBus
         public void DoNotEnforceBestPractices() { }
         public void DoNotTranslateReplyToAddressForFailedMessages() { }
         public void RunInReceiveOnlyTransactionMode() { }
-        [System.Obsolete("The bridge now translates ReplyTo addresses for failed messages by default. To op" +
-            "t out, use DoNotTranslateReplyToAddressForFailedMessages. Will be removed in ver" +
-            "sion 5.0.0.", true)]
+        [System.Obsolete("The bridge now translates ReplyTo addresses for failed messages by default so thi" +
+            "s method call is no longer necessary. Will be removed in version 5.0.0.", true)]
         public void TranslateReplyToAddressForFailedMessages() { }
     }
     public class BridgeEndpoint
