@@ -10,7 +10,7 @@ namespace NServiceBus
     /// <summary>
     /// Configuration options for bridging multiple transports
     /// </summary>
-    public class BridgeConfiguration
+    public partial class BridgeConfiguration
     {
         /// <summary>
         /// Configures the bridge with the given transport
@@ -38,9 +38,9 @@ namespace NServiceBus
         public void DoNotEnforceBestPractices() => allowMultiplePublishersSameEvent = true;
 
         /// <summary>
-        /// Enable ReplyTo address translation on the bridge, which allows seamless retry of messages when endpoints move from one side of the bridge to another
+        /// Disable ReplyTo address translation on the bridge for failed messages
         /// </summary>
-        public void TranslateReplyToAddressForFailedMessages() => translateReplyToAddressForFailedMessages = true;
+        public void DoNotTranslateReplyToAddressForFailedMessages() => translateReplyToAddressForFailedMessages = false;
 
         internal FinalizedBridgeConfiguration FinalizeConfiguration(ILogger<BridgeConfiguration> logger)
         {
@@ -175,7 +175,7 @@ namespace NServiceBus
 
         bool runInReceiveOnlyTransactionMode;
         bool allowMultiplePublishersSameEvent;
-        bool translateReplyToAddressForFailedMessages;
+        bool translateReplyToAddressForFailedMessages = true;
 
         readonly List<BridgeTransport> transportConfigurations = [];
     }

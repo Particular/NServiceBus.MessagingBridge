@@ -7,7 +7,10 @@ namespace NServiceBus
         public BridgeConfiguration() { }
         public void AddTransport(NServiceBus.BridgeTransport transportConfiguration) { }
         public void DoNotEnforceBestPractices() { }
+        public void DoNotTranslateReplyToAddressForFailedMessages() { }
         public void RunInReceiveOnlyTransactionMode() { }
+        [System.Obsolete("The bridge now translates ReplyTo addresses for failed messages by default so thi" +
+            "s method call is no longer necessary. Will be removed in version 5.0.0.", true)]
         public void TranslateReplyToAddressForFailedMessages() { }
     }
     public class BridgeEndpoint

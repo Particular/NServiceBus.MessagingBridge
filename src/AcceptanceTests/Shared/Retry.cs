@@ -14,7 +14,7 @@ public class Retry : BridgeAcceptanceTest
 {
     [TestCase(true)]
     [TestCase(false)]
-    public async Task Should_work(bool translateReplyToAdressForFailedMessages)
+    public async Task Should_work(bool doNotTranslateReplyToAdressForFailedMessages)
     {
         var ctx = await Scenario.Define<Context>()
             .WithEndpoint<ProcessingEndpoint>(builder =>
@@ -25,9 +25,9 @@ public class Retry : BridgeAcceptanceTest
             .WithEndpoint<FakeSCError>()
             .WithBridge(bridgeConfiguration =>
             {
-                if (translateReplyToAdressForFailedMessages)
+                if (doNotTranslateReplyToAdressForFailedMessages)
                 {
-                    bridgeConfiguration.TranslateReplyToAddressForFailedMessages();
+                    bridgeConfiguration.DoNotTranslateReplyToAddressForFailedMessages();
                 }
                 var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
                 {
@@ -54,7 +54,7 @@ public class Retry : BridgeAcceptanceTest
         {
             if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
             {
-                if (translateReplyToAdressForFailedMessages && header.Key == Headers.ReplyToAddress)
+                if (!doNotTranslateReplyToAdressForFailedMessages && header.Key == Headers.ReplyToAddress)
                 {
                     Assert.That(receivedHeaderValue.Contains(nameof(ProcessingEndpoint), StringComparison.InvariantCultureIgnoreCase), Is.True,
                         $"The ReplyToAddress received by ServiceControl ({TransportBeingTested} physical address) should contain the logical name of the endpoint.");
@@ -91,7 +91,6 @@ public class Retry : BridgeAcceptanceTest
             .WithEndpoint<FakeSCError>()
             .WithBridge(bridgeConfiguration =>
             {
-                bridgeConfiguration.TranslateReplyToAddressForFailedMessages();
                 var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
                 {
                     Name = "DefaultTestingTransport"
