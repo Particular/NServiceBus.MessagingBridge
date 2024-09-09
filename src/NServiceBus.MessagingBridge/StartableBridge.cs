@@ -23,8 +23,12 @@ class StartableBridge(
 
             stoppableEndpointProxies.Add(stoppableRawEndpoint);
 
-            await subscriptionManager.SubscribeToEvents(endpointRegistration.RawEndpoint, endpointRegistration.Endpoint, cancellationToken)
-               .ConfigureAwait(false);
+            // If the endpoint is null, it is a dispatcher endpoint and we don't need to subscribe to events
+            if (endpointRegistration.Endpoint != null)
+            {
+                await subscriptionManager.SubscribeToEvents(endpointRegistration.RawEndpoint, endpointRegistration.Endpoint, cancellationToken)
+                   .ConfigureAwait(false);
+            }
         }
 
         logger.LogInformation("Bridge startup complete");
