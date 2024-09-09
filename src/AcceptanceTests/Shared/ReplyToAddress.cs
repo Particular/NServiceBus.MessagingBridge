@@ -47,11 +47,12 @@ public class ReplyToAddress : BridgeAcceptanceTest
     public class SendingEndpoint : EndpointConfigurationBuilder
     {
         public SendingEndpoint() => EndpointSetup<DefaultTestServer>((c, runDescriptor) =>
-            c.Pipeline.Register(new OverrideReplyToAddress(runDescriptor.ScenarioContext as Context), "Checks that the retry confirmation arrived"));
+            //c.Pipeline.Register(new OverrideReplyToAddress(runDescriptor.ScenarioContext as Context), "Checks that the retry confirmation arrived"));
+            c.Pipeline.Register(new OverrideReplyToAddress(), "Checks that the retry confirmation arrived"));
 
         class OverrideReplyToAddress : Behavior<IOutgoingPhysicalMessageContext>
         {
-            public OverrideReplyToAddress(Context testContext) => this.testContext = testContext;
+            //public OverrideReplyToAddress(Context testContext) => this.testContext = testContext;
 
             public override async Task Invoke(IOutgoingPhysicalMessageContext context, Func<Task> next)
             {
@@ -60,7 +61,7 @@ public class ReplyToAddress : BridgeAcceptanceTest
 
             }
 
-            Context testContext;
+            //readonly Context testContext;
         }
     }
 
