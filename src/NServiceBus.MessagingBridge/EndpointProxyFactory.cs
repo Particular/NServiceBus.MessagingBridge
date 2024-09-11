@@ -55,7 +55,6 @@ class EndpointProxyFactory(IServiceProvider serviceProvider)
     public static Task<IStartableRawEndpoint> CreateDispatcher(BridgeTransport transportConfiguration, CancellationToken cancellationToken = default)
     {
         var endpointConfiguration = RawEndpointConfiguration.CreateSendOnly($"bridge-dispatcher-{transportConfiguration.Name}", transportConfiguration.TransportDefinition);
-        //endpointConfiguration.AutoCreateQueues();
 
         return RawEndpoint.Create(endpointConfiguration, cancellationToken);
     }
