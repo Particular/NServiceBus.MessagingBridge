@@ -19,14 +19,7 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
         // create required proxy endpoints on all transports
         foreach (var targetTransport in transportConfigurations)
         {
-            var dispatchEndpoint = await EndpointProxyFactory.CreateDispatcher(targetTransport, cancellationToken).ConfigureAwait(false);
-
-            yield return new ProxyRegistration
-            {
-                Endpoint = null,
-                TranportName = targetTransport.Name,
-                RawEndpoint = dispatchEndpoint
-            };
+            var dispatcher = await DispatcherFactory.CreateDispatcher(targetTransport, cancellationToken).ConfigureAwait(false);
 
             foreach (var endpointToSimulate in targetTransport.Endpoints)
             {
@@ -39,7 +32,7 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
                     logger.LogInformation("Proxy for endpoint {endpoint} created on {transport}", endpointToSimulate.Name, proxyTransport.Name);
 
                     var queueAddress = new QueueAddress(endpointToSimulate.Name);
-                    var targetTransportAddress = dispatchEndpoint.ToTransportAddress(queueAddress);
+                    var targetTransportAddress = dispatcher.ToTransportAddress(queueAddress);
                     var sourceTransportAddress = startableEndpointProxy.ToTransportAddress(queueAddress);
 
                     endpointAddressMappings[endpointToSimulate.Name] = endpointToSimulate.QueueAddress ?? targetTransportAddress;
@@ -48,7 +41,7 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
                     {
                         targetEndpointAddressMappings[sourceTransportAddress] = targetTransportAddress;
                     }
-                    targetEndpointDispatchers[endpointToSimulate.Name] = new TargetEndpointDispatcher(targetTransport.Name, dispatchEndpoint, targetTransportAddress);
+                    targetEndpointDispatchers[endpointToSimulate.Name] = new TargetEndpointDispatcher(targetTransport.Name, dispatcher, targetTransportAddress);
 
                     yield return new ProxyRegistration
                     {

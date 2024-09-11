@@ -4,17 +4,9 @@ using NServiceBus.Raw;
 using NServiceBus.Routing;
 using NServiceBus.Transport;
 
-class TargetEndpointDispatcher
+class TargetEndpointDispatcher(string transportName, IRawDispatcher rawDispatcher, string queueAddress)
 {
-    public TargetEndpointDispatcher(string transportName, IRawEndpoint rawEndpoint, string queueAddress)
-    {
-        this.rawEndpoint = rawEndpoint;
-        TransportName = transportName;
-
-        targetAddress = new UnicastAddressTag(queueAddress);
-    }
-
-    public string TransportName { get; }
+    public string TransportName { get; } = transportName;
 
     public Task Dispatch(
         OutgoingMessage outgoingMessage,
@@ -22,9 +14,8 @@ class TargetEndpointDispatcher
         CancellationToken cancellationToken = default)
     {
         var transportOperation = new TransportOperation(outgoingMessage, targetAddress);
-        return rawEndpoint.Dispatch(new TransportOperations(transportOperation), transaction, cancellationToken);
+        return rawDispatcher.Dispatch(new TransportOperations(transportOperation), transaction, cancellationToken);
     }
 
-    readonly IRawEndpoint rawEndpoint;
-    readonly UnicastAddressTag targetAddress;
+    readonly UnicastAddressTag targetAddress = new(queueAddress);
 }
