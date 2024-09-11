@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Raw;
@@ -10,23 +10,26 @@ using NServiceBus.Transport;
 
 class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<StartableBridge> logger) : IEndpointRegistry
 {
-    public async IAsyncEnumerable<ProxyRegistration> Initialize(IReadOnlyCollection<BridgeTransport> transportConfigurations, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    //NOTE: This method cannot have a return type of IAsyncEnumerable as all the endpoints need to be configured on the bridge before the bridge can start processing messages. 
+    public async Task<IEnumerable<ProxyRegistration>> Initialize(IReadOnlyCollection<BridgeTransport> transportConfigurations, CancellationToken cancellationToken = default)
     {
         // Assume that it is the number of endpoints that is more likely to scale up in size than the number of transports (typically only 2).
         // Therefore in cases where it might matter, it is more efficient to iterate over the transports multiple times.
         transportConfigurationMappings = transportConfigurations.ToDictionary(t => t.Name, t => t);
+
+        IList<ProxyRegistration> proxyRegistrations = [];
 
         // create required proxy endpoints on all transports
         foreach (var targetTransport in transportConfigurations)
         {
             var dispatchEndpoint = await EndpointProxyFactory.CreateDispatcher(targetTransport, cancellationToken).ConfigureAwait(false);
 
-            yield return new ProxyRegistration
+            proxyRegistrations.Add(new ProxyRegistration
             {
                 Endpoint = null,
                 TranportName = targetTransport.Name,
                 RawEndpoint = dispatchEndpoint
-            };
+            });
 
             foreach (var endpointToSimulate in targetTransport.Endpoints)
             {
@@ -50,15 +53,17 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
                     }
                     targetEndpointDispatchers[endpointToSimulate.Name] = new TargetEndpointDispatcher(targetTransport.Name, dispatchEndpoint, targetTransportAddress);
 
-                    yield return new ProxyRegistration
+                    proxyRegistrations.Add(new ProxyRegistration
                     {
                         Endpoint = endpointToSimulate,
                         TranportName = proxyTransport.Name,
                         RawEndpoint = startableEndpointProxy
-                    };
+                    });
                 }
             }
         }
+
+        return proxyRegistrations;
     }
 
     public TargetEndpointDispatcher GetTargetEndpointDispatcher(string sourceEndpointName)

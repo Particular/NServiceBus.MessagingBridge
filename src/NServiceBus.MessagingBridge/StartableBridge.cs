@@ -16,7 +16,7 @@ class StartableBridge(
     {
         var stoppableEndpointProxies = new List<IStoppableRawEndpoint>();
 
-        await foreach (var endpointRegistration in endpointRegistry.Initialize(configuration.TransportConfigurations, cancellationToken).ConfigureAwait(false))
+        foreach (var endpointRegistration in await endpointRegistry.Initialize(configuration.TransportConfigurations, cancellationToken).ConfigureAwait(false))
         {
             var stoppableRawEndpoint = await endpointRegistration.RawEndpoint.Start(cancellationToken)
                 .ConfigureAwait(false);
