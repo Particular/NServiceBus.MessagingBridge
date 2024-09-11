@@ -67,7 +67,7 @@ public class Retry : BridgeAcceptanceTest
             }
         }
     }
-    
+
     public class SendingEndpoint : EndpointConfigurationBuilder
     {
         public SendingEndpoint() => EndpointSetup<DefaultServer>(c =>
