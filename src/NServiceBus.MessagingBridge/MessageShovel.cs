@@ -72,13 +72,6 @@ sealed class MessageShovel : IMessageShovel
                     TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
                 }
             }
-            else if (IsRetryEditedMessage(messageToSend))
-            {
-                // This is a retry message that has been edited going from one side of the bridge to another
-                // The ReplyToAddress is transformed to allow for replies to be delivered
-                messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
-            }
             else
             {
                 // This is a regular message sent between the endpoints on different sides of the bridge.
@@ -112,8 +105,6 @@ sealed class MessageShovel : IMessageShovel
 
     static bool IsErrorMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey(FaultsHeaderKeys.FailedQ);
     static bool IsRetryMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.Retry.UniqueMessageId");
-
-    static bool IsRetryEditedMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.EditOf");
 
     void TransformAddressHeader(
         OutgoingMessage messageToSend,
