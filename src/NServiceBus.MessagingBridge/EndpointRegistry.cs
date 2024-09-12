@@ -19,9 +19,9 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
 
         IList<ProxyRegistration> proxyRegistrations = [];
 
-        // create required proxy endpoints on all transports
         foreach (var targetTransport in transportConfigurations)
         {
+            // Create the dispatcher for this transport
             var dispatchEndpoint = await EndpointProxyFactory.CreateDispatcher(targetTransport, cancellationToken).ConfigureAwait(false);
 
             proxyRegistrations.Add(new ProxyRegistration
@@ -31,6 +31,7 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
                 RawEndpoint = dispatchEndpoint
             });
 
+            // create required proxy endpoints on all transports
             foreach (var endpointToSimulate in targetTransport.Endpoints)
             {
                 // Endpoint will need to be proxied on the other transports
@@ -49,6 +50,9 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
                     targetEndpointAddressMappings[targetTransportAddress] = sourceTransportAddress;
                     if (targetTransportAddress != sourceTransportAddress)
                     {
+                        // Also add the reverse mapping so that any messages that were in-flight before a bridge configuration change
+                        // can still have their address translated correctly.  This also allows for the case where duplicate logical endpoints
+                        // are running as a competing consumer with the bridge in canary/parallel deployment scenarios.
                         targetEndpointAddressMappings[sourceTransportAddress] = targetTransportAddress;
                     }
                     targetEndpointDispatchers[endpointToSimulate.Name] = new TargetEndpointDispatcher(targetTransport.Name, dispatchEndpoint, targetTransportAddress);
