@@ -21,6 +21,19 @@ public class BridgeConfigurationTests
     }
 
     [Test]
+    public void At_least_one_endpoint_should_be_configured()
+    {
+        var configuration = new BridgeConfiguration();
+
+        configuration.AddTransport(new BridgeTransport(new SomeTransport()));
+        configuration.AddTransport(new BridgeTransport(new SomeOtherTransport()));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
+
+        Assert.That(ex.Message, Does.Contain("At least one"));
+    }
+
+    [Test]
     public void Should_default_auto_queue_creation_to_off()
     {
         var transport = new BridgeTransport(new SomeTransport());
