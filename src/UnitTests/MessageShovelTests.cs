@@ -122,21 +122,13 @@ public class MessageShovelTests
         Assert.That(transferDetails.OutgoingOperation.Destination, Is.EqualTo(targetEndpointAddress));
     }
 
-    [Test]
-    public async Task Should_not_throw_transform_reply_to_address_error_for_edited_retries_if_translateReplyToAddressForFailedMessages_turned_on()
-    {
-        var unknownQueue = "some-unknwon-queue";
-        await Transfer(replyToAddress: unknownQueue, isEditedRetryMessage: true, translateReplyToAddressForFailedMessages: true, findMatchOnTryTranslateAddress: false);
-
-        Assert.That(logger.logEntries.Contains($"Could not translate {unknownQueue} address. Consider using `.HasEndpoint()` method to add missing endpoint declaration."), Is.True);
-    }
-
-    [Test]
-    public void Should_throw_transform_reply_to_address_error_for_edited_retries_if_translateReplyToAddressForFailedMessages_turned_off()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Should_throw_transform_reply_to_address_error_for_edited_retries(bool translateReplyToAddressForFailedMessages)
     {
         var unknownQueue = "some-unknwon-queue";
 
-        var ex = Assert.ThrowsAsync<Exception>(async () => await Transfer(replyToAddress: unknownQueue, isEditedRetryMessage: true, findMatchOnTryTranslateAddress: false));
+        var ex = Assert.ThrowsAsync<Exception>(async () => await Transfer(replyToAddress: unknownQueue, isEditedRetryMessage: true, findMatchOnTryTranslateAddress: false, translateReplyToAddressForFailedMessages: translateReplyToAddressForFailedMessages));
 
         Assert.That(ex.InnerException.Message, Does.Contain("No target address mapping could be found for source address:"));
         Assert.That(ex.InnerException.Message, Does.Contain(unknownQueue));

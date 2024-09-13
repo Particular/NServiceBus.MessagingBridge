@@ -68,52 +68,6 @@ public class Retry : BridgeAcceptanceTest
         }
     }
 
-    [Test]
-    public async Task Should_log_warn_when_best_effort_ReplyToAddress_fails()
-    {
-        var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<SendingEndpoint>(builder =>
-            {
-                builder.DoNotFailOnErrorMessages();
-                builder.When(c => c.EndpointsStarted, (session, _) => session.Send(new FaultyMessage()));
-            })
-            .WithEndpoint<ProcessingEndpoint>(builder =>
-            {
-                builder.DoNotFailOnErrorMessages();
-                builder.When(c => c.EndpointsStarted, (session, _) =>
-                {
-                    var options = new SendOptions();
-                    options.RouteToThisEndpoint();
-                    options.SetHeader(Headers.ReplyToAddress, "address-not-declared-in-the-bridge");
-                    return session.Send(new FaultyMessage(), options);
-                });
-            })
-            .WithEndpoint<FakeSCError>()
-            .WithBridge(bridgeConfiguration =>
-            {
-                var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
-                {
-                    Name = "DefaultTestingTransport"
-                };
-                bridgeTransport.AddTestEndpoint<FakeSCError>();
-                bridgeConfiguration.AddTransport(bridgeTransport);
-
-                var theOtherTransport = new TestableBridgeTransport(TransportBeingTested);
-                theOtherTransport.AddTestEndpoint<ProcessingEndpoint>();
-                bridgeConfiguration.AddTransport(theOtherTransport);
-            })
-            .Done(c => c.GotRetrySuccessfullAck)
-            .Run();
-
-        var translationFailureLogs = ctx.Logs.ToArray().Where(i =>
-            i.Message.Contains("Could not translate") &&
-            i.Message.Contains("address. Consider using `.HasEndpoint()`"));
-
-        //There is only one warning here because the ServiceControl testing fake does not properly set the ReplyToAddress header value
-        Assert.That(translationFailureLogs.Count(), Is.EqualTo(1),
-            "Bridge should log warnings when ReplyToAddress cannot be translated for failed message and retry.");
-    }
-
     public class SendingEndpoint : EndpointConfigurationBuilder
     {
         public SendingEndpoint() => EndpointSetup<DefaultServer>(c =>

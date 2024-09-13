@@ -53,7 +53,7 @@ sealed class MessageShovel : IMessageShovel
                 if (translateReplyToAddressForFailedMessages)
                 {
                     //Try to translate the ReplyToAddress, this is needed when an endpoint is migrated to the ServiceControl side before this message is retried
-                    TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
+                    TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
                 }
             }
             else if (IsAuditMessage(messageToSend))
@@ -69,22 +69,15 @@ sealed class MessageShovel : IMessageShovel
                 if (translateReplyToAddressForFailedMessages)
                 {
                     //This is a message retried from ServiceControl. We try to translate its ReplyToAddress.
-                    TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
+                    TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
                 }
-            }
-            else if (IsRetryEditedMessage(messageToSend))
-            {
-                // This is a retry message that has been edited going from one side of the bridge to another
-                // The ReplyToAddress is transformed to allow for replies to be delivered
-                messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, !translateReplyToAddressForFailedMessages);
             }
             else
             {
                 // This is a regular message sent between the endpoints on different sides of the bridge.
                 // The ReplyToAddress is transformed to allow for replies to be delivered
                 messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
-                TransformRegularMessageReplyToAddress(transferContext, messageToSend, targetEndpointRegistry);
+                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
             }
 
             await targetEndpointDispatcher.Dispatch(
@@ -113,35 +106,10 @@ sealed class MessageShovel : IMessageShovel
     static bool IsErrorMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey(FaultsHeaderKeys.FailedQ);
     static bool IsRetryMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.Retry.UniqueMessageId");
 
-    static bool IsRetryEditedMessage(OutgoingMessage messageToSend) => messageToSend.Headers.ContainsKey("ServiceControl.EditOf");
-
-    void TransformRegularMessageReplyToAddress(
-        TransferContext transferContext,
-        OutgoingMessage messageToSend,
-        IEndpointRegistry targetEndpointRegistry)
-    {
-        if (!messageToSend.Headers.TryGetValue(Headers.ReplyToAddress, out var headerValue))
-        {
-            return;
-        }
-
-        //If the bridge is transferring a message that was sent by an endpoint to itself e.g. via SendLocal,
-        //then the ReplyToAddress value should be transformed to physical address of the source endpoint on the target side
-        if (headerValue == transferContext.MessageToTransfer.ReceiveAddress)
-        {
-            messageToSend.Headers[Headers.ReplyToAddress] = targetEndpointRegistry.GetEndpointAddress(transferContext.SourceEndpointName);
-        }
-        else
-        {
-            TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
-        }
-    }
-
     void TransformAddressHeader(
         OutgoingMessage messageToSend,
         IEndpointRegistry endpointRegistry,
-        string addressHeaderKey,
-        bool throwOnError = true)
+        string addressHeaderKey)
     {
         if (!messageToSend.Headers.TryGetValue(addressHeaderKey, out var sourceAddress))
         {
@@ -151,10 +119,6 @@ sealed class MessageShovel : IMessageShovel
         if (endpointRegistry.TryTranslateToTargetAddress(sourceAddress, out string bestMatch))
         {
             messageToSend.Headers[addressHeaderKey] = bestMatch;
-        }
-        else if (throwOnError == false)
-        {
-            logger.LogWarning($"Could not translate {sourceAddress} address. Consider using `.HasEndpoint()` method to add missing endpoint declaration.");
         }
         else
         {

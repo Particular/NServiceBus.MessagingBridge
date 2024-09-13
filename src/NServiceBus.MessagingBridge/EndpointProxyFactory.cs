@@ -7,13 +7,8 @@ using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Raw;
 
-class EndpointProxyFactory
+class EndpointProxyFactory(IServiceProvider serviceProvider)
 {
-    public EndpointProxyFactory(IServiceProvider serviceProvider)
-    {
-        this.serviceProvider = serviceProvider;
-    }
-
     public Task<IStartableRawEndpoint> CreateProxy(
         BridgeEndpoint endpointToProxy,
         BridgeTransport transportConfiguration,
@@ -51,11 +46,17 @@ class EndpointProxyFactory
         }
 
         transportEndpointConfiguration.LimitMessageProcessingConcurrencyTo(transportConfiguration.Concurrency);
-
         transportEndpointConfiguration.CustomErrorHandlingPolicy(new MessageShovelErrorHandlingPolicy(
             serviceProvider.GetRequiredService<ILogger<MessageShovelErrorHandlingPolicy>>()));
 
         return RawEndpoint.Create(transportEndpointConfiguration, cancellationToken);
+    }
+
+    public static Task<IStartableRawEndpoint> CreateDispatcher(BridgeTransport transportConfiguration, CancellationToken cancellationToken = default)
+    {
+        var endpointConfiguration = RawEndpointConfiguration.CreateSendOnly($"bridge-dispatcher-{transportConfiguration.Name}", transportConfiguration.TransportDefinition);
+
+        return RawEndpoint.Create(endpointConfiguration, cancellationToken);
     }
 
     static bool IsSubscriptionMessage(IReadOnlyDictionary<string, string> messageContextHeaders)
@@ -68,6 +69,4 @@ class EndpointProxyFactory
 
         return messageIntent is MessageIntent.Subscribe or MessageIntent.Unsubscribe;
     }
-
-    readonly IServiceProvider serviceProvider;
 }

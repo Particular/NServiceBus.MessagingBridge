@@ -11,7 +11,7 @@ using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 public class Error : BridgeAcceptanceTest
 {
     [Test]
-    public async Task Should_forward_error_messages_by_not_modify_message()
+    public async Task Should_forward_error_messages_and_not_modify_header_other_than_ReplyToAddress()
     {
         var ctx = await Scenario.Define<Context>()
             .WithEndpoint<PublishingEndpoint>(b => b
@@ -41,10 +41,13 @@ public class Error : BridgeAcceptanceTest
         Assert.That(ctx.MessageFailed, Is.True);
         foreach (var header in ctx.FailedMessageHeaders)
         {
-            if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
+            if (header.Key != Headers.ReplyToAddress)
             {
-                Assert.That(receivedHeaderValue, Is.EqualTo(header.Value),
-                    $"{header.Key} is not the same on processed message and audit message.");
+                if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
+                {
+                    Assert.That(receivedHeaderValue, Is.EqualTo(header.Value),
+                        $"{header.Key} is not the same on processed message and error message.");
+                }
             }
         }
     }

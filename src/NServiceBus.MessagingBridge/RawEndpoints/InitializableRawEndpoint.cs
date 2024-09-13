@@ -1,5 +1,6 @@
 namespace NServiceBus.Raw
 {
+    using System;
     using NServiceBus.Transport;
     using System.Collections.Generic;
     using System.Threading;
@@ -20,13 +21,21 @@ namespace NServiceBus.Raw
                 null); //null means "not hosted by core", transport SHOULD adjust accordingly to not assume things
 
             var usePubSub = rawEndpointConfiguration.TransportDefinition.SupportsPublishSubscribe && !rawEndpointConfiguration.PublishAndSubscribeDisabled;
-            var receivers = new[]{
-                new ReceiveSettings(
-                    rawEndpointConfiguration.EndpointName,
-                    new QueueAddress(rawEndpointConfiguration.EndpointName),
-                    usePubSub,
-                    false,
-                    rawEndpointConfiguration.PoisonMessageQueue)};
+
+            var receivers = Array.Empty<ReceiveSettings>();
+
+            if (!rawEndpointConfiguration.SendOnly)
+            {
+                receivers = new[]
+                {
+                    new ReceiveSettings(
+                        rawEndpointConfiguration.EndpointName,
+                        new QueueAddress(rawEndpointConfiguration.EndpointName),
+                        usePubSub,
+                        false,
+                        rawEndpointConfiguration.PoisonMessageQueue)
+                };
+            }
 
             var sendingQueues = new List<string>(rawEndpointConfiguration.AdditionalQueues);
 
