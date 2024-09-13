@@ -51,6 +51,11 @@ namespace NServiceBus
             var allEndpoints = transportConfigurations
                 .SelectMany(t => t.Endpoints).ToArray();
 
+            if (!allEndpoints.Any())
+            {
+                throw new InvalidOperationException($"At least one endpoint needs to be configured");
+            }
+
             var duplicatedEndpoints = allEndpoints
                 .GroupBy(e => e.Name)
                 .Where(g => g.Count() > 1)
