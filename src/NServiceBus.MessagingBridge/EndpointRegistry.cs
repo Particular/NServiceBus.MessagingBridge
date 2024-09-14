@@ -79,7 +79,7 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
         throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    public AddressMap AddressMap { get; } = new();
+    public IAddressMap AddressMap { get; } = new AddressMap();
 
     public string GetEndpointAddress(string endpointName)
     {
