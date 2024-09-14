@@ -2,7 +2,7 @@
 {
     TargetEndpointDispatcher GetTargetEndpointDispatcher(string sourceEndpointName);
 
-    AddressMap AddressMap { get; }
+    IAddressMap AddressMap { get; }
 
     string GetEndpointAddress(string endpointName);
 }

@@ -4,7 +4,7 @@
 /// How to map an address depends upon which transport the message is being sent to, 
 /// so it is necessary to have an address mapping dictionary for each transport
 /// </summary>
-class AddressMap
+class AddressMap : IAddressMap
 {
     readonly Dictionary<string, TransportAddressMap> addressMap = [];
 
