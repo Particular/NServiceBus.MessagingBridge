@@ -259,7 +259,7 @@ public class MessageShovelTests
 
     class FakeAddressMap(bool tryTranslateToTargetFindsAMatch) : IAddressMap
     {
-        public void Add(string transport, string address, string translatedAddress) => throw new NotImplementedException();
+        public void Add(BridgeTransport transport, BridgeEndpoint endpoint) => throw new NotImplementedException();
 
         public bool TryTranslate(string targetTransport, string address, out string bestMatch)
         {

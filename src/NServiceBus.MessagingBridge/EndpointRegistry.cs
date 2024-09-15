@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,54 +18,76 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
 
         IList<ProxyRegistration> proxyRegistrations = [];
 
-        foreach (var targetTransport in transportConfigurations)
+        await CreateAndRegisterDispatchers(transportConfigurations, proxyRegistrations, cancellationToken)
+            .ConfigureAwait(false);
+
+        var allEndpoints = transportConfigurations.SelectMany(
+            transport => transport.Endpoints.Select(endpoint => (transport, endpoint)));
+
+        foreach (var (transport, endpoint) in allEndpoints)
         {
-            // Create the dispatcher for this transport
-            var dispatchEndpoint = await EndpointProxyFactory.CreateDispatcher(targetTransport, cancellationToken).ConfigureAwait(false);
+            AddressMap.Add(transport, endpoint);
 
-            proxyRegistrations.Add(new ProxyRegistration
-            {
-                Endpoint = null,
-                TranportName = targetTransport.Name,
-                RawEndpoint = dispatchEndpoint
-            });
+            var dispatcher = dispatchers[transport.Name];
+            var queueAddress = new QueueAddress(endpoint.Name);
+            var targetTransportAddress = dispatcher.ToTransportAddress(queueAddress);
+            endpointAddressMappings[endpoint.Name] = endpoint.QueueAddress ?? targetTransportAddress;
+            targetEndpointDispatchers[endpoint.Name] = new TargetEndpointDispatcher(transport.Name, dispatcher, targetTransportAddress);
 
-            // create required proxy endpoints on all transports
-            foreach (var endpointToSimulate in targetTransport.Endpoints)
-            {
-                var queueAddress = new QueueAddress(endpointToSimulate.Name);
-                var targetTransportAddress = dispatchEndpoint.ToTransportAddress(queueAddress);
-                endpointAddressMappings[endpointToSimulate.Name] = endpointToSimulate.QueueAddress ?? targetTransportAddress;
-                targetEndpointDispatchers[endpointToSimulate.Name] = new TargetEndpointDispatcher(targetTransport.Name, dispatchEndpoint, targetTransportAddress);
-
-                // Endpoint will need to be proxied on the other transports
-                foreach (var proxyTransport in transportConfigurations)
-                {
-                    string sourceTransportAddress = null;
-
-                    if (proxyTransport.Name != targetTransport.Name)
-                    {
-                        var startableEndpointProxy = await endpointProxyFactory.CreateProxy(endpointToSimulate, proxyTransport, cancellationToken)
-                            .ConfigureAwait(false);
-
-                        logger.LogInformation("Proxy for endpoint {endpoint} created on {transport}", endpointToSimulate.Name, proxyTransport.Name);
-
-                        sourceTransportAddress = startableEndpointProxy.ToTransportAddress(queueAddress);
-
-                        proxyRegistrations.Add(new ProxyRegistration
-                        {
-                            Endpoint = endpointToSimulate,
-                            TranportName = proxyTransport.Name,
-                            RawEndpoint = startableEndpointProxy
-                        });
-                    }
-
-                    AddressMap.Add(proxyTransport.Name, targetTransportAddress, sourceTransportAddress ?? targetTransportAddress);
-                }
-            }
+            await CreateAndRegisterProxies(transport, endpoint, transportConfigurations, proxyRegistrations, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return proxyRegistrations;
+    }
+
+    async Task CreateAndRegisterDispatchers(
+        IReadOnlyCollection<BridgeTransport> transportConfigurations,
+        IList<ProxyRegistration> proxyRegistrations,
+        CancellationToken cancellationToken)
+    {
+        foreach (var transport in transportConfigurations)
+        {
+            var dispatcher = await EndpointProxyFactory.CreateDispatcher(transport, cancellationToken).ConfigureAwait(false);
+            dispatchers.Add(transport.Name, dispatcher);
+            proxyRegistrations.Add(new ProxyRegistration
+            {
+                Endpoint = null,
+                TranportName = transport.Name,
+                RawEndpoint = dispatcher
+            });
+        }
+
+        AddressMap = new AddressMap(dispatchers);
+    }
+
+    async Task CreateAndRegisterProxies(
+        BridgeTransport targetTransport,
+        BridgeEndpoint targetEndpoint,
+        IReadOnlyCollection<BridgeTransport> transportConfigurations,
+        IList<ProxyRegistration> proxyRegistrations,
+        CancellationToken cancellationToken)
+    {
+        // Endpoint will need to be proxied on the other transports
+        foreach (var proxyTransport in transportConfigurations)
+        {
+            if (proxyTransport.Name == targetTransport.Name)
+            {
+                continue;
+            }
+
+            var startableEndpointProxy = await endpointProxyFactory.CreateProxy(targetEndpoint, proxyTransport, cancellationToken)
+                .ConfigureAwait(false);
+
+            logger.LogInformation("Proxy for endpoint {endpoint} created on {transport}", targetTransport.Name, proxyTransport.Name);
+
+            proxyRegistrations.Add(new ProxyRegistration
+            {
+                Endpoint = targetEndpoint,
+                TranportName = proxyTransport.Name,
+                RawEndpoint = startableEndpointProxy
+            });
+        }
     }
 
     public TargetEndpointDispatcher GetTargetEndpointDispatcher(string sourceEndpointName)
@@ -79,7 +102,7 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
         throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    public IAddressMap AddressMap { get; } = new AddressMap();
+    public IAddressMap AddressMap { get; private set; }
 
     public string GetEndpointAddress(string endpointName)
     {
@@ -93,6 +116,7 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
         throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
+    readonly Dictionary<string, IStartableRawEndpoint> dispatchers = [];
     readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = [];
     readonly Dictionary<string, string> endpointAddressMappings = [];
 
