@@ -1,0 +1,5 @@
+[*.cs]
+
+# Justification : Test Project
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.PS0018.severity = suggestion
