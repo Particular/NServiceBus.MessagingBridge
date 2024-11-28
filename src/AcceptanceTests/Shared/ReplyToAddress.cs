@@ -19,7 +19,6 @@ public class ReplyToAddress : BridgeAcceptanceTest
                 {
                     var options = new SendOptions();
                     options.SetDestination(Conventions.EndpointNamingConvention(typeof(SecondMigratedEndpoint)));
-                    //options.SetHeader(Headers.ReplyToAddress, Conventions.EndpointNamingConvention(typeof(FirstMigratedEndpoint)));
                     return session.Send(new ADelayedMessage(), options);
                 });
             })
