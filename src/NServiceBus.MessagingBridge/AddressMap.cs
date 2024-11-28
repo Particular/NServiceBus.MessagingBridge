@@ -23,23 +23,24 @@ class AddressMap(IReadOnlyDictionary<string, IStartableRawEndpoint> dispatchers)
             throw new InvalidOperationException($"{endpoint.Name} has already been added to the address map.");
         }
 
+        var queueAddress = new QueueAddress(endpoint.Name);
+
         foreach (var targetTransport in addressMap.Keys)
         {
-            var queueAddress = new QueueAddress(endpoint.Name);
-            var targetAddress = targetTransport == transport.Name
-                ? endpoint.QueueAddress ?? dispatchers[targetTransport].ToTransportAddress(queueAddress)
-                : dispatchers[targetTransport].ToTransportAddress(queueAddress);
+            var targetAddress = DetermineTransportAddress(targetTransport, transport.Name, endpoint.QueueAddress, queueAddress);
 
             foreach (var sourceTransport in addressMap.Keys)
             {
-                var sourceAddress = sourceTransport == transport.Name
-                    ? endpoint.QueueAddress ?? dispatchers[sourceTransport].ToTransportAddress(queueAddress)
-                    : dispatchers[sourceTransport].ToTransportAddress(queueAddress);
+                var sourceAddress = DetermineTransportAddress(sourceTransport, transport.Name, endpoint.QueueAddress, queueAddress);
 
                 addressMap[targetTransport][sourceAddress] = targetAddress;
             }
         }
     }
+
+    string DetermineTransportAddress(string transportToMap, string endpointTransport, string overriddenQueueAddress, QueueAddress queueAddress) => transportToMap == endpointTransport
+        ? overriddenQueueAddress ?? dispatchers[transportToMap].ToTransportAddress(queueAddress)
+        : dispatchers[transportToMap].ToTransportAddress(queueAddress);
 
     public bool TryTranslate(string targetTransport, string address, out string bestMatch)
     {
