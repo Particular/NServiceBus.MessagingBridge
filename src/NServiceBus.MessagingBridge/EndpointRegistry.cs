@@ -53,7 +53,6 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
             proxyRegistrations.Add(new ProxyRegistration
             {
                 Endpoint = null,
-                TranportName = transport.Name,
                 RawEndpoint = dispatcher
             });
         }
@@ -84,7 +83,6 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
             proxyRegistrations.Add(new ProxyRegistration
             {
                 Endpoint = targetEndpoint,
-                TranportName = proxyTransport.Name,
                 RawEndpoint = startableEndpointProxy
             });
         }
@@ -123,7 +121,6 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
     public class ProxyRegistration
     {
         public BridgeEndpoint Endpoint;
-        public string TranportName;
         public IStartableRawEndpoint RawEndpoint;
     }
 }
