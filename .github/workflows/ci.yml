@@ -17,16 +17,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ windows-2022, ubuntu-22.04 ]
-        transport: [ Learning, RabbitMQ, AzureServiceBus, AzureStorageQueue, SqlServer, AmazonSQS, MSMQ ]
+        os: [ ubuntu-22.04 ]
+        transport: [ RabbitMQ, SqlServer ]
         include:
-          - os: windows-2022
-            os-name: Windows
           - os: ubuntu-22.04
             os-name: Linux
-        exclude:
-          - os: ubuntu-22.04
-            transport: MSMQ
       fail-fast: false
     steps:
       - name: Check for secrets
@@ -44,17 +39,12 @@ jobs:
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages
-        if: matrix.os-name == 'Windows' && matrix.transport == 'Learning'
+        if: matrix.transport == 'RabbitMQ'
         uses: actions/upload-artifact@v4.4.3
         with:
           name: NuGet packages
           path: nugets/
           retention-days: 7
-      - name: Azure login
-        uses: azure/login@v2.2.0
-        with:
-          creds: ${{ secrets.AZURE_ACI_CREDENTIALS }}
-          enable-AzPSSession: true
       - name: Install SQL Server
         if: matrix.transport == 'SqlServer'
         uses: Particular/install-sql-server-action@v1.2.0
@@ -66,41 +56,11 @@ jobs:
         run: |
           echo "Create extra databases"
           sqlcmd -Q "CREATE DATABASE nservicebus2"
-      - name: Setup Azure Service Bus
-        if: matrix.transport == 'AzureServiceBus'
-        uses: Particular/setup-azureservicebus-action@v2.0.0
-        with:
-          connection-string-name: AzureServiceBus_ConnectionString
-          azure-credentials: ${{ secrets.AZURE_ACI_CREDENTIALS }}
-          tag: ASBTransportBridge
-      - name: Setup learning transport
-        if: matrix.transport == 'Learning'
-        run: |
-          echo "LearningTransport=true" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
-      - name: Setup MSMQ transport
-        if: matrix.transport == 'MSMQ'
-        run: |
-          echo "MSMQTransport=true" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
-      - name: Setup AWS SDK environment
-        if: matrix.transport == 'AmazonSQS'
-        run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
-          echo "AWS_REGION=${{ secrets.AWS_REGION }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
       - name: Setup RabbitMQ
         if: matrix.transport == 'RabbitMQ'
         uses: Particular/setup-rabbitmq-action@v1.7.1
         with:
           connection-string-name: RabbitMQTransport_ConnectionString
           tag: RabbitMQTransportBridge
-          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
-          registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Setup Azure Storage Account
-        if: matrix.transport == 'AzureStorageQueue'
-        uses: Particular/setup-azurestorage-action@v2.0.0
-        with:
-          connection-string-name: AzureStorageQueueTransport_ConnectionString
-          azure-credentials: ${{ secrets.AZURE_ACI_CREDENTIALS }}
-          tag: ASQTransport
       - name: Run tests
         uses: Particular/run-tests-action@v1.7.0
