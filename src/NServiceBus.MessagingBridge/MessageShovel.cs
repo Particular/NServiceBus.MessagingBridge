@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NewRelic.Api.Agent;
 using NServiceBus;
 using NServiceBus.Faults;
 using NServiceBus.Transport;
@@ -18,12 +20,18 @@ sealed class MessageShovel : IMessageShovel
         translateReplyToAddressForFailedMessages = finalizedBridgeConfiguration.TranslateReplyToAddressForFailedMessages;
     }
 
+    [Transaction()]
     public async Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
     {
         TargetEndpointDispatcher targetEndpointDispatcher = null;
         try
         {
             targetEndpointDispatcher = targetEndpointRegistry.GetTargetEndpointDispatcher(transferContext.SourceEndpointName);
+
+            SetNewRelicTransaction(
+                transferContext.MessageToTransfer.Headers,
+                transferContext.SourceTransport,
+                targetEndpointDispatcher.TransportName);
 
             var messageContext = transferContext.MessageToTransfer;
 
@@ -129,4 +137,26 @@ sealed class MessageShovel : IMessageShovel
     readonly ILogger<MessageShovel> logger;
     readonly IEndpointRegistry targetEndpointRegistry;
     readonly bool translateReplyToAddressForFailedMessages;
+
+    static void SetNewRelicTransaction(
+        IDictionary<string, string> messageHeaders,
+        string sourceTransport,
+        string targetTransport)
+    {
+        var transactionName = "Message/NServiceBus/Queue/Unknown";
+        if (messageHeaders.TryGetValue(Headers.EnclosedMessageTypes, out var enclosedMessageTypes))
+        {
+            var messageType = enclosedMessageTypes.Split(',', 2)[0];
+            transactionName = "Message/NServiceBus/Queue/Named/" + messageType;
+        }
+        NewRelic.Api.Agent.NewRelic.SetTransactionName(null, transactionName);
+
+        messageHeaders.TryGetValue(Headers.OriginatingEndpoint, out var originatingEndpoint);
+
+        var newRelicAgent = NewRelic.Api.Agent.NewRelic.GetAgent();
+        newRelicAgent.CurrentTransaction
+            .AddCustomAttribute("NServiceBus.Bridge.SourceTransport", sourceTransport)
+            .AddCustomAttribute("NServiceBus.Bridge.TargetTransport", targetTransport)
+            .AddCustomAttribute(Headers.OriginatingEndpoint, originatingEndpoint);
+    }
 }

@@ -11,19 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTesting", "Accept
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BD366FEE-B2FC-4827-8D73-BCD5943AD659}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.Msmq", "AcceptanceTests.Msmq\AcceptanceTests.Msmq.csproj", "{995068A9-F998-4315-8FCB-76875C512BF3}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.Learning", "AcceptanceTests.Learning\AcceptanceTests.Learning.csproj", "{F7C30E15-51FD-4265-840A-BEE8167B58F7}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.SqlServer", "AcceptanceTests.SqlServer\AcceptanceTests.SqlServer.csproj", "{89B29A1A-D92E-4099-97D3-48CCA08D0025}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.RabbitMQ", "AcceptanceTests.RabbitMQ\AcceptanceTests.RabbitMQ.csproj", "{DBC0573A-4B20-4176-98A2-9B05F924D4B4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{F2DDEC46-20A1-4D33-BF7F-270EB1263511}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.ASB", "AcceptanceTests.ASB\AcceptanceTests.ASB.csproj", "{121DAD2E-C872-4921-BA6F-9F5772784829}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.SQS", "AcceptanceTests.SQS\AcceptanceTests.SQS.csproj", "{AD10AF05-2BFF-4C4C-9C42-F9A862F159FE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7C9AAE78-1698-46A0-89C8-DE78587C1B29}"
 	ProjectSection(SolutionItems) = preProject
@@ -32,10 +24,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 		..\.github\workflows\release.yml = ..\.github\workflows\release.yml
 	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcceptanceTests.ASQ", "AcceptanceTests.ASQ\AcceptanceTests.ASQ.csproj", "{6E534115-6E4C-4F4D-AFFA-14FCC81CA7AE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NServiceBus.MessagingBridge.Msmq", "NServiceBus.MessagingBridge.Msmq\NServiceBus.MessagingBridge.Msmq.csproj", "{15DA1652-C18F-4A66-9487-500E8F5B3CE3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,14 +43,6 @@ Global
 		{005F90DA-F476-4A08-BA67-D0464FD872B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{005F90DA-F476-4A08-BA67-D0464FD872B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{005F90DA-F476-4A08-BA67-D0464FD872B1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{995068A9-F998-4315-8FCB-76875C512BF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{995068A9-F998-4315-8FCB-76875C512BF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{995068A9-F998-4315-8FCB-76875C512BF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{995068A9-F998-4315-8FCB-76875C512BF3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F7C30E15-51FD-4265-840A-BEE8167B58F7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{89B29A1A-D92E-4099-97D3-48CCA08D0025}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{89B29A1A-D92E-4099-97D3-48CCA08D0025}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89B29A1A-D92E-4099-97D3-48CCA08D0025}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -75,36 +55,15 @@ Global
 		{F2DDEC46-20A1-4D33-BF7F-270EB1263511}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2DDEC46-20A1-4D33-BF7F-270EB1263511}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2DDEC46-20A1-4D33-BF7F-270EB1263511}.Release|Any CPU.Build.0 = Release|Any CPU
-		{121DAD2E-C872-4921-BA6F-9F5772784829}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{121DAD2E-C872-4921-BA6F-9F5772784829}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{121DAD2E-C872-4921-BA6F-9F5772784829}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{121DAD2E-C872-4921-BA6F-9F5772784829}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AD10AF05-2BFF-4C4C-9C42-F9A862F159FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AD10AF05-2BFF-4C4C-9C42-F9A862F159FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AD10AF05-2BFF-4C4C-9C42-F9A862F159FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AD10AF05-2BFF-4C4C-9C42-F9A862F159FE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E534115-6E4C-4F4D-AFFA-14FCC81CA7AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E534115-6E4C-4F4D-AFFA-14FCC81CA7AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E534115-6E4C-4F4D-AFFA-14FCC81CA7AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E534115-6E4C-4F4D-AFFA-14FCC81CA7AE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{15DA1652-C18F-4A66-9487-500E8F5B3CE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{15DA1652-C18F-4A66-9487-500E8F5B3CE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{15DA1652-C18F-4A66-9487-500E8F5B3CE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{15DA1652-C18F-4A66-9487-500E8F5B3CE3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C27BC21F-5283-483C-BE77-E86543B26E9E} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
-		{995068A9-F998-4315-8FCB-76875C512BF3} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
-		{F7C30E15-51FD-4265-840A-BEE8167B58F7} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 		{89B29A1A-D92E-4099-97D3-48CCA08D0025} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 		{DBC0573A-4B20-4176-98A2-9B05F924D4B4} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 		{F2DDEC46-20A1-4D33-BF7F-270EB1263511} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
-		{121DAD2E-C872-4921-BA6F-9F5772784829} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
-		{AD10AF05-2BFF-4C4C-9C42-F9A862F159FE} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
-		{6E534115-6E4C-4F4D-AFFA-14FCC81CA7AE} = {BD366FEE-B2FC-4827-8D73-BCD5943AD659}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1B296A99-AC69-4840-BC9B-502101AE9B76}
