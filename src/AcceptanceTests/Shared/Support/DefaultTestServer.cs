@@ -8,6 +8,8 @@ using NUnit.Framework;
 
 public class DefaultTestServer : IEndpointSetupTemplate
 {
+    const string StorageDirectory = "DefaultTestingTransport";
+
 #pragma warning disable PS0013 // Add a CancellationToken parameter type argument
     public virtual async Task<EndpointConfiguration> GetConfiguration(RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointConfiguration, Func<EndpointConfiguration, Task> configurationBuilderCustomization)
 #pragma warning restore PS0013 // Add a CancellationToken parameter type argument
@@ -25,7 +27,7 @@ public class DefaultTestServer : IEndpointSetupTemplate
 
         configuration.RegisterComponentsAndInheritanceHierarchy(runDescriptor);
 
-        var transportDefinition = GetTestTransportDefinition();
+        var transportDefinition = GetTransportDefinition();
         configuration.UseTransport(transportDefinition);
 
         runDescriptor.OnTestCompleted(_ =>
@@ -43,12 +45,17 @@ public class DefaultTestServer : IEndpointSetupTemplate
         return configuration;
     }
 
-    public static AcceptanceTestingTransport GetTestTransportDefinition()
+    protected static AcceptanceTestingTransport GetTransportDefinition(string instanceId)
     {
         var testRunId = TestContext.CurrentContext.Test.ID;
-        //make sure to run in a non-default directory to not clash with learning transport and other acceptance tests
-        var storageDir = Path.Combine(Path.GetTempPath(), testRunId, "DefaultTestingTransport");
 
-        return new AcceptanceTestingTransport { StorageLocation = storageDir };
+        //make sure to run in a non-default directory to not clash with learning transport and other acceptance tests
+        var storagePath = Path.Combine(Path.GetTempPath(), testRunId, instanceId);
+
+        return new AcceptanceTestingTransport { StorageLocation = storagePath };
     }
+
+    protected virtual AcceptanceTestingTransport GetTransportDefinition() => GetTransportDefinition(StorageDirectory);
+
+    public static AcceptanceTestingTransport GetTestTransportDefinition() => GetTransportDefinition(StorageDirectory);
 }
