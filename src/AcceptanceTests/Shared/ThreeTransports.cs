@@ -55,8 +55,13 @@ public class ThreeTransports : BridgeAcceptanceTest
     {
         public ReceivingEndpoint() => EndpointSetup<ReceivingTestServer>();
 
-        class SomeMessageHandler(Context context) : IHandleMessages<SomeMessage>
+        class SomeMessageHandler : IHandleMessages<SomeMessage>
         {
+            public SomeMessageHandler(Context context)
+            {
+                testContext = context;
+            }
+
             public Task Handle(SomeMessage message, IMessageHandlerContext context)
             {
                 Assert.Multiple(() =>
@@ -70,7 +75,7 @@ public class ThreeTransports : BridgeAcceptanceTest
                 return Task.CompletedTask;
             }
 
-            readonly Context testContext = context;
+            readonly Context testContext;
         }
     }
 
