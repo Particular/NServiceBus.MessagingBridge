@@ -245,7 +245,7 @@ public class MessageShovelTests
         {
             this.targetTransport = targetTransport;
             this.targetEndpoint = targetEndpoint;
-            this.tryTranslateToTargetFindsAMatch = tryTranslateToTargetFindsAMatch;
+            AddressMap = new FakeAddressMap(tryTranslateToTargetFindsAMatch);
             rawEndpoint = new FakeRawEndpoint(targetEndpoint.Name);
         }
 
@@ -254,22 +254,27 @@ public class MessageShovelTests
             return new TargetEndpointDispatcher(targetTransport, rawEndpoint, targetEndpoint.QueueAddress.ToString());
         }
 
-        public bool TryTranslateToTargetAddress(string sourceAddress, out string bestMatch)
-        {
-            var result = sourceAddress.Split('@').First();
-
-            bestMatch = result;
-            return tryTranslateToTargetFindsAMatch;
-        }
+        public IAddressMap AddressMap { get; }
 
         public string GetEndpointAddress(string endpointName) => throw new NotImplementedException();
 
         readonly string targetTransport;
         readonly BridgeEndpoint targetEndpoint;
         readonly FakeRawEndpoint rawEndpoint;
-        readonly bool tryTranslateToTargetFindsAMatch;
 
         public TransferDetails TransferDetails => rawEndpoint.TransferDetails;
+    }
+
+    class FakeAddressMap(bool tryTranslateToTargetFindsAMatch) : IAddressMap
+    {
+        public void Add(BridgeTransport transport, BridgeEndpoint endpoint) => throw new NotImplementedException();
+
+        public bool TryTranslate(string targetTransport, string address, out string bestMatch)
+        {
+            bestMatch = address.Split('@').First();
+
+            return tryTranslateToTargetFindsAMatch;
+        }
     }
 
     public class TransferDetails
