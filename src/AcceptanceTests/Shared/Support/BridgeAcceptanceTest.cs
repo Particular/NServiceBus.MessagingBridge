@@ -41,7 +41,6 @@ public class BridgeAcceptanceTest
     }
 
     protected TransportDefinition TransportBeingTested => bridgeTransportDefinition.TransportDefinition;
-    protected TransportDefinition TestTransport;
 
     BridgeTransportDefinition bridgeTransportDefinition;
 }
