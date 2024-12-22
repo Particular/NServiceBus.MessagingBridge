@@ -1,46 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
 
 class EndpointRegistry : IEndpointRegistry
 {
-    public void RegisterDispatcher(
-        BridgeEndpoint endpoint,
-        string targetTransportName,
-        IStartableRawEndpoint startableRawEndpoint)
+    public EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<StartableBridge> logger)
     {
-        registrations.Add(new ProxyRegistration
-        {
-            Endpoint = endpoint,
-            TranportName = targetTransportName,
-            RawEndpoint = startableRawEndpoint
-        });
-
-        endpointAddressMappings[endpoint.Name] = endpoint.QueueAddress;
-        targetEndpointAddressMappings[endpoint.QueueAddress] = startableRawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
+        this.endpointProxyFactory = endpointProxyFactory;
+        this.logger = logger;
     }
 
-    public void ApplyMappings(IReadOnlyCollection<BridgeTransport> transportConfigurations)
+    //NOTE: This method cannot have a return type of IAsyncEnumerable as all the endpoints need to be configured on the bridge before the bridge can start processing messages. 
+    public async Task<IEnumerable<ProxyRegistration>> Initialize(IReadOnlyCollection<BridgeTransport> transportConfigurations, CancellationToken cancellationToken = default)
     {
-        foreach (var registration in registrations)
+        // Assume that it is the number of endpoints that is more likely to scale up in size than the number of transports (typically only 2).
+        // Therefore in cases where it might matter, it is more efficient to iterate over the transports multiple times.
+        var transportConfigurationMappings = transportConfigurations.ToDictionary(t => t.Name, t => t);
+
+        IList<ProxyRegistration> proxyRegistrations = new List<ProxyRegistration>();
+
+        foreach (var targetTransport in transportConfigurations)
         {
-            // target transport is the transport where this endpoint is actually running
-            var targetTransport = transportConfigurations.Single(t => t.Endpoints.Any(e => e.Name == registration.Endpoint.Name));
+            // Create the dispatcher for this transport
+            var dispatchEndpoint = await EndpointProxyFactory.CreateDispatcher(targetTransport, cancellationToken).ConfigureAwait(false);
 
-            // just pick the first proxy that is running on the target transport since
-            // we just need to be able to send messages to that transport
-            var proxyEndpoint = registrations
-                .First(r => r.TranportName == targetTransport.Name)
-                .RawEndpoint;
+            proxyRegistrations.Add(new ProxyRegistration
+            {
+                Endpoint = null,
+                TranportName = targetTransport.Name,
+                RawEndpoint = dispatchEndpoint
+            });
 
-            targetEndpointDispatchers[registration.Endpoint.Name] = new TargetEndpointDispatcher(
-                targetTransport.Name,
-                proxyEndpoint,
-                registration.Endpoint.QueueAddress);
+            // create required proxy endpoints on all transports
+            foreach (var endpointToSimulate in targetTransport.Endpoints)
+            {
+                // Endpoint will need to be proxied on the other transports
+                foreach (var proxyTransport in transportConfigurationMappings.Where(kvp => kvp.Key != targetTransport.Name).Select(kvp => kvp.Value))
+                {
+                    var startableEndpointProxy = await endpointProxyFactory.CreateProxy(endpointToSimulate, proxyTransport, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    logger.LogInformation("Proxy for endpoint {endpoint} created on {transport}", endpointToSimulate.Name, proxyTransport.Name);
+
+                    var queueAddress = new QueueAddress(endpointToSimulate.Name);
+                    var targetTransportAddress = dispatchEndpoint.ToTransportAddress(queueAddress);
+                    var sourceTransportAddress = startableEndpointProxy.ToTransportAddress(queueAddress);
+
+                    endpointAddressMappings[endpointToSimulate.Name] = endpointToSimulate.QueueAddress ?? targetTransportAddress;
+                    targetEndpointAddressMappings[targetTransportAddress] = sourceTransportAddress;
+                    if (targetTransportAddress != sourceTransportAddress)
+                    {
+                        // Also add the reverse mapping so that any messages that were in-flight before a bridge configuration change
+                        // can still have their address translated correctly.  This also allows for the case where duplicate logical endpoints
+                        // are running as a competing consumer with the bridge in canary/parallel deployment scenarios.
+                        targetEndpointAddressMappings[sourceTransportAddress] = targetTransportAddress;
+                    }
+                    targetEndpointDispatchers[endpointToSimulate.Name] = new TargetEndpointDispatcher(targetTransport.Name, dispatchEndpoint, targetTransportAddress);
+
+                    proxyRegistrations.Add(new ProxyRegistration
+                    {
+                        Endpoint = endpointToSimulate,
+                        TranportName = proxyTransport.Name,
+                        RawEndpoint = startableEndpointProxy
+                    });
+                }
+            }
         }
+
+        return proxyRegistrations;
     }
 
     public TargetEndpointDispatcher GetTargetEndpointDispatcher(string sourceEndpointName)
@@ -87,12 +120,11 @@ class EndpointRegistry : IEndpointRegistry
         return nearestMatch ?? "(No mappings registered)";
     }
 
-    public IEnumerable<ProxyRegistration> Registrations => registrations;
-
     readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = new Dictionary<string, TargetEndpointDispatcher>();
     readonly Dictionary<string, string> targetEndpointAddressMappings = new Dictionary<string, string>();
     readonly Dictionary<string, string> endpointAddressMappings = new Dictionary<string, string>();
-    readonly List<ProxyRegistration> registrations = new List<ProxyRegistration>();
+    readonly EndpointProxyFactory endpointProxyFactory;
+    readonly ILogger<StartableBridge> logger;
 
     public class ProxyRegistration
     {
