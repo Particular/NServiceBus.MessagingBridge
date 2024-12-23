@@ -21,7 +21,7 @@ public class BridgeConfigurationTests
     }
 
     [Test]
-    public void At_least_on_endpoint_per_endpoint_should_be_configured()
+    public void At_least_one_endpoint_should_be_configured()
     {
         var configuration = new BridgeConfiguration();
 
@@ -31,7 +31,6 @@ public class BridgeConfigurationTests
         var ex = Assert.Throws<InvalidOperationException>(() => FinalizeConfiguration(configuration));
 
         Assert.That(ex.Message, Does.Contain("At least one"));
-        Assert.That(ex.Message, Does.Contain("some, someother"));
     }
 
     [Test]

@@ -6,18 +6,11 @@ using NServiceBus;
 using NServiceBus.Faults;
 using NServiceBus.Transport;
 
-sealed class MessageShovel : IMessageShovel
+sealed class MessageShovel(
+    ILogger<MessageShovel> logger,
+    IEndpointRegistry targetEndpointRegistry,
+    FinalizedBridgeConfiguration finalizedBridgeConfiguration) : IMessageShovel
 {
-    public MessageShovel(
-        ILogger<MessageShovel> logger,
-        IEndpointRegistry targetEndpointRegistry,
-        FinalizedBridgeConfiguration finalizedBridgeConfiguration)
-    {
-        this.logger = logger;
-        this.targetEndpointRegistry = targetEndpointRegistry;
-        translateReplyToAddressForFailedMessages = finalizedBridgeConfiguration.TranslateReplyToAddressForFailedMessages;
-    }
-
     public async Task TransferMessage(TransferContext transferContext, CancellationToken cancellationToken = default)
     {
         TargetEndpointDispatcher targetEndpointDispatcher = null;
@@ -26,13 +19,14 @@ sealed class MessageShovel : IMessageShovel
             targetEndpointDispatcher = targetEndpointRegistry.GetTargetEndpointDispatcher(transferContext.SourceEndpointName);
 
             var messageContext = transferContext.MessageToTransfer;
+            var targetTransport = targetEndpointDispatcher.TransportName;
 
             var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
             messageToSend.Headers.Remove(BridgeHeaders.FailedQ);
 
-            var length = transferContext.SourceTransport.Length + targetEndpointDispatcher.TransportName.Length + 2 /* ->*/;
+            var length = transferContext.SourceTransport.Length + targetTransport.Length + 2 /* ->*/;
             var transferDetails = string.Create(length,
-                (Source: transferContext.SourceTransport, Target: targetEndpointDispatcher.TransportName),
+                (Source: transferContext.SourceTransport, Target: targetTransport),
                 static (chars, context) =>
                 {
                     var position = 0;
@@ -48,12 +42,12 @@ sealed class MessageShovel : IMessageShovel
                 //This is a failed message forwarded to ServiceControl. We need to transform the FailedQ header so that ServiceControl returns the message
                 //to the correct queue/transport on the other side
 
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, FaultsHeaderKeys.FailedQ);
+                TransformAddressHeader(messageToSend, targetTransport, FaultsHeaderKeys.FailedQ);
 
                 if (translateReplyToAddressForFailedMessages)
                 {
                     //Try to translate the ReplyToAddress, this is needed when an endpoint is migrated to the ServiceControl side before this message is retried
-                    TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
+                    TransformAddressHeader(messageToSend, targetTransport, Headers.ReplyToAddress, throwOnError: false);
                 }
             }
             else if (IsAuditMessage(messageToSend))
@@ -64,12 +58,12 @@ sealed class MessageShovel : IMessageShovel
             else if (IsRetryMessage(messageToSend))
             {
                 //Transform the retry ack queue address
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, "ServiceControl.Retry.AcknowledgementQueue");
+                TransformAddressHeader(messageToSend, targetTransport, "ServiceControl.Retry.AcknowledgementQueue");
 
                 if (translateReplyToAddressForFailedMessages)
                 {
                     //This is a message retried from ServiceControl. We try to translate its ReplyToAddress.
-                    TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, throwOnError: false);
+                    TransformAddressHeader(messageToSend, targetTransport, Headers.ReplyToAddress, throwOnError: false);
                 }
             }
             else if (IsRetryEditedMessage(messageToSend))
@@ -77,14 +71,14 @@ sealed class MessageShovel : IMessageShovel
                 // This is a retry message that has been edited going from one side of the bridge to another
                 // The ReplyToAddress is transformed to allow for replies to be delivered
                 messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
-                TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress, !translateReplyToAddressForFailedMessages);
+                TransformAddressHeader(messageToSend, targetTransport, Headers.ReplyToAddress, !translateReplyToAddressForFailedMessages);
             }
             else
             {
                 // This is a regular message sent between the endpoints on different sides of the bridge.
                 // The ReplyToAddress is transformed to allow for replies to be delivered
                 messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
-                TransformRegularMessageReplyToAddress(transferContext, messageToSend, targetEndpointRegistry);
+                TransformRegularMessageReplyToAddress(transferContext, messageToSend, targetTransport);
             }
 
             await targetEndpointDispatcher.Dispatch(
@@ -118,7 +112,7 @@ sealed class MessageShovel : IMessageShovel
     void TransformRegularMessageReplyToAddress(
         TransferContext transferContext,
         OutgoingMessage messageToSend,
-        IEndpointRegistry targetEndpointRegistry)
+        string targetTransport)
     {
         if (!messageToSend.Headers.TryGetValue(Headers.ReplyToAddress, out var headerValue))
         {
@@ -133,36 +127,34 @@ sealed class MessageShovel : IMessageShovel
         }
         else
         {
-            TransformAddressHeader(messageToSend, targetEndpointRegistry, Headers.ReplyToAddress);
+            TransformAddressHeader(messageToSend, targetTransport, Headers.ReplyToAddress);
         }
     }
 
     void TransformAddressHeader(
         OutgoingMessage messageToSend,
-        IEndpointRegistry endpointRegistry,
+        string targetTransport,
         string addressHeaderKey,
         bool throwOnError = true)
     {
-        if (!messageToSend.Headers.TryGetValue(addressHeaderKey, out var sourceAddress))
+        if (!messageToSend.Headers.TryGetValue(addressHeaderKey, out var address))
         {
             return;
         }
 
-        if (endpointRegistry.TryTranslateToTargetAddress(sourceAddress, out string bestMatch))
+        if (targetEndpointRegistry.AddressMap.TryTranslate(targetTransport, address, out string bestMatch))
         {
             messageToSend.Headers[addressHeaderKey] = bestMatch;
         }
         else if (throwOnError == false)
         {
-            logger.LogWarning($"Could not translate {sourceAddress} address. Consider using `.HasEndpoint()` method to add missing endpoint declaration.");
+            logger.LogWarning($"Could not translate {address} address. Consider using `.HasEndpoint()` method to add missing endpoint declaration.");
         }
         else
         {
-            throw new Exception($"No target address mapping could be found for source address: {sourceAddress}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {bestMatch}");
+            throw new Exception($"No target address mapping could be found for source address: {address}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {bestMatch ?? "(No mappings registered)"}");
         }
     }
 
-    readonly ILogger<MessageShovel> logger;
-    readonly IEndpointRegistry targetEndpointRegistry;
-    readonly bool translateReplyToAddressForFailedMessages;
+    readonly bool translateReplyToAddressForFailedMessages = finalizedBridgeConfiguration.TranslateReplyToAddressForFailedMessages;
 }

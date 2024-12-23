@@ -14,12 +14,12 @@ namespace NServiceBus.Raw
             RawCriticalError criticalError)
         {
             this.criticalError = criticalError;
-            messagePump = transportInfrastructure.Receivers.Values.First();
+            messagePump = transportInfrastructure.Receivers.Values.FirstOrDefault();
             dispatcher = transportInfrastructure.Dispatcher;
             this.rawEndpointConfiguration = rawEndpointConfiguration;
             this.transportInfrastructure = transportInfrastructure;
-            SubscriptionManager = messagePump.Subscriptions;
-            TransportAddress = messagePump.ReceiveAddress;
+            SubscriptionManager = messagePump?.Subscriptions;
+            TransportAddress = messagePump?.ReceiveAddress;
         }
 
         public async Task<IReceivingRawEndpoint> Start(CancellationToken cancellationToken = default)
