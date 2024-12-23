@@ -48,6 +48,8 @@ public class Retry : BridgeAcceptanceTest
             Assert.That(ctx.MessageFailed, Is.True);
             Assert.That(ctx.RetryDelivered, Is.True);
             Assert.That(ctx.GotRetrySuccessfullAck, Is.True);
+            Assert.That(ctx.FailedMessageHeaders, Is.Not.Null);
+            Assert.That(ctx.ReceivedMessageHeaders, Is.Not.Null);
         });
 
         foreach (var header in ctx.FailedMessageHeaders)

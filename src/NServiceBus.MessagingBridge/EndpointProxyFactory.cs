@@ -66,6 +66,13 @@ class EndpointProxyFactory
         return RawEndpoint.Create(transportEndpointConfiguration, cancellationToken);
     }
 
+    public static Task<IStartableRawEndpoint> CreateDispatcher(BridgeTransport transportConfiguration, CancellationToken cancellationToken = default)
+    {
+        var endpointConfiguration = RawEndpointConfiguration.CreateSendOnly($"bridge-dispatcher-{transportConfiguration.Name}", transportConfiguration.TransportDefinition);
+
+        return RawEndpoint.Create(endpointConfiguration, cancellationToken);
+    }
+
     static bool IsSubscriptionMessage(IReadOnlyDictionary<string, string> messageContextHeaders)
     {
         var messageIntent = default(MessageIntent);

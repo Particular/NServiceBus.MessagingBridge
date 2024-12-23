@@ -1,45 +1,96 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Raw;
 using NServiceBus.Transport;
 
 class EndpointRegistry : IEndpointRegistry
 {
-    public void RegisterDispatcher(
-        BridgeEndpoint endpoint,
-        string targetTransportName,
-        IStartableRawEndpoint startableRawEndpoint)
+    public EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<StartableBridge> logger)
     {
-        registrations.Add(new ProxyRegistration
-        {
-            Endpoint = endpoint,
-            TranportName = targetTransportName,
-            RawEndpoint = startableRawEndpoint
-        });
-
-        endpointAddressMappings[endpoint.Name] = endpoint.QueueAddress;
-        targetEndpointAddressMappings[endpoint.QueueAddress] = startableRawEndpoint.ToTransportAddress(new QueueAddress(endpoint.Name));
+        this.endpointProxyFactory = endpointProxyFactory;
+        this.logger = logger;
     }
 
-    public void ApplyMappings(IReadOnlyCollection<BridgeTransport> transportConfigurations)
+    //NOTE: This method cannot have a return type of IAsyncEnumerable as all the endpoints need to be configured on the bridge before the bridge can start processing messages. 
+    public async Task<IEnumerable<ProxyRegistration>> Initialize(IReadOnlyCollection<BridgeTransport> transportConfigurations, CancellationToken cancellationToken = default)
     {
-        foreach (var registration in registrations)
+        // Assume that it is the number of endpoints that is more likely to scale up in size than the number of transports (typically only 2).
+        // Therefore in cases where it might matter, it is more efficient to iterate over the transports multiple times.
+
+        IList<ProxyRegistration> proxyRegistrations = new List<ProxyRegistration>();
+
+        await CreateAndRegisterDispatchers(transportConfigurations, proxyRegistrations, cancellationToken)
+            .ConfigureAwait(false);
+
+        var allEndpoints = transportConfigurations.SelectMany(
+            transport => transport.Endpoints.Select(endpoint => (transport, endpoint)));
+
+        foreach (var (transport, endpoint) in allEndpoints)
         {
-            // target transport is the transport where this endpoint is actually running
-            var targetTransport = transportConfigurations.Single(t => t.Endpoints.Any(e => e.Name == registration.Endpoint.Name));
+            AddressMap.Add(transport, endpoint);
 
-            // just pick the first proxy that is running on the target transport since
-            // we just need to be able to send messages to that transport
-            var proxyEndpoint = registrations
-                .First(r => r.TranportName == targetTransport.Name)
-                .RawEndpoint;
+            var dispatcher = dispatchers[transport.Name];
+            var queueAddress = new QueueAddress(endpoint.Name);
+            var targetTransportAddress = dispatcher.ToTransportAddress(queueAddress);
+            endpointAddressMappings[endpoint.Name] = endpoint.QueueAddress ?? targetTransportAddress;
+            targetEndpointDispatchers[endpoint.Name] = new TargetEndpointDispatcher(transport.Name, dispatcher, targetTransportAddress);
 
-            targetEndpointDispatchers[registration.Endpoint.Name] = new TargetEndpointDispatcher(
-                targetTransport.Name,
-                proxyEndpoint,
-                registration.Endpoint.QueueAddress);
+            await CreateAndRegisterProxies(transport, endpoint, transportConfigurations, proxyRegistrations, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return proxyRegistrations;
+    }
+
+    async Task CreateAndRegisterDispatchers(
+        IReadOnlyCollection<BridgeTransport> transportConfigurations,
+        IList<ProxyRegistration> proxyRegistrations,
+        CancellationToken cancellationToken)
+    {
+        foreach (var transport in transportConfigurations)
+        {
+            var dispatcher = await EndpointProxyFactory.CreateDispatcher(transport, cancellationToken).ConfigureAwait(false);
+            dispatchers.Add(transport.Name, dispatcher);
+            proxyRegistrations.Add(new ProxyRegistration
+            {
+                Endpoint = null,
+                RawEndpoint = dispatcher
+            });
+        }
+
+        AddressMap = new AddressMap(dispatchers);
+    }
+
+    async Task CreateAndRegisterProxies(
+        BridgeTransport targetTransport,
+        BridgeEndpoint targetEndpoint,
+        IReadOnlyCollection<BridgeTransport> transportConfigurations,
+        IList<ProxyRegistration> proxyRegistrations,
+        CancellationToken cancellationToken)
+    {
+        // Endpoint will need to be proxied on the other transports
+        foreach (var proxyTransport in transportConfigurations)
+        {
+            if (proxyTransport.Name == targetTransport.Name)
+            {
+                continue;
+            }
+
+            var startableEndpointProxy = await endpointProxyFactory.CreateProxy(targetEndpoint, proxyTransport, cancellationToken)
+                .ConfigureAwait(false);
+
+            logger.LogInformation("Proxy for endpoint {endpoint} created on {transport}", targetTransport.Name, proxyTransport.Name);
+
+            proxyRegistrations.Add(new ProxyRegistration
+            {
+                Endpoint = targetEndpoint,
+                RawEndpoint = startableEndpointProxy
+            });
         }
     }
 
@@ -50,21 +101,12 @@ class EndpointRegistry : IEndpointRegistry
             return endpointDispatcher;
         }
 
-        var nearestMatch = GetClosestMatchForExceptionMessage(sourceEndpointName, targetEndpointDispatchers.Keys);
+        var nearestMatch = sourceEndpointName.GetClosestMatch(targetEndpointDispatchers.Keys);
 
         throw new Exception($"No target endpoint dispatcher could be found for endpoint: {sourceEndpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    public bool TryTranslateToTargetAddress(string sourceAddress, out string bestMatch)
-    {
-        if (targetEndpointAddressMappings.TryGetValue(sourceAddress, out bestMatch))
-        {
-            return true;
-        }
-
-        bestMatch = GetClosestMatchForExceptionMessage(sourceAddress, targetEndpointAddressMappings.Keys);
-        return false;
-    }
+    public IAddressMap AddressMap { get; private set; }
 
     public string GetEndpointAddress(string endpointName)
     {
@@ -73,31 +115,20 @@ class EndpointRegistry : IEndpointRegistry
             return address;
         }
 
-        var nearestMatch = GetClosestMatchForExceptionMessage(endpointName, endpointAddressMappings.Keys);
+        var nearestMatch = endpointName.GetClosestMatch(endpointAddressMappings.Keys) ?? "(No mappings registered)";
 
         throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
-    static string GetClosestMatchForExceptionMessage(string sourceEndpointName, IEnumerable<string> items)
-    {
-        var calculator = new Levenshtein(sourceEndpointName.ToLower());
-        var nearestMatch = items
-            .OrderBy(x => calculator.DistanceFrom(x.ToLower()))
-            .FirstOrDefault();
-        return nearestMatch ?? "(No mappings registered)";
-    }
-
-    public IEnumerable<ProxyRegistration> Registrations => registrations;
-
+    readonly Dictionary<string, IStartableRawEndpoint> dispatchers = new Dictionary<string, IStartableRawEndpoint>();
     readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = new Dictionary<string, TargetEndpointDispatcher>();
-    readonly Dictionary<string, string> targetEndpointAddressMappings = new Dictionary<string, string>();
     readonly Dictionary<string, string> endpointAddressMappings = new Dictionary<string, string>();
-    readonly List<ProxyRegistration> registrations = new List<ProxyRegistration>();
+    readonly EndpointProxyFactory endpointProxyFactory;
+    readonly ILogger<StartableBridge> logger;
 
     public class ProxyRegistration
     {
         public BridgeEndpoint Endpoint;
-        public string TranportName;
         public IStartableRawEndpoint RawEndpoint;
     }
 }
