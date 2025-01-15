@@ -26,5 +26,5 @@ class FakeTransport : TransportDefinition
     public override string ToTransportAddress(QueueAddress address) => address.BaseAddress;
 #pragma warning restore CS0672 // Member overrides obsolete member
 
-    List<TransportTransactionMode> supportedTransactionModes = new List<TransportTransactionMode>();
+    List<TransportTransactionMode> supportedTransactionModes = [];
 }
