@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="9.2.4" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="NServiceBus" Version="9.2.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="UnitTests" Key="$(NServiceBusTestsKey)" />
     <InternalsVisibleTo Include="AcceptanceTesting" Key="$(NServiceBusTestsKey)" />
+    <InternalsVisibleTo Include="UnitTests" Key="$(NServiceBusTestsKey)" />
   </ItemGroup>
 
 </Project>
