@@ -5,16 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus.Transport.SqlServer" Version="7.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\AcceptanceTesting\AcceptanceTesting.csproj" />
-    <ProjectReference Include="..\NServiceBus.MessagingBridge\NServiceBus.MessagingBridge.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\AcceptanceTests\Shared\**\*.cs" Link="Shared\%(RecursiveDir)\%(Filename).%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,8 +15,16 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NServiceBus.Transport.SqlServer" Version="7.0.1" />
+  </ItemGroup>
+
   <ItemGroup Label="Direct references to transitive dependencies to avoid versions with CVE">
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\AcceptanceTests\Shared\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

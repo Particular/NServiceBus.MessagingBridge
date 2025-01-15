@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.2.1" />
+    <ProjectReference Include="..\AcceptanceTesting\AcceptanceTesting.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,12 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AcceptanceTesting\AcceptanceTesting.csproj" />
-    <ProjectReference Include="..\NServiceBus.MessagingBridge\NServiceBus.MessagingBridge.csproj" />
+    <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.2.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\AcceptanceTests\Shared\**\*.cs" Link="Shared\%(RecursiveDir)\%(Filename).%(Extension)" />
+    <Compile Include="..\AcceptanceTests\Shared\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

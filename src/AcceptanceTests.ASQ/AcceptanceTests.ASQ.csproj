@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AcceptanceTesting\AcceptanceTesting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="3.0.0" />
@@ -14,12 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AcceptanceTesting\AcceptanceTesting.csproj" />
-    <ProjectReference Include="..\NServiceBus.MessagingBridge\NServiceBus.MessagingBridge.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\AcceptanceTests\Shared\**\*.cs" Link="Shared\%(RecursiveDir)\%(Filename).%(Extension)" />
+    <Compile Include="..\AcceptanceTests\Shared\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

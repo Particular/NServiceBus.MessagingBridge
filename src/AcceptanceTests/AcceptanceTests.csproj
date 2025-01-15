@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net481;net8.0</TargetFrameworks>
@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AcceptanceTesting\AcceptanceTesting.csproj" />
-    <ProjectReference Include="..\NServiceBus.MessagingBridge\NServiceBus.MessagingBridge.csproj" />
   </ItemGroup>
 
   <ItemGroup>
