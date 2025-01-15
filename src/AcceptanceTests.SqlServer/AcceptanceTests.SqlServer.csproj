@@ -20,6 +20,10 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
   </ItemGroup>
 
+  <ItemGroup Label="Direct references to transitive dependencies to avoid versions with CVE">
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Include="..\AcceptanceTests\Shared\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
