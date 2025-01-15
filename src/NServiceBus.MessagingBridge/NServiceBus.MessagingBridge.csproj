@@ -7,19 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="9.2.3" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="NServiceBus" Version="9.2.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Particular.Packaging" Version="4.2.0" PrivateAssets="All" />
     <PackageReference Include="Fody" Version="6.9.1" PrivateAssets="All" />
     <PackageReference Include="Obsolete.Fody" Version="5.3.0" PrivateAssets="All" />
+    <PackageReference Include="Particular.Packaging" Version="4.2.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="UnitTests" Key="$(NServiceBusTestsKey)" />
     <InternalsVisibleTo Include="AcceptanceTesting" Key="$(NServiceBusTestsKey)" />
+    <InternalsVisibleTo Include="UnitTests" Key="$(NServiceBusTestsKey)" />
   </ItemGroup>
 
 </Project>
