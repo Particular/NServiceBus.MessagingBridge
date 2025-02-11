@@ -1,0 +1,4 @@
+ignore:
+  - test: ComponentShouldTargetDotNetLtsVersion
+    code: FrameworkPackages
+    path: src/NServiceBus.MessagingBridge/NServiceBus.MessagingBridge.csproj
