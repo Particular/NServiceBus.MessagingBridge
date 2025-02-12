@@ -45,7 +45,7 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
             }
 
             return transport.ConnectionFactory(cancellationToken).Result;
-        };
+        }
 
         using (var conn = factory())
         {
