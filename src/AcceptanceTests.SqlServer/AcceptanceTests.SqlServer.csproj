@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus.Transport.SqlServer" Version="8.1.6" />
+    <PackageReference Include="NServiceBus.Transport.SqlServer" Version="8.1.7" />
   </ItemGroup>
 
   <ItemGroup Label="Direct references to transitive dependencies to avoid versions with CVE">
