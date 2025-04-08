@@ -4,6 +4,7 @@ namespace NServiceBus.Raw
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using NServiceBus.Faults;
     using NServiceBus.Routing;
     using NServiceBus.Transport;
 
@@ -30,6 +31,7 @@ namespace NServiceBus.Raw
             headers.Remove(Headers.ImmediateRetries);
 
             headers[BridgeHeaders.FailedQ] = localAddress;
+            headers[FaultsHeaderKeys.FailedQ] = localAddress;
             ExceptionHeaderHelper.SetExceptionHeaders(headers, errorContext.Exception);
 
             var transportOperations = new TransportOperations(new TransportOperation(outgoingMessage, new UnicastAddressTag(errorQueue)));
