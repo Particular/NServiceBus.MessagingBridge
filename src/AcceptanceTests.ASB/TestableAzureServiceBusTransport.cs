@@ -7,9 +7,9 @@ using NServiceBus.Transport;
 
 public class TestableAzureServiceBusTransport : AzureServiceBusTransport
 {
-    public TestableAzureServiceBusTransport(string connectionString) : base(connectionString)
+    public TestableAzureServiceBusTransport(string connectionString) : base(connectionString, TopicTopology.Default)
     {
-        SubscriptionRuleNamingConvention = (evt) => evt.FullName.Replace("+", "");
+        //SubscriptionRuleNamingConvention = (evt) => evt.FullName.Replace("+", "");
     }
 
     public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings,
