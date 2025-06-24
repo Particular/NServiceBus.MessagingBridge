@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../.github/workflows/ci.yml" />
+    <File Path="../.github/workflows/release.yml" />
+    <File Path="Custom.Build.props" />
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="AcceptanceTests.ASB/AcceptanceTests.ASB.csproj" />
+    <Project Path="AcceptanceTests.ASQ/AcceptanceTests.ASQ.csproj" />
+    <Project Path="AcceptanceTests.Learning/AcceptanceTests.Learning.csproj" />
+    <Project Path="AcceptanceTests.Msmq/AcceptanceTests.Msmq.csproj" />
+    <Project Path="AcceptanceTests.RabbitMQ/AcceptanceTests.RabbitMQ.csproj" />
+    <Project Path="AcceptanceTests.SqlServer/AcceptanceTests.SqlServer.csproj" />
+    <Project Path="AcceptanceTests.SQS/AcceptanceTests.SQS.csproj" />
+    <Project Path="AcceptanceTests/AcceptanceTests.csproj" />
+    <Project Path="UnitTests/UnitTests.csproj" />
+  </Folder>
+  <Project Path="AcceptanceTesting/AcceptanceTesting.csproj" />
+  <Project Path="NServiceBus.MessagingBridge.Msmq/NServiceBus.MessagingBridge.Msmq.csproj" />
+  <Project Path="NServiceBus.MessagingBridge/NServiceBus.MessagingBridge.csproj" />
+</Solution>
