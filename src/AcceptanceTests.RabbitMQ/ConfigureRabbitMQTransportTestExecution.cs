@@ -21,7 +21,7 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         transport = new TestableRabbitMQTransport(
             RoutingTopology.Conventional(QueueType.Quorum),

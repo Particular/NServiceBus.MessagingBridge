@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
+using NServiceBus.AcceptanceTesting.Customization;
 using NServiceBus.AcceptanceTesting.Support;
 using Particular.Msmq;
 
@@ -20,7 +21,7 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new TestableMsmqTransport();
         var routingConfig = endpointConfiguration.UseTransport(transportDefinition);
@@ -33,6 +34,8 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
                 routingConfig.RegisterPublisher(eventType, publisher.PublisherName);
             }
         }
+
+        endpointConfiguration.EnforcePublisherMetadataRegistration(endpointName, publisherMetadata);
 
         return (ct) => Cleanup(transportDefinition, ct);
     }

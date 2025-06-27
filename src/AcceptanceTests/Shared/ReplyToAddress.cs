@@ -69,17 +69,13 @@ public class ReplyToAddress : BridgeAcceptanceTest
     {
         public SecondMigratedEndpoint() => EndpointSetup<DefaultServer>();
 
-        class ADelayedMessageHandler : IHandleMessages<ADelayedMessage>
+        class ADelayedMessageHandler(Context testContext) : IHandleMessages<ADelayedMessage>
         {
-            public ADelayedMessageHandler(Context context) => testContext = context;
-
             public Task Handle(ADelayedMessage message, IMessageHandlerContext context)
             {
                 testContext.ADelayedMessageReceived = true;
                 return Task.CompletedTask;
             }
-
-            readonly Context testContext;
         }
     }
 
@@ -88,7 +84,5 @@ public class ReplyToAddress : BridgeAcceptanceTest
         public bool ADelayedMessageReceived { get; set; }
     }
 
-    public class ADelayedMessage : IMessage
-    {
-    }
+    public class ADelayedMessage : IMessage;
 }

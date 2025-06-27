@@ -21,7 +21,7 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new TestableSQSTransport(NamePrefixGenerator.GetNamePrefix());
         endpointConfiguration.UseTransport(transportDefinition);

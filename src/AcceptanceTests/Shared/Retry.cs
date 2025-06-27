@@ -83,12 +83,8 @@ public class Retry : BridgeAcceptanceTest
             c.SendFailedMessagesTo(Conventions.EndpointNamingConvention(typeof(FakeSCError)));
         });
 
-        public class MessageHandler : IHandleMessages<FaultyMessage>
+        public class MessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
-            readonly Context testContext;
-
-            public MessageHandler(Context context) => testContext = context;
-
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
                 if (testContext.MessageFailed)
@@ -110,10 +106,8 @@ public class Retry : BridgeAcceptanceTest
         public FakeSCError() => EndpointSetup<DefaultTestServer>((c, runDescriptor) =>
                 c.Pipeline.Register(new ControlMessageBehavior(runDescriptor.ScenarioContext as Context), "Checks that the retry confirmation arrived"));
 
-        class FailedMessageHander : IHandleMessages<FaultyMessage>
+        class FailedMessageHander(Context testContext) : IHandleMessages<FaultyMessage>
         {
-            public FailedMessageHander(Context context) => testContext = context;
-
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
                 testContext.FailedMessageHeaders =
@@ -132,14 +126,10 @@ public class Retry : BridgeAcceptanceTest
                 sendOptions.SetHeader("ServiceControl.Retry.AcknowledgementQueue", Conventions.EndpointNamingConvention(typeof(FakeSCError)));
                 return context.Send(new FaultyMessage(), sendOptions);
             }
-
-            readonly Context testContext;
         }
 
-        class ControlMessageBehavior : Behavior<IIncomingPhysicalMessageContext>
+        class ControlMessageBehavior(Context testContext) : Behavior<IIncomingPhysicalMessageContext>
         {
-            public ControlMessageBehavior(Context testContext) => this.testContext = testContext;
-
             public override async Task Invoke(IIncomingPhysicalMessageContext context, Func<Task> next)
             {
                 if (context.MessageHeaders.ContainsKey("ServiceControl.Retry.Successful"))
@@ -150,8 +140,6 @@ public class Retry : BridgeAcceptanceTest
                 await next();
 
             }
-
-            Context testContext;
         }
     }
 
@@ -164,7 +152,5 @@ public class Retry : BridgeAcceptanceTest
         public bool GotRetrySuccessfullAck { get; set; }
     }
 
-    public class FaultyMessage : IMessage
-    {
-    }
+    public class FaultyMessage : IMessage;
 }

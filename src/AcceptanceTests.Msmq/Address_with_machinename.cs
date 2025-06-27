@@ -64,7 +64,5 @@ public class Address_with_machinename : BridgeAcceptanceTest
         }
     }
 
-    public class MyMessage : IMessage
-    {
-    }
+    public class MyMessage : IMessage;
 }

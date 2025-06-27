@@ -15,10 +15,7 @@ public class Error : BridgeAcceptanceTest
     {
         var ctx = await Scenario.Define<Context>()
             .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, c) =>
-                {
-                    return session.Publish(new FaultyMessage());
-                }))
+                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new FaultyMessage())))
             .WithEndpoint<ProcessingEndpoint>(builder => builder.DoNotFailOnErrorMessages())
             .WithEndpoint<ErrorSpy>()
             .WithBridge(bridgeConfiguration =>
@@ -62,20 +59,16 @@ public class Error : BridgeAcceptanceTest
                     ctx.SubscriberSubscribed = true;
                 });
                 c.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), typeof(ProcessingEndpoint));
-            });
+            }, metadata => metadata.RegisterSelfAsPublisherFor<FaultyMessage>(this));
     }
 
     public class ProcessingEndpoint : EndpointConfigurationBuilder
     {
         public ProcessingEndpoint() => EndpointSetup<DefaultTestServer>(
-            c => c.SendFailedMessagesTo("Error.ErrorSpy"));
+            c => c.SendFailedMessagesTo("Error.ErrorSpy"), metadata => metadata.RegisterPublisherFor<FaultyMessage, PublishingEndpoint>());
 
-        public class MessageHandler : IHandleMessages<FaultyMessage>
+        public class MessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
-            readonly Context testContext;
-
-            public MessageHandler(Context context) => testContext = context;
-
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
                 testContext.ReceivedMessageHeaders =
@@ -88,15 +81,10 @@ public class Error : BridgeAcceptanceTest
 
     public class ErrorSpy : EndpointConfigurationBuilder
     {
-        public ErrorSpy()
-        {
-            var endpoint = EndpointSetup<DefaultServer>(c => c.AutoSubscribe().DisableFor<FaultyMessage>());
-        }
+        public ErrorSpy() => EndpointSetup<DefaultServer>(c => c.AutoSubscribe().DisableFor<FaultyMessage>());
 
-        class FailedMessageHander : IHandleMessages<FaultyMessage>
+        class FailedMessageHander(Context testContext) : IHandleMessages<FaultyMessage>
         {
-            public FailedMessageHander(Context context) => testContext = context;
-
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
                 testContext.FailedMessageHeaders =
@@ -106,8 +94,6 @@ public class Error : BridgeAcceptanceTest
 
                 return Task.CompletedTask;
             }
-
-            readonly Context testContext;
         }
     }
 
@@ -119,7 +105,5 @@ public class Error : BridgeAcceptanceTest
         public IReadOnlyDictionary<string, string> FailedMessageHeaders { get; set; }
     }
 
-    public class FaultyMessage : IEvent
-    {
-    }
+    public class FaultyMessage : IEvent;
 }
