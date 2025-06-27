@@ -17,7 +17,7 @@ class ConfigureLearningTransportTestExecution : IConfigureTransportTestExecution
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new LearningTransport { StorageDirectory = GetStorageDir() };
         endpointConfiguration.UseTransport(transportDefinition);

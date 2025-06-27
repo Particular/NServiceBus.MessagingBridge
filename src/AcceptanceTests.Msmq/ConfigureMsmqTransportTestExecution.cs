@@ -20,7 +20,7 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new TestableMsmqTransport();
         var routingConfig = endpointConfiguration.UseTransport(transportDefinition);

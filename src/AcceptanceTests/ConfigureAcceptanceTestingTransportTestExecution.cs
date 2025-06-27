@@ -17,7 +17,7 @@ class ConfigureAcceptanceTestingTransportTestExecution : IConfigureTransportTest
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new AcceptanceTestingTransport { StorageLocation = GetStorageDir() };
         endpointConfiguration.UseTransport(transportDefinition);

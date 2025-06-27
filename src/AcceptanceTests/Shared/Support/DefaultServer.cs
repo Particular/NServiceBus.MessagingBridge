@@ -26,7 +26,7 @@ public class DefaultServer : IEndpointSetupTemplate
 
         var transportConfig = TestSuiteConfiguration.Current.CreateTransportConfiguration();
 
-        var transportCleanup = transportConfig.ConfigureTransportForEndpoint(configuration, endpointConfiguration.PublisherMetadata);
+        var transportCleanup = transportConfig.ConfigureTransportForEndpoint(endpointConfiguration.EndpointName, configuration, endpointConfiguration.PublisherMetadata);
 
         runDescriptor.OnTestCompleted(_ => transportCleanup(CancellationToken.None));
 

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
+using NServiceBus.AcceptanceTesting.Customization;
 using NServiceBus.AcceptanceTesting.Support;
 
 public class ConfigureAzureServiceBusTransportTestExecution : IConfigureTransportTestExecution
@@ -26,10 +27,12 @@ public class ConfigureAzureServiceBusTransportTestExecution : IConfigureTranspor
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new TestableAzureServiceBusTransport(connectionString);
         endpointConfiguration.UseTransport(transportDefinition);
+
+        endpointConfiguration.EnforcePublisherMetadataRegistration(endpointName, publisherMetadata);
 
         return ct => Cleanup(transportDefinition, ct);
     }

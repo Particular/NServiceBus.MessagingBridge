@@ -23,7 +23,7 @@ public class ConfigureAzureStorageQueuesTransportTestExecution : IConfigureTrans
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new TestableAzureStorageQueuesTransport(connectionString);
 

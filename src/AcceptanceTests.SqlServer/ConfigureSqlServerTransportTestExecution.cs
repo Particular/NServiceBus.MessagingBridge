@@ -24,7 +24,7 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new TestableSqlServerTransport(connectionString);
         endpointConfiguration.UseTransport(transportDefinition);
