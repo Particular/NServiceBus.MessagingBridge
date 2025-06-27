@@ -50,7 +50,7 @@ class Publishing : BridgeAcceptanceTest
                 {
                     ctx.SubscriberSubscribed = true;
                 });
-            });
+            }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
         }
     }
 
@@ -58,7 +58,7 @@ class Publishing : BridgeAcceptanceTest
     {
         public Subscriber()
         {
-            EndpointSetup<DefaultTestServer>();
+            EndpointSetup<DefaultTestServer>(_ => { }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>());
         }
 
         public class MessageHandler : IHandleMessages<MyEvent>

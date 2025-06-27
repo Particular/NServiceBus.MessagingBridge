@@ -46,7 +46,7 @@ class Subscribing : BridgeAcceptanceTest
     {
         public Publisher()
         {
-            EndpointSetup<DefaultTestPublisher>();
+            EndpointSetup<DefaultTestPublisher>(_ => { }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
         }
     }
 
@@ -54,7 +54,7 @@ class Subscribing : BridgeAcceptanceTest
     {
         public Subscriber()
         {
-            EndpointSetup<DefaultServer>();
+            EndpointSetup<DefaultServer>(_ => { }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>());
         }
 
         public class MessageHandler : IHandleMessages<MyEvent>

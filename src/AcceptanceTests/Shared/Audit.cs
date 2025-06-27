@@ -57,13 +57,13 @@ public class Audit : BridgeAcceptanceTest
                     ctx.SubscriberSubscribed = true;
                 });
                 c.ConfigureRouting().RouteToEndpoint(typeof(MessageToBeAudited), typeof(ProcessingEndpoint));
-            });
+            }, metadata => metadata.RegisterSelfAsPublisherFor<MessageToBeAudited>(this));
     }
 
     public class ProcessingEndpoint : EndpointConfigurationBuilder
     {
         public ProcessingEndpoint() => EndpointSetup<DefaultTestServer>(
-            c => c.AuditProcessedMessagesTo("Audit.AuditSpy"));
+            c => c.AuditProcessedMessagesTo("Audit.AuditSpy"), metadata => metadata.RegisterPublisherFor<MessageToBeAudited, PublishingEndpoint>());
 
         public class MessageHandler : IHandleMessages<MessageToBeAudited>
         {

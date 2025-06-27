@@ -64,7 +64,7 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
                 {
                     ctx.SubscriberPublisherOneSubscribed = true;
                 });
-            });
+            }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
         }
     }
 
@@ -78,7 +78,7 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
                 {
                     ctx.SubscriberPublisherTwoSubscribed = true;
                 });
-            });
+            }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
         }
     }
 
@@ -86,7 +86,11 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
     {
         public Subscriber()
         {
-            EndpointSetup<DefaultTestServer>();
+            EndpointSetup<DefaultTestServer>(_ => { }, metadata =>
+            {
+                metadata.RegisterPublisherFor<MyEvent, PublisherOne>();
+                metadata.RegisterPublisherFor<MyEvent, PublisherTwo>();
+            });
         }
 
         public class MessageHandler : IHandleMessages<MyEvent>

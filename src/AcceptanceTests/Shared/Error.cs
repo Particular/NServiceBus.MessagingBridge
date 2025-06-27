@@ -62,13 +62,13 @@ public class Error : BridgeAcceptanceTest
                     ctx.SubscriberSubscribed = true;
                 });
                 c.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), typeof(ProcessingEndpoint));
-            });
+            }, metadata => metadata.RegisterSelfAsPublisherFor<FaultyMessage>(this));
     }
 
     public class ProcessingEndpoint : EndpointConfigurationBuilder
     {
         public ProcessingEndpoint() => EndpointSetup<DefaultTestServer>(
-            c => c.SendFailedMessagesTo("Error.ErrorSpy"));
+            c => c.SendFailedMessagesTo("Error.ErrorSpy"), metadata => metadata.RegisterPublisherFor<FaultyMessage, PublishingEndpoint>());
 
         public class MessageHandler : IHandleMessages<FaultyMessage>
         {
