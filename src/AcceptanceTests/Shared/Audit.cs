@@ -14,7 +14,7 @@ public class Audit : BridgeAcceptanceTest
     {
         var ctx = await Scenario.Define<Context>()
             .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
+                .When(c => c.HasNativePubSubSupport || c.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
             .WithEndpoint<ProcessingEndpoint>()
             .WithEndpoint<AuditSpy>()
             .WithBridge(bridgeConfiguration =>
@@ -49,10 +49,7 @@ public class Audit : BridgeAcceptanceTest
         public PublishingEndpoint() =>
             EndpointSetup<DefaultServer>(c =>
             {
-                c.OnEndpointSubscribed<Context>((_, ctx) =>
-                {
-                    ctx.SubscriberSubscribed = true;
-                });
+                c.OnEndpointSubscribed<Context>((_, ctx) => ctx.SubscriberSubscribed = true);
                 c.ConfigureRouting().RouteToEndpoint(typeof(MessageToBeAudited), typeof(ProcessingEndpoint));
             }, metadata => metadata.RegisterSelfAsPublisherFor<MessageToBeAudited>(this));
     }
@@ -77,7 +74,7 @@ public class Audit : BridgeAcceptanceTest
     {
         public AuditSpy() => EndpointSetup<DefaultServer>(c => c.AutoSubscribe().DisableFor<MessageToBeAudited>());
 
-        class AuditMessageHander(Context testContext) : IHandleMessages<MessageToBeAudited>
+        class AuditMessageHandler(Context testContext) : IHandleMessages<MessageToBeAudited>
         {
             public Task Handle(MessageToBeAudited message, IMessageHandlerContext context)
             {

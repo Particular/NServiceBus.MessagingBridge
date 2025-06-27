@@ -30,10 +30,10 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
             .WithEndpoint<PublisherOne>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberPublisherOneSubscribed,
+                .When(c => c.HasNativePubSubSupport || c.SubscriberPublisherOneSubscribed,
                     (session, _) => session.Publish(new MyEvent())))
             .WithEndpoint<PublisherTwo>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberPublisherTwoSubscribed,
+                .When(c => c.HasNativePubSubSupport || c.SubscriberPublisherTwoSubscribed,
                     (session, c) => session.Publish(new MyEvent())))
             .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEventFromPublisherOne && c.SubscriberGotEventFromPublisherTwo)
@@ -50,28 +50,18 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
 
     class PublisherOne : EndpointConfigurationBuilder
     {
-        public PublisherOne()
-        {
-            EndpointSetup<DefaultPublisher>(c =>
-            {
-                c.OnEndpointSubscribed<Context>((_, ctx) =>
-                {
-                    ctx.SubscriberPublisherOneSubscribed = true;
-                });
-            }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
-        }
+        public PublisherOne() =>
+            EndpointSetup<DefaultPublisher>(
+                c => c.OnEndpointSubscribed<Context>((_, ctx) => ctx.SubscriberPublisherOneSubscribed = true),
+                metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
     }
 
     class PublisherTwo : EndpointConfigurationBuilder
     {
         public PublisherTwo() =>
-            EndpointSetup<DefaultPublisher>(c =>
-            {
-                c.OnEndpointSubscribed<Context>((_, ctx) =>
-                {
-                    ctx.SubscriberPublisherTwoSubscribed = true;
-                });
-            }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
+            EndpointSetup<DefaultPublisher>(
+                c => c.OnEndpointSubscribed<Context>((_, ctx) => ctx.SubscriberPublisherTwoSubscribed = true),
+                metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
     }
 
     class Subscriber : EndpointConfigurationBuilder

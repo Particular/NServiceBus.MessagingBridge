@@ -15,7 +15,7 @@ public class Error : BridgeAcceptanceTest
     {
         var ctx = await Scenario.Define<Context>()
             .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new FaultyMessage())))
+                .When(c => c.HasNativePubSubSupport || c.SubscriberSubscribed, (session, _) => session.Publish(new FaultyMessage())))
             .WithEndpoint<ProcessingEndpoint>(builder => builder.DoNotFailOnErrorMessages())
             .WithEndpoint<ErrorSpy>()
             .WithBridge(bridgeConfiguration =>
@@ -54,10 +54,7 @@ public class Error : BridgeAcceptanceTest
         public PublishingEndpoint() =>
             EndpointSetup<DefaultServer>(c =>
             {
-                c.OnEndpointSubscribed<Context>((_, ctx) =>
-                {
-                    ctx.SubscriberSubscribed = true;
-                });
+                c.OnEndpointSubscribed<Context>((_, ctx) => ctx.SubscriberSubscribed = true);
                 c.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), typeof(ProcessingEndpoint));
             }, metadata => metadata.RegisterSelfAsPublisherFor<FaultyMessage>(this));
     }
@@ -83,7 +80,7 @@ public class Error : BridgeAcceptanceTest
     {
         public ErrorSpy() => EndpointSetup<DefaultServer>(c => c.AutoSubscribe().DisableFor<FaultyMessage>());
 
-        class FailedMessageHander(Context testContext) : IHandleMessages<FaultyMessage>
+        class FailedMessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {

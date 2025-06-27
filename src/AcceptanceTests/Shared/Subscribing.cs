@@ -12,7 +12,7 @@ class Subscribing : BridgeAcceptanceTest
         var context = await Scenario.Define<Context>()
             .WithEndpoint<Subscriber>()
             .WithEndpoint<Publisher>(b => b
-                .When((session, _) => session.Publish(new MyEvent())))
+                .When(c => c.HasNativePubSubSupport || c.SubscriberSubscribed, (session, _) => session.Publish(new MyEvent())))
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -41,7 +41,9 @@ class Subscribing : BridgeAcceptanceTest
 
     class Publisher : EndpointConfigurationBuilder
     {
-        public Publisher() => EndpointSetup<DefaultTestPublisher>(_ => { }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
+        public Publisher() => EndpointSetup<DefaultTestPublisher>(
+            c => c.OnEndpointSubscribed<Context>((_, ctx) => ctx.SubscriberSubscribed = true),
+            metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
     }
 
     class Subscriber : EndpointConfigurationBuilder

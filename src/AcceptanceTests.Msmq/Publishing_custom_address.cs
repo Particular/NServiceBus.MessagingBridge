@@ -29,7 +29,7 @@ class Publishing_custom_address : BridgeAcceptanceTest
             })
             .WithEndpoint<LogicalPublisher>()
             .WithEndpoint<Publisher>(b => b
-                .When(c => c.SubscriberSubscribed, (session, c) => session.Publish(new MyEvent())))
+                .When(c => c.SubscriberSubscribed, (session, _) => session.Publish(new MyEvent())))
             .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEvent)
             .Run();
@@ -46,13 +46,9 @@ class Publishing_custom_address : BridgeAcceptanceTest
     class Publisher : EndpointConfigurationBuilder
     {
         public Publisher() =>
-            EndpointSetup<DefaultPublisher>(c =>
-            {
-                c.OnEndpointSubscribed<Context>((_, ctx) =>
-                {
-                    ctx.SubscriberSubscribed = true;
-                });
-            }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
+            EndpointSetup<DefaultPublisher>(
+                c => c.OnEndpointSubscribed<Context>((_, ctx) => ctx.SubscriberSubscribed = true),
+                metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
     }
 
     class LogicalPublisher : EndpointConfigurationBuilder

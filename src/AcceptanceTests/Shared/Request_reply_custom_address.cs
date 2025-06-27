@@ -39,13 +39,11 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
 
     public class SendingEndpoint : EndpointConfigurationBuilder
     {
-        public SendingEndpoint()
-        {
+        public SendingEndpoint() =>
             EndpointSetup<DefaultServer>(c =>
             {
                 c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReplyingEndpoint));
             });
-        }
 
         public class ResponseHandler(ITransportAddressResolver transportAddressResolver) : IHandleMessages<StartMessage>
         {

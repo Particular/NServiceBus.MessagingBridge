@@ -84,21 +84,15 @@ public class TransferFailureTests : BridgeAcceptanceTest
     public class Sender : EndpointConfigurationBuilder
     {
         public Sender() =>
-            EndpointSetup<DefaultServer>(c =>
-            {
-                c.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), ReceiveDummyQueue);
-            });
+            EndpointSetup<DefaultServer>(c => c.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), ReceiveDummyQueue));
     }
 
     public class ErrorSpy : EndpointConfigurationBuilder
     {
         public ErrorSpy() =>
-            EndpointSetup<DefaultServer>(c =>
-            {
-                c.OverrideLocalAddress(ErrorQueue);
-            });
+            EndpointSetup<DefaultServer>(c => c.OverrideLocalAddress(ErrorQueue));
 
-        class FailedMessageHander(Context testContext) : IHandleMessages<FaultyMessage>
+        class FailedMessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
