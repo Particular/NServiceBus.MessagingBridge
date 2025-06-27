@@ -52,7 +52,7 @@ class Publishing_custom_address : BridgeAcceptanceTest
                 {
                     ctx.SubscriberSubscribed = true;
                 });
-            });
+            }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
     }
 
     class LogicalPublisher : EndpointConfigurationBuilder
@@ -62,7 +62,7 @@ class Publishing_custom_address : BridgeAcceptanceTest
 
     class Subscriber : EndpointConfigurationBuilder
     {
-        public Subscriber() => EndpointSetup<DefaultTestServer>();
+        public Subscriber() => EndpointSetup<DefaultTestServer>(_ => { }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>());
 
         public class MessageHandler(Context context) : IHandleMessages<MyEvent>
         {
