@@ -12,9 +12,9 @@ public class Audit : BridgeAcceptanceTest
     [Test]
     public async Task Should_forward_audit_messages_by_not_modify_message()
     {
-        var ctx = await Scenario.Define<Context>()
+        var context = await Scenario.Define<Context>()
             .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => c.HasNativePubSubSupport || c.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
+                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
             .WithEndpoint<ProcessingEndpoint>()
             .WithEndpoint<AuditSpy>()
             .WithBridge(bridgeConfiguration =>
@@ -33,10 +33,10 @@ public class Audit : BridgeAcceptanceTest
             .Done(c => c.MessageAudited)
             .Run();
 
-        Assert.That(ctx.MessageAudited, Is.True);
-        foreach (var header in ctx.AuditMessageHeaders)
+        Assert.That(context.MessageAudited, Is.True);
+        foreach (var header in context.AuditMessageHeaders)
         {
-            if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
+            if (context.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
             {
                 Assert.That(receivedHeaderValue, Is.EqualTo(header.Value),
                     $"{header.Key} is not the same on processed message and audit message.");

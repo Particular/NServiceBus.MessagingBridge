@@ -23,7 +23,7 @@ class Publishing : BridgeAcceptanceTest
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
             .WithEndpoint<Publisher>(b => b
-                .When(c => c.HasNativePubSubSupport || c.SubscriberSubscribed, (session, _) =>
+                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberSubscribed, (session, _) =>
                     session.Publish(new MyEvent())))
             .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEvent)

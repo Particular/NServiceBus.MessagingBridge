@@ -15,12 +15,12 @@ public class ThreeTransports : BridgeAcceptanceTest
         var options = new SendOptions();
         options.SetDestination(Conventions.EndpointNamingConvention(typeof(ReceivingEndpoint)));
 
-        var ctx = await Scenario.Define<Context>()
+        var context = await Scenario.Define<Context>()
             .WithEndpoint<ReceivingEndpoint>()
-            .WithEndpoint<EndpointOnTestingTransport>(builder => builder
-                .When(c => c.EndpointsStarted, (session, _) => session.Send(new SomeMessage { From = endpointOnTestingTransportName }, options)))
-            .WithEndpoint<EndpointOnTransportUnderTest>(builder => builder
-                .When(c => c.EndpointsStarted, (session, _) => session.Send(new SomeMessage { From = endpointOnTransportUnderTestName }, options)))
+            .WithEndpoint<EndpointOnTestingTransport>(b => b
+                .When(ctx => ctx.EndpointsStarted, (session, _) => session.Send(new SomeMessage { From = endpointOnTestingTransportName }, options)))
+            .WithEndpoint<EndpointOnTransportUnderTest>(b => b
+                .When(ctx => ctx.EndpointsStarted, (session, _) => session.Send(new SomeMessage { From = endpointOnTransportUnderTestName }, options)))
             .WithBridge(bridgeConfiguration =>
             {
                 var receivingTransport = new TestableBridgeTransport(ReceivingTestServer.GetReceivingTransportDefinition())
@@ -53,7 +53,7 @@ public class ThreeTransports : BridgeAcceptanceTest
     {
         public ReceivingEndpoint() => EndpointSetup<ReceivingTestServer>();
 
-        class SomeMessageHandler(Context context) : IHandleMessages<SomeMessage>
+        class SomeMessageHandler(Context testContext) : IHandleMessages<SomeMessage>
         {
             public Task Handle(SomeMessage message, IMessageHandlerContext context)
             {
@@ -67,8 +67,6 @@ public class ThreeTransports : BridgeAcceptanceTest
 
                 return Task.CompletedTask;
             }
-
-            readonly Context testContext = context;
         }
     }
 

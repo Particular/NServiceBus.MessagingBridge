@@ -14,21 +14,21 @@ public class Send_local : BridgeAcceptanceTest
     [Test]
     public async Task Should_transfer_send_local_message()
     {
-        var ctx = await Scenario.Define<Context>()
-                    .WithEndpoint<OriginalEndpoint>()
-                    .WithEndpoint<MigratedEndpoint>()
-                    .WithBridge(bridgeConfiguration =>
-                    {
-                        var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-                        bridgeTransport.HasEndpoint("_");
-                        bridgeConfiguration.AddTransport(bridgeTransport);
+        var context = await Scenario.Define<Context>()
+            .WithEndpoint<OriginalEndpoint>()
+            .WithEndpoint<MigratedEndpoint>()
+            .WithBridge(bridgeConfiguration =>
+            {
+                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
+                bridgeTransport.HasEndpoint("_");
+                bridgeConfiguration.AddTransport(bridgeTransport);
 
-                        bridgeConfiguration.AddTestTransportEndpoint(new BridgeEndpoint(OriginalEndpointName));
-                    })
-                    .Done(c => c.MessageReceived)
-                    .Run();
+                bridgeConfiguration.AddTestTransportEndpoint(new BridgeEndpoint(OriginalEndpointName));
+            })
+            .Done(c => c.MessageReceived)
+            .Run();
 
-        Assert.That(ctx.MessageReceived, Is.True);
+        Assert.That(context.MessageReceived, Is.True);
     }
 
     public class Context : ScenarioContext

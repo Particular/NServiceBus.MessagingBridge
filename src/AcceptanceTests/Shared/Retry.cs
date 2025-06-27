@@ -15,12 +15,9 @@ public class Retry : BridgeAcceptanceTest
     [TestCase(false)]
     public async Task Should_work(bool doNotTranslateReplyToAdressForFailedMessages)
     {
-        var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<ProcessingEndpoint>(builder =>
-            {
-                builder.DoNotFailOnErrorMessages();
-                builder.When(c => c.EndpointsStarted, (session, _) => session.SendLocal(new FaultyMessage()));
-            })
+        var context = await Scenario.Define<Context>()
+            .WithEndpoint<ProcessingEndpoint>(b => b.When(ctx => ctx.EndpointsStarted, (session, _) => session.SendLocal(new FaultyMessage()))
+                .DoNotFailOnErrorMessages())
             .WithEndpoint<FakeSCError>()
             .WithBridge(bridgeConfiguration =>
             {
@@ -44,14 +41,14 @@ public class Retry : BridgeAcceptanceTest
 
         Assert.Multiple(() =>
         {
-            Assert.That(ctx.MessageFailed, Is.True);
-            Assert.That(ctx.RetryDelivered, Is.True);
-            Assert.That(ctx.GotRetrySuccessfullAck, Is.True);
+            Assert.That(context.MessageFailed, Is.True);
+            Assert.That(context.RetryDelivered, Is.True);
+            Assert.That(context.GotRetrySuccessfullAck, Is.True);
         });
 
-        foreach (var header in ctx.FailedMessageHeaders)
+        foreach (var header in context.FailedMessageHeaders)
         {
-            if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
+            if (context.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
             {
                 if (!doNotTranslateReplyToAdressForFailedMessages && header.Key == Headers.ReplyToAddress)
                 {

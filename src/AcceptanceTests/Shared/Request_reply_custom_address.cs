@@ -11,23 +11,23 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
     public async Task Should_get_the_reply()
     {
         var ctx = await Scenario.Define<Context>()
-                    .WithEndpoint<SendingEndpoint>(c => c
-                        .When(cc => cc.EndpointsStarted, (b, _) => b.SendLocal(new StartMessage())))
-                    .WithEndpoint<ReplyingEndpoint>()
-                    .WithEndpoint<ReplyReceivingEndpoint>()
-                    .WithBridge(bridgeConfiguration =>
-                    {
-                        var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
+            .WithEndpoint<SendingEndpoint>(b => b
+                .When(ctx => ctx.EndpointsStarted, (session, _) => session.SendLocal(new StartMessage())))
+            .WithEndpoint<ReplyingEndpoint>()
+            .WithEndpoint<ReplyReceivingEndpoint>()
+            .WithBridge(bridgeConfiguration =>
+            {
+                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
 
-                        bridgeTransport.AddTestEndpoint<SendingEndpoint>();
-                        bridgeTransport.AddTestEndpoint<ReplyReceivingEndpoint>();
+                bridgeTransport.AddTestEndpoint<SendingEndpoint>();
+                bridgeTransport.AddTestEndpoint<ReplyReceivingEndpoint>();
 
-                        bridgeConfiguration.AddTransport(bridgeTransport);
+                bridgeConfiguration.AddTransport(bridgeTransport);
 
-                        bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
-                    })
-                    .Done(c => c.SendingEndpointGotResponse)
-                    .Run();
+                bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
+            })
+            .Done(c => c.SendingEndpointGotResponse)
+            .Run();
 
         Assert.That(ctx.SendingEndpointGotResponse, Is.True);
     }

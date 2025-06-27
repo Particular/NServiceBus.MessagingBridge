@@ -30,11 +30,11 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
             .WithEndpoint<PublisherOne>(b => b
-                .When(c => c.HasNativePubSubSupport || c.SubscriberPublisherOneSubscribed,
+                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberPublisherOneSubscribed,
                     (session, _) => session.Publish(new MyEvent())))
             .WithEndpoint<PublisherTwo>(b => b
-                .When(c => c.HasNativePubSubSupport || c.SubscriberPublisherTwoSubscribed,
-                    (session, c) => session.Publish(new MyEvent())))
+                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberPublisherTwoSubscribed,
+                    (session, _) => session.Publish(new MyEvent())))
             .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEventFromPublisherOne && c.SubscriberGotEventFromPublisherTwo)
             .Run();

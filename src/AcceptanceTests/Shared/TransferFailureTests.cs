@@ -15,10 +15,10 @@ public class TransferFailureTests : BridgeAcceptanceTest
     [Test]
     public async Task Should_add_failedq_header_when_transfer_fails()
     {
-        var ctx = await Scenario.Define<Context>()
+        var context = await Scenario.Define<Context>()
             .WithEndpoint<ErrorSpy>()
             .WithEndpoint<Sender>(b => b
-                .When(c => c.EndpointsStarted, async (session, c) =>
+                .When(ctx => ctx.EndpointsStarted, async (session, c) =>
                 {
                     var opts = new SendOptions();
                     opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
@@ -39,8 +39,8 @@ public class TransferFailureTests : BridgeAcceptanceTest
 
         Assert.Multiple(() =>
         {
-            Assert.That(ctx.MessageFailed, Is.True, "Message did not fail");
-            Assert.That(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
+            Assert.That(context.MessageFailed, Is.True, "Message did not fail");
+            Assert.That(context.FailedMessageHeaders.ContainsKey(FailedQHeader),
                 Is.True,
                 $"Failed message headers does not contain {FailedQHeader}");
         });
@@ -49,10 +49,10 @@ public class TransferFailureTests : BridgeAcceptanceTest
     [Test]
     public async Task Should_add_failedq_header_when_transfer_fails_for_subsequent_failures()
     {
-        var ctx = await Scenario.Define<Context>()
+        var context = await Scenario.Define<Context>()
             .WithEndpoint<ErrorSpy>()
             .WithEndpoint<Sender>(b => b
-                .When(c => c.EndpointsStarted, async (session, c) =>
+                .When(ctx => ctx.EndpointsStarted, async (session, _) =>
                 {
                     var opts = new SendOptions();
                     opts.SetHeader(FailedQHeader, ReceiveDummyQueue);
@@ -74,8 +74,8 @@ public class TransferFailureTests : BridgeAcceptanceTest
 
         Assert.Multiple(() =>
         {
-            Assert.That(ctx.MessageFailed, Is.True, "Message did not fail");
-            Assert.That(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
+            Assert.That(context.MessageFailed, Is.True, "Message did not fail");
+            Assert.That(context.FailedMessageHeaders.ContainsKey(FailedQHeader),
                 Is.True,
                 $"Failed message headers does not contain {FailedQHeader}");
         });
