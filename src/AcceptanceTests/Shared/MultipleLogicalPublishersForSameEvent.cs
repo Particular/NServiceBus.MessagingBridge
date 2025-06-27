@@ -31,16 +31,10 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
             })
             .WithEndpoint<PublisherOne>(b => b
                 .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberPublisherOneSubscribed,
-                    (session, c) =>
-                    {
-                        return session.Publish(new MyEvent());
-                    }))
+                    (session, _) => session.Publish(new MyEvent())))
             .WithEndpoint<PublisherTwo>(b => b
                 .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberPublisherTwoSubscribed,
-                    (session, c) =>
-                    {
-                        return session.Publish(new MyEvent());
-                    }))
+                    (session, c) => session.Publish(new MyEvent())))
             .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEventFromPublisherOne && c.SubscriberGotEventFromPublisherTwo)
             .Run();
@@ -70,8 +64,7 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
 
     class PublisherTwo : EndpointConfigurationBuilder
     {
-        public PublisherTwo()
-        {
+        public PublisherTwo() =>
             EndpointSetup<DefaultPublisher>(c =>
             {
                 c.OnEndpointSubscribed<Context>((_, ctx) =>
@@ -79,26 +72,19 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
                     ctx.SubscriberPublisherTwoSubscribed = true;
                 });
             }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
-        }
     }
 
     class Subscriber : EndpointConfigurationBuilder
     {
-        public Subscriber()
-        {
+        public Subscriber() =>
             EndpointSetup<DefaultTestServer>(_ => { }, metadata =>
             {
                 metadata.RegisterPublisherFor<MyEvent, PublisherOne>();
                 metadata.RegisterPublisherFor<MyEvent, PublisherTwo>();
             });
-        }
 
-        public class MessageHandler : IHandleMessages<MyEvent>
+        public class MessageHandler(Context context) : IHandleMessages<MyEvent>
         {
-            Context context;
-
-            public MessageHandler(Context context) => this.context = context;
-
             public Task Handle(MyEvent message, IMessageHandlerContext handlerContext)
             {
                 string originatingEndpoint = handlerContext.MessageHeaders[Headers.OriginatingEndpoint];
@@ -114,12 +100,10 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
                         throw new InvalidOperationException($"Unknown originating endpoint: {originatingEndpoint}");
                 }
 
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
         }
     }
 
-    public class MyEvent : IEvent
-    {
-    }
+    public class MyEvent : IEvent;
 }

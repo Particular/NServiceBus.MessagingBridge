@@ -99,7 +99,7 @@ public class Separate_instances : BridgeAcceptanceTest
             public Task Handle(MyEvent message, IMessageHandlerContext handlerContext)
             {
                 context.SubscriberGotEvent = true;
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
         }
     }

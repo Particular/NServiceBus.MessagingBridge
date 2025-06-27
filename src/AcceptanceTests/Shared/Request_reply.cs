@@ -11,10 +11,7 @@ public class Request_reply : BridgeAcceptanceTest
     {
         var ctx = await Scenario.Define<Context>()
                     .WithEndpoint<SendingEndpoint>(c => c
-                        .When(cc => cc.EndpointsStarted, (b, _) =>
-                        {
-                            return b.Send(new MyMessage());
-                        }))
+                        .When(cc => cc.EndpointsStarted, (b, _) => b.Send(new MyMessage())))
                     .WithEndpoint<ReplyingEndpoint>()
                     .WithBridge(bridgeConfiguration =>
                     {
@@ -37,52 +34,33 @@ public class Request_reply : BridgeAcceptanceTest
 
     public class SendingEndpoint : EndpointConfigurationBuilder
     {
-        public SendingEndpoint()
-        {
+        public SendingEndpoint() =>
             EndpointSetup<DefaultServer>(c =>
             {
                 c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReplyingEndpoint));
             });
-        }
 
-        public class ResponseHandler : IHandleMessages<MyReply>
+        public class ResponseHandler(Context testContext) : IHandleMessages<MyReply>
         {
-            public ResponseHandler(Context context)
-            {
-                testContext = context;
-            }
-
             public Task Handle(MyReply messageThatIsEnlisted, IMessageHandlerContext context)
             {
                 testContext.SendingEndpointGotResponse = true;
                 return Task.CompletedTask;
             }
-
-            Context testContext;
         }
     }
 
     public class ReplyingEndpoint : EndpointConfigurationBuilder
     {
-        public ReplyingEndpoint()
-        {
-            EndpointSetup<DefaultTestServer>();
-        }
+        public ReplyingEndpoint() => EndpointSetup<DefaultTestServer>();
 
         public class MessageHandler : IHandleMessages<MyMessage>
         {
-            public Task Handle(MyMessage message, IMessageHandlerContext context)
-            {
-                return context.Reply(new MyReply());
-            }
+            public Task Handle(MyMessage message, IMessageHandlerContext context) => context.Reply(new MyReply());
         }
     }
 
-    public class MyMessage : IMessage
-    {
-    }
+    public class MyMessage : IMessage;
 
-    public class MyReply : IMessage
-    {
-    }
+    public class MyReply : IMessage;
 }

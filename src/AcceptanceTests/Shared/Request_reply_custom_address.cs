@@ -47,15 +47,8 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
             });
         }
 
-        public class ResponseHandler : IHandleMessages<StartMessage>
+        public class ResponseHandler(ITransportAddressResolver transportAddressResolver) : IHandleMessages<StartMessage>
         {
-            readonly ITransportAddressResolver transportAddressResolver;
-
-            public ResponseHandler(ITransportAddressResolver transportAddressResolver)
-            {
-                this.transportAddressResolver = transportAddressResolver;
-            }
-
             public Task Handle(StartMessage message, IMessageHandlerContext context)
             {
                 var sendOptions = new SendOptions();
@@ -70,53 +63,31 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
 
     public class ReplyReceivingEndpoint : EndpointConfigurationBuilder
     {
-        public ReplyReceivingEndpoint()
-        {
-            EndpointSetup<DefaultServer>();
-        }
+        public ReplyReceivingEndpoint() => EndpointSetup<DefaultServer>();
 
-        public class ResponseHandler : IHandleMessages<MyReply>
+        public class ResponseHandler(Context testContext) : IHandleMessages<MyReply>
         {
-            public ResponseHandler(Context context)
-            {
-                testContext = context;
-            }
-
             public Task Handle(MyReply messageThatIsEnlisted, IMessageHandlerContext context)
             {
                 testContext.SendingEndpointGotResponse = true;
                 return Task.CompletedTask;
             }
-
-            Context testContext;
         }
     }
 
     public class ReplyingEndpoint : EndpointConfigurationBuilder
     {
-        public ReplyingEndpoint()
-        {
-            EndpointSetup<DefaultTestServer>();
-        }
+        public ReplyingEndpoint() => EndpointSetup<DefaultTestServer>();
 
         public class MessageHandler : IHandleMessages<MyMessage>
         {
-            public Task Handle(MyMessage message, IMessageHandlerContext context)
-            {
-                return context.Reply(new MyReply());
-            }
+            public Task Handle(MyMessage message, IMessageHandlerContext context) => context.Reply(new MyReply());
         }
     }
 
-    public class StartMessage : IMessage
-    {
-    }
+    public class StartMessage : IMessage;
 
-    public class MyMessage : IMessage
-    {
-    }
+    public class MyMessage : IMessage;
 
-    public class MyReply : IMessage
-    {
-    }
+    public class MyReply : IMessage;
 }

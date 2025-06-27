@@ -44,20 +44,13 @@ public class Send_local : BridgeAcceptanceTest
             EndpointSetup<DefaultTestServer>();
         }
 
-        public class AMessageHandler : IHandleMessages<AMessage>
+        public class AMessageHandler(Context testContext) : IHandleMessages<AMessage>
         {
-            public AMessageHandler(Context context)
-            {
-                testContext = context;
-            }
-
             public Task Handle(AMessage message, IMessageHandlerContext context)
             {
                 testContext.MessageReceived = true;
                 return Task.CompletedTask;
             }
-
-            Context testContext;
         }
     }
 
@@ -80,12 +73,10 @@ public class Send_local : BridgeAcceptanceTest
                     await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
                 }
 
-                protected override Task OnStop(IMessageSession session, CancellationToken cancellationToken = default) => Task.FromResult(0);
+                protected override Task OnStop(IMessageSession session, CancellationToken cancellationToken = default) => Task.CompletedTask;
             }
         }
     }
 
-    public class AMessage : IMessage
-    {
-    }
+    public class AMessage : IMessage;
 }

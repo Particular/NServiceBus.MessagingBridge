@@ -23,10 +23,8 @@ class Publishing : BridgeAcceptanceTest
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
             .WithEndpoint<Publisher>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, c) =>
-                {
-                    return session.Publish(new MyEvent());
-                }))
+                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) =>
+                    session.Publish(new MyEvent())))
             .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEvent)
             .Run();
@@ -42,8 +40,7 @@ class Publishing : BridgeAcceptanceTest
 
     class Publisher : EndpointConfigurationBuilder
     {
-        public Publisher()
-        {
+        public Publisher() =>
             EndpointSetup<DefaultPublisher>(c =>
             {
                 c.OnEndpointSubscribed<Context>((_, ctx) =>
@@ -51,31 +48,21 @@ class Publishing : BridgeAcceptanceTest
                     ctx.SubscriberSubscribed = true;
                 });
             }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
-        }
     }
 
     class Subscriber : EndpointConfigurationBuilder
     {
-        public Subscriber()
+        public Subscriber() => EndpointSetup<DefaultTestServer>(_ => { }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>());
+
+        public class MessageHandler(Context context) : IHandleMessages<MyEvent>
         {
-            EndpointSetup<DefaultTestServer>(_ => { }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>());
-        }
-
-        public class MessageHandler : IHandleMessages<MyEvent>
-        {
-            Context context;
-
-            public MessageHandler(Context context) => this.context = context;
-
             public Task Handle(MyEvent message, IMessageHandlerContext handlerContext)
             {
                 context.SubscriberGotEvent = true;
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
         }
     }
 
-    public class MyEvent : IEvent
-    {
-    }
+    public class MyEvent : IEvent;
 }

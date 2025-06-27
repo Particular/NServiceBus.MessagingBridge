@@ -12,10 +12,7 @@ class Subscribing : BridgeAcceptanceTest
         var context = await Scenario.Define<Context>()
             .WithEndpoint<Subscriber>()
             .WithEndpoint<Publisher>(b => b
-                .When((session, _) =>
-                {
-                    return session.Publish(new MyEvent());
-                }))
+                .When((session, _) => session.Publish(new MyEvent())))
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -44,34 +41,22 @@ class Subscribing : BridgeAcceptanceTest
 
     class Publisher : EndpointConfigurationBuilder
     {
-        public Publisher()
-        {
-            EndpointSetup<DefaultTestPublisher>(_ => { }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
-        }
+        public Publisher() => EndpointSetup<DefaultTestPublisher>(_ => { }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
     }
 
     class Subscriber : EndpointConfigurationBuilder
     {
-        public Subscriber()
+        public Subscriber() => EndpointSetup<DefaultServer>(_ => { }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>());
+
+        public class MessageHandler(Context context) : IHandleMessages<MyEvent>
         {
-            EndpointSetup<DefaultServer>(_ => { }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>());
-        }
-
-        public class MessageHandler : IHandleMessages<MyEvent>
-        {
-            Context context;
-
-            public MessageHandler(Context context) => this.context = context;
-
             public Task Handle(MyEvent message, IMessageHandlerContext handlerContext)
             {
                 context.SubscriberGotEvent = true;
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
         }
     }
 
-    public class MyEvent : IEvent
-    {
-    }
+    public class MyEvent : IEvent;
 }

@@ -92,18 +92,14 @@ public class TransferFailureTests : BridgeAcceptanceTest
 
     public class ErrorSpy : EndpointConfigurationBuilder
     {
-        public ErrorSpy()
-        {
+        public ErrorSpy() =>
             EndpointSetup<DefaultServer>(c =>
             {
                 c.OverrideLocalAddress(ErrorQueue);
             });
-        }
 
-        class FailedMessageHander : IHandleMessages<FaultyMessage>
+        class FailedMessageHander(Context testContext) : IHandleMessages<FaultyMessage>
         {
-            public FailedMessageHander(Context context) => testContext = context;
-
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
                 testContext.FailedMessageHeaders =
@@ -111,8 +107,6 @@ public class TransferFailureTests : BridgeAcceptanceTest
                 testContext.MessageFailed = true;
                 return Task.CompletedTask;
             }
-
-            readonly Context testContext;
         }
     }
 
@@ -122,7 +116,5 @@ public class TransferFailureTests : BridgeAcceptanceTest
         public IReadOnlyDictionary<string, string> FailedMessageHeaders { get; set; }
     }
 
-    public class FaultyMessage : ICommand
-    {
-    }
+    public class FaultyMessage : ICommand;
 }

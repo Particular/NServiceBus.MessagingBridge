@@ -14,10 +14,7 @@ public class Audit : BridgeAcceptanceTest
     {
         var ctx = await Scenario.Define<Context>()
             .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, c) =>
-                {
-                    return session.Publish(new MessageToBeAudited());
-                }))
+                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
             .WithEndpoint<ProcessingEndpoint>()
             .WithEndpoint<AuditSpy>()
             .WithBridge(bridgeConfiguration =>
@@ -65,12 +62,8 @@ public class Audit : BridgeAcceptanceTest
         public ProcessingEndpoint() => EndpointSetup<DefaultTestServer>(
             c => c.AuditProcessedMessagesTo("Audit.AuditSpy"), metadata => metadata.RegisterPublisherFor<MessageToBeAudited, PublishingEndpoint>());
 
-        public class MessageHandler : IHandleMessages<MessageToBeAudited>
+        public class MessageHandler(Context testContext) : IHandleMessages<MessageToBeAudited>
         {
-            readonly Context testContext;
-
-            public MessageHandler(Context context) => testContext = context;
-
             public Task Handle(MessageToBeAudited message, IMessageHandlerContext context)
             {
                 testContext.ReceivedMessageHeaders =
@@ -82,15 +75,10 @@ public class Audit : BridgeAcceptanceTest
 
     public class AuditSpy : EndpointConfigurationBuilder
     {
-        public AuditSpy()
-        {
-            var endpoint = EndpointSetup<DefaultServer>(c => c.AutoSubscribe().DisableFor<MessageToBeAudited>());
-        }
+        public AuditSpy() => EndpointSetup<DefaultServer>(c => c.AutoSubscribe().DisableFor<MessageToBeAudited>());
 
-        class AuditMessageHander : IHandleMessages<MessageToBeAudited>
+        class AuditMessageHander(Context testContext) : IHandleMessages<MessageToBeAudited>
         {
-            public AuditMessageHander(Context context) => testContext = context;
-
             public Task Handle(MessageToBeAudited message, IMessageHandlerContext context)
             {
                 testContext.MessageAudited = true;
@@ -99,8 +87,6 @@ public class Audit : BridgeAcceptanceTest
 
                 return Task.CompletedTask;
             }
-
-            readonly Context testContext;
         }
     }
 
@@ -112,7 +98,5 @@ public class Audit : BridgeAcceptanceTest
         public IReadOnlyDictionary<string, string> AuditMessageHeaders { get; set; }
     }
 
-    public class MessageToBeAudited : IEvent
-    {
-    }
+    public class MessageToBeAudited : IEvent;
 }
