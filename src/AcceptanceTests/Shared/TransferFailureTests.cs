@@ -16,14 +16,6 @@ public class TransferFailureTests : BridgeAcceptanceTest
     public async Task Should_add_failedq_header_when_transfer_fails()
     {
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<ErrorSpy>()
-            .WithEndpoint<Sender>(b => b
-                .When(ctx => ctx.EndpointsStarted, async (session, c) =>
-                {
-                    var opts = new SendOptions();
-                    opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
-                    await session.Send(new FaultyMessage(), opts);
-                }))
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -34,6 +26,14 @@ public class TransferFailureTests : BridgeAcceptanceTest
                 var subscriberEndpoint = new BridgeEndpoint(ReceiveDummyQueue);
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
+            .WithEndpoint<ErrorSpy>()
+            .WithEndpoint<Sender>(b => b
+                .When(ctx => ctx.EndpointsStarted, async (session, c) =>
+                {
+                    var opts = new SendOptions();
+                    opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
+                    await session.Send(new FaultyMessage(), opts);
+                }))
             .Done(c => c.MessageFailed)
             .Run();
 
@@ -50,15 +50,6 @@ public class TransferFailureTests : BridgeAcceptanceTest
     public async Task Should_add_failedq_header_when_transfer_fails_for_subsequent_failures()
     {
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<ErrorSpy>()
-            .WithEndpoint<Sender>(b => b
-                .When(ctx => ctx.EndpointsStarted, async (session, _) =>
-                {
-                    var opts = new SendOptions();
-                    opts.SetHeader(FailedQHeader, ReceiveDummyQueue);
-                    opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
-                    await session.Send(new FaultyMessage(), opts);
-                }))
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -69,6 +60,15 @@ public class TransferFailureTests : BridgeAcceptanceTest
                 var subscriberEndpoint = new BridgeEndpoint(ReceiveDummyQueue);
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
+            .WithEndpoint<ErrorSpy>()
+            .WithEndpoint<Sender>(b => b
+                .When(ctx => ctx.EndpointsStarted, async (session, _) =>
+                {
+                    var opts = new SendOptions();
+                    opts.SetHeader(FailedQHeader, ReceiveDummyQueue);
+                    opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
+                    await session.Send(new FaultyMessage(), opts);
+                }))
             .Done(c => c.MessageFailed)
             .Run();
 

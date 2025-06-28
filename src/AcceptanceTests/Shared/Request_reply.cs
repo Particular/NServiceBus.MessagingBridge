@@ -10,9 +10,6 @@ public class Request_reply : BridgeAcceptanceTest
     public async Task Should_get_the_reply()
     {
         var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<SendingEndpoint>(b => b
-                .When(ctx => ctx.EndpointsStarted, (session, _) => session.Send(new MyMessage())))
-            .WithEndpoint<ReplyingEndpoint>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -21,6 +18,8 @@ public class Request_reply : BridgeAcceptanceTest
 
                 bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
             })
+            .WithEndpoint<SendingEndpoint>(b => b.When(ctx => ctx.EndpointsStarted, (session, _) => session.Send(new MyMessage())))
+            .WithEndpoint<ReplyingEndpoint>()
             .Done(c => c.SendingEndpointGotResponse)
             .Run();
 

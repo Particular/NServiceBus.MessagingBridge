@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
+using NServiceBus.Features;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
@@ -11,13 +12,6 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
     public async Task Subscriber_should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<PublisherOne>(b => b
-                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberPublisherOneSubscribed,
-                    (session, _) => session.Publish(new MyEvent())))
-            .WithEndpoint<PublisherTwo>(b => b
-                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberPublisherTwoSubscribed,
-                    (session, _) => session.Publish(new MyEvent())))
-            .WithEndpoint<Subscriber>()
             .WithBridge(bridgeConfiguration =>
             {
                 bridgeConfiguration.DoNotEnforceBestPractices();
@@ -30,12 +24,21 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
 
                 var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
 
-                subscriberEndpoint.RegisterPublisher<MyEvent>(
-                    Conventions.EndpointNamingConvention(typeof(PublisherOne)));
-                subscriberEndpoint.RegisterPublisher<MyEvent>(
-                    Conventions.EndpointNamingConvention(typeof(PublisherTwo)));
+                subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(PublisherOne)));
+                subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(PublisherTwo)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
+            .WithEndpoint<PublisherOne>(b => b.When(ctx => ctx.SubscriberPublisherOneSubscribed, (session, _) => session.Publish(new MyEvent())))
+            .WithEndpoint<PublisherTwo>(b => b.When(ctx => ctx.SubscriberPublisherTwoSubscribed, (session, _) => session.Publish(new MyEvent())))
+            .WithEndpoint<Subscriber>(b => b.When(async (session, c) =>
+            {
+                await session.Subscribe<MyEvent>();
+                if (c.HasNativePubSubSupport)
+                {
+                    c.SubscriberPublisherOneSubscribed = true;
+                    c.SubscriberPublisherTwoSubscribed = true;
+                }
+            }))
             .Done(c => c.SubscriberGotEventFromPublisherOne && c.SubscriberGotEventFromPublisherTwo)
             .Run();
     }
@@ -52,7 +55,14 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
     {
         public PublisherOne() =>
             EndpointSetup<DefaultPublisher>(
-                c => c.OnEndpointSubscribed<Context>((_, ctx) => ctx.SubscriberPublisherOneSubscribed = true),
+                b => b.OnEndpointSubscribed<Context>((s, ctx) =>
+                {
+                    var subscriber = Conventions.EndpointNamingConvention(typeof(Subscriber));
+                    if (s.SubscriberEndpoint.Contains(subscriber))
+                    {
+                        ctx.SubscriberPublisherOneSubscribed = true;
+                    }
+                }),
                 metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
     }
 
@@ -60,14 +70,21 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
     {
         public PublisherTwo() =>
             EndpointSetup<DefaultPublisher>(
-                c => c.OnEndpointSubscribed<Context>((_, ctx) => ctx.SubscriberPublisherTwoSubscribed = true),
+                b => b.OnEndpointSubscribed<Context>((s, ctx) =>
+                {
+                    var subscriber = Conventions.EndpointNamingConvention(typeof(Subscriber));
+                    if (s.SubscriberEndpoint.Contains(subscriber))
+                    {
+                        ctx.SubscriberPublisherTwoSubscribed = true;
+                    }
+                }),
                 metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
     }
 
     class Subscriber : EndpointConfigurationBuilder
     {
         public Subscriber() =>
-            EndpointSetup<DefaultTestServer>(_ => { }, metadata =>
+            EndpointSetup<DefaultTestServer>(b => b.DisableFeature<AutoSubscribe>(), metadata =>
             {
                 metadata.RegisterPublisherFor<MyEvent, PublisherOne>();
                 metadata.RegisterPublisherFor<MyEvent, PublisherTwo>();

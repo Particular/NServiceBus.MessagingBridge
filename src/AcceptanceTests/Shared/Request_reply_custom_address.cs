@@ -11,10 +11,6 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
     public async Task Should_get_the_reply()
     {
         var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<SendingEndpoint>(b => b
-                .When(ctx => ctx.EndpointsStarted, (session, _) => session.SendLocal(new StartMessage())))
-            .WithEndpoint<ReplyingEndpoint>()
-            .WithEndpoint<ReplyReceivingEndpoint>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -26,6 +22,9 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
 
                 bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
             })
+            .WithEndpoint<SendingEndpoint>(b => b.When(ctx => ctx.EndpointsStarted, (session, _) => session.SendLocal(new StartMessage())))
+            .WithEndpoint<ReplyingEndpoint>()
+            .WithEndpoint<ReplyReceivingEndpoint>()
             .Done(c => c.SendingEndpointGotResponse)
             .Run();
 

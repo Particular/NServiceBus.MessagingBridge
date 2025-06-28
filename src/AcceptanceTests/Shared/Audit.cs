@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
+using NServiceBus.Features;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
@@ -13,10 +14,6 @@ public class Audit : BridgeAcceptanceTest
     public async Task Should_forward_audit_messages_by_not_modify_message()
     {
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<PublishingEndpoint>(b => b
-                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
-            .WithEndpoint<ProcessingEndpoint>()
-            .WithEndpoint<AuditSpy>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -30,6 +27,17 @@ public class Audit : BridgeAcceptanceTest
                     Conventions.EndpointNamingConvention(typeof(PublishingEndpoint)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
+            .WithEndpoint<PublishingEndpoint>(b => b
+                .When(ctx => ctx.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
+            .WithEndpoint<ProcessingEndpoint>(b => b.When(async (session, c) =>
+            {
+                await session.Subscribe<MessageToBeAudited>();
+                if (c.HasNativePubSubSupport)
+                {
+                    c.SubscriberSubscribed = true;
+                }
+            }))
+            .WithEndpoint<AuditSpy>()
             .Done(c => c.MessageAudited)
             .Run();
 
@@ -47,17 +55,28 @@ public class Audit : BridgeAcceptanceTest
     public class PublishingEndpoint : EndpointConfigurationBuilder
     {
         public PublishingEndpoint() =>
-            EndpointSetup<DefaultServer>(c =>
+            EndpointSetup<DefaultServer>(b =>
             {
-                c.OnEndpointSubscribed<Context>((_, ctx) => ctx.SubscriberSubscribed = true);
-                c.ConfigureRouting().RouteToEndpoint(typeof(MessageToBeAudited), typeof(ProcessingEndpoint));
+                b.OnEndpointSubscribed<Context>((s, ctx) =>
+                {
+                    var subscriber = Conventions.EndpointNamingConvention(typeof(ProcessingEndpoint));
+                    if (s.SubscriberEndpoint.Contains(subscriber))
+                    {
+                        ctx.SubscriberSubscribed = true;
+                    }
+                });
+                b.ConfigureRouting().RouteToEndpoint(typeof(MessageToBeAudited), typeof(ProcessingEndpoint));
             }, metadata => metadata.RegisterSelfAsPublisherFor<MessageToBeAudited>(this));
     }
 
     public class ProcessingEndpoint : EndpointConfigurationBuilder
     {
         public ProcessingEndpoint() => EndpointSetup<DefaultTestServer>(
-            c => c.AuditProcessedMessagesTo("Audit.AuditSpy"), metadata => metadata.RegisterPublisherFor<MessageToBeAudited, PublishingEndpoint>());
+            b =>
+            {
+                b.DisableFeature<AutoSubscribe>();
+                b.AuditProcessedMessagesTo("Audit.AuditSpy");
+            }, metadata => metadata.RegisterPublisherFor<MessageToBeAudited, PublishingEndpoint>());
 
         public class MessageHandler(Context testContext) : IHandleMessages<MessageToBeAudited>
         {

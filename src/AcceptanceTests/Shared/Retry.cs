@@ -16,9 +16,6 @@ public class Retry : BridgeAcceptanceTest
     public async Task Should_work(bool doNotTranslateReplyToAdressForFailedMessages)
     {
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<ProcessingEndpoint>(b => b.When(ctx => ctx.EndpointsStarted, (session, _) => session.SendLocal(new FaultyMessage()))
-                .DoNotFailOnErrorMessages())
-            .WithEndpoint<FakeSCError>()
             .WithBridge(bridgeConfiguration =>
             {
                 if (doNotTranslateReplyToAdressForFailedMessages)
@@ -36,6 +33,9 @@ public class Retry : BridgeAcceptanceTest
                 theOtherTransport.AddTestEndpoint<ProcessingEndpoint>();
                 bridgeConfiguration.AddTransport(theOtherTransport);
             })
+            .WithEndpoint<ProcessingEndpoint>(b => b.When(ctx => ctx.EndpointsStarted, (session, _) => session.SendLocal(new FaultyMessage()))
+                .DoNotFailOnErrorMessages())
+            .WithEndpoint<FakeSCError>()
             .Done(c => c.GotRetrySuccessfullAck)
             .Run();
 

@@ -15,8 +15,6 @@ public class Send_local : BridgeAcceptanceTest
     public async Task Should_transfer_send_local_message()
     {
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<OriginalEndpoint>()
-            .WithEndpoint<MigratedEndpoint>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -25,6 +23,8 @@ public class Send_local : BridgeAcceptanceTest
 
                 bridgeConfiguration.AddTestTransportEndpoint(new BridgeEndpoint(OriginalEndpointName));
             })
+            .WithEndpoint<OriginalEndpoint>()
+            .WithEndpoint<MigratedEndpoint>()
             .Done(c => c.MessageReceived)
             .Run();
 
