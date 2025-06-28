@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Customization;
+using NServiceBus.Features;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
@@ -13,11 +14,7 @@ public class Error : BridgeAcceptanceTest
     [Test]
     public async Task Should_forward_error_messages_and_not_modify_header_other_than_ReplyToAddress()
     {
-        var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new FaultyMessage())))
-            .WithEndpoint<ProcessingEndpoint>(builder => builder.DoNotFailOnErrorMessages())
-            .WithEndpoint<ErrorSpy>()
+        var context = await Scenario.Define<Context>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -32,15 +29,26 @@ public class Error : BridgeAcceptanceTest
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
 
             })
+            .WithEndpoint<PublishingEndpoint>(b => b
+                .When(ctx => ctx.SubscriberSubscribed, (session, _) => session.Publish(new FaultyMessage())))
+            .WithEndpoint<ProcessingEndpoint>(b => b.When(async (session, c) =>
+            {
+                await session.Subscribe<FaultyMessage>();
+                if (c.HasNativePubSubSupport)
+                {
+                    c.SubscriberSubscribed = true;
+                }
+            }).DoNotFailOnErrorMessages())
+            .WithEndpoint<ErrorSpy>()
             .Done(c => c.MessageFailed)
             .Run();
 
-        Assert.That(ctx.MessageFailed, Is.True);
-        foreach (var header in ctx.FailedMessageHeaders)
+        Assert.That(context.MessageFailed, Is.True);
+        foreach (var header in context.FailedMessageHeaders)
         {
             if (header.Key != Headers.ReplyToAddress)
             {
-                if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
+                if (context.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
                 {
                     Assert.That(receivedHeaderValue, Is.EqualTo(header.Value),
                         $"{header.Key} is not the same on processed message and error message.");
@@ -52,20 +60,28 @@ public class Error : BridgeAcceptanceTest
     public class PublishingEndpoint : EndpointConfigurationBuilder
     {
         public PublishingEndpoint() =>
-            EndpointSetup<DefaultServer>(c =>
+            EndpointSetup<DefaultServer>(b =>
             {
-                c.OnEndpointSubscribed<Context>((_, ctx) =>
+                b.OnEndpointSubscribed<Context>((s, ctx) =>
                 {
-                    ctx.SubscriberSubscribed = true;
+                    var subscriber = Conventions.EndpointNamingConvention(typeof(ProcessingEndpoint));
+                    if (s.SubscriberEndpoint.Contains(subscriber))
+                    {
+                        ctx.SubscriberSubscribed = true;
+                    }
                 });
-                c.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), typeof(ProcessingEndpoint));
+                b.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), typeof(ProcessingEndpoint));
             }, metadata => metadata.RegisterSelfAsPublisherFor<FaultyMessage>(this));
     }
 
     public class ProcessingEndpoint : EndpointConfigurationBuilder
     {
         public ProcessingEndpoint() => EndpointSetup<DefaultTestServer>(
-            c => c.SendFailedMessagesTo("Error.ErrorSpy"), metadata => metadata.RegisterPublisherFor<FaultyMessage, PublishingEndpoint>());
+            b =>
+            {
+                b.DisableFeature<AutoSubscribe>();
+                b.SendFailedMessagesTo("Error.ErrorSpy");
+            }, metadata => metadata.RegisterPublisherFor<FaultyMessage, PublishingEndpoint>());
 
         public class MessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
@@ -83,7 +99,7 @@ public class Error : BridgeAcceptanceTest
     {
         public ErrorSpy() => EndpointSetup<DefaultServer>(c => c.AutoSubscribe().DisableFor<FaultyMessage>());
 
-        class FailedMessageHander(Context testContext) : IHandleMessages<FaultyMessage>
+        class FailedMessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {

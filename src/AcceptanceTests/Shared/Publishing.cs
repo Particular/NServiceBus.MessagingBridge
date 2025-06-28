@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
+using NServiceBus.Features;
 using NUnit.Framework;
 using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
@@ -22,10 +24,15 @@ class Publishing : BridgeAcceptanceTest
                 subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
-            .WithEndpoint<Publisher>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) =>
-                    session.Publish(new MyEvent())))
-            .WithEndpoint<Subscriber>()
+            .WithEndpoint<Publisher>(b => b.When(ctx => ctx.SubscriberSubscribed, (session, _) => session.Publish(new MyEvent())))
+            .WithEndpoint<Subscriber>(b => b.When(async (session, c) =>
+            {
+                await session.Subscribe<MyEvent>();
+                if (c.HasNativePubSubSupport)
+                {
+                    c.SubscriberSubscribed = true;
+                }
+            }))
             .Done(c => c.SubscriberGotEvent)
             .Run();
 
@@ -41,18 +48,21 @@ class Publishing : BridgeAcceptanceTest
     class Publisher : EndpointConfigurationBuilder
     {
         public Publisher() =>
-            EndpointSetup<DefaultPublisher>(c =>
-            {
-                c.OnEndpointSubscribed<Context>((_, ctx) =>
+            EndpointSetup<DefaultPublisher>(
+                b => b.OnEndpointSubscribed<Context>((s, ctx) =>
                 {
-                    ctx.SubscriberSubscribed = true;
-                });
-            }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
+                    var subscriber = Conventions.EndpointNamingConvention(typeof(Subscriber));
+                    if (s.SubscriberEndpoint.Contains(subscriber))
+                    {
+                        ctx.SubscriberSubscribed = true;
+                    }
+                }),
+                metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
     }
 
     class Subscriber : EndpointConfigurationBuilder
     {
-        public Subscriber() => EndpointSetup<DefaultTestServer>(_ => { }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>());
+        public Subscriber() => EndpointSetup<DefaultTestServer>(b => b.DisableFeature<AutoSubscribe>(), metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>());
 
         public class MessageHandler(Context context) : IHandleMessages<MyEvent>
         {
