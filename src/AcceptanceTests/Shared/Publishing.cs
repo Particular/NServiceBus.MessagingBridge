@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NUnit.Framework;
@@ -10,6 +11,10 @@ class Publishing : BridgeAcceptanceTest
     public async Task Subscriber_should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
+            .WithEndpoint<Publisher>(b => b
+                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberSubscribed, (session, _) =>
+                    session.Publish(new MyEvent())))
+            .WithEndpoint<Subscriber>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -22,12 +27,8 @@ class Publishing : BridgeAcceptanceTest
                 subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
-            .WithEndpoint<Publisher>(b => b
-                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberSubscribed, (session, _) =>
-                    session.Publish(new MyEvent())))
-            .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEvent)
-            .Run();
+            .Run(TimeSpan.FromSeconds(5));
 
         Assert.That(context.SubscriberGotEvent, Is.True);
     }

@@ -10,6 +10,10 @@ class Publishing_custom_address : BridgeAcceptanceTest
     public async Task Subscriber_should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
+            .WithEndpoint<LogicalPublisher>()
+            .WithEndpoint<Publisher>(b => b
+                .When(c => c.SubscriberSubscribed, (session, _) => session.Publish(new MyEvent())))
+            .WithEndpoint<Subscriber>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -27,10 +31,6 @@ class Publishing_custom_address : BridgeAcceptanceTest
                 subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(LogicalPublisher)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
-            .WithEndpoint<LogicalPublisher>()
-            .WithEndpoint<Publisher>(b => b
-                .When(c => c.SubscriberSubscribed, (session, _) => session.Publish(new MyEvent())))
-            .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEvent)
             .Run();
 

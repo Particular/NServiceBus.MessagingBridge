@@ -11,6 +11,13 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
     public async Task Subscriber_should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
+            .WithEndpoint<PublisherOne>(b => b
+                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberPublisherOneSubscribed,
+                    (session, _) => session.Publish(new MyEvent())))
+            .WithEndpoint<PublisherTwo>(b => b
+                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberPublisherTwoSubscribed,
+                    (session, _) => session.Publish(new MyEvent())))
+            .WithEndpoint<Subscriber>()
             .WithBridge(bridgeConfiguration =>
             {
                 bridgeConfiguration.DoNotEnforceBestPractices();
@@ -29,13 +36,6 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
                     Conventions.EndpointNamingConvention(typeof(PublisherTwo)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
-            .WithEndpoint<PublisherOne>(b => b
-                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberPublisherOneSubscribed,
-                    (session, _) => session.Publish(new MyEvent())))
-            .WithEndpoint<PublisherTwo>(b => b
-                .When(ctx => ctx.HasNativePubSubSupport || ctx.SubscriberPublisherTwoSubscribed,
-                    (session, _) => session.Publish(new MyEvent())))
-            .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEventFromPublisherOne && c.SubscriberGotEventFromPublisherTwo)
             .Run();
     }
