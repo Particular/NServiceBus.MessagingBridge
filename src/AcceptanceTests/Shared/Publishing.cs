@@ -28,7 +28,7 @@ class Publishing : BridgeAcceptanceTest
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
             .Done(c => c.SubscriberGotEvent)
-            .Run(TimeSpan.FromSeconds(5));
+            .Run();
 
         Assert.That(context.SubscriberGotEvent, Is.True);
     }
