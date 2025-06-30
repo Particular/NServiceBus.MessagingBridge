@@ -14,10 +14,6 @@ public class Error : BridgeAcceptanceTest
     public async Task Should_forward_error_messages_and_not_modify_header_other_than_ReplyToAddress()
     {
         var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new FaultyMessage())))
-            .WithEndpoint<ProcessingEndpoint>(builder => builder.DoNotFailOnErrorMessages())
-            .WithEndpoint<ErrorSpy>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -32,6 +28,10 @@ public class Error : BridgeAcceptanceTest
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
 
             })
+            .WithEndpoint<PublishingEndpoint>(b => b
+                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new FaultyMessage())))
+            .WithEndpoint<ProcessingEndpoint>(builder => builder.DoNotFailOnErrorMessages())
+            .WithEndpoint<ErrorSpy>()
             .Done(c => c.MessageFailed)
             .Run();
 

@@ -10,9 +10,6 @@ class Subscribing : BridgeAcceptanceTest
     public async Task Should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<Subscriber>()
-            .WithEndpoint<Publisher>(b => b
-                .When((session, _) => session.Publish(new MyEvent())))
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -27,6 +24,9 @@ class Subscribing : BridgeAcceptanceTest
 
                 bridgeConfiguration.AddTestTransportEndpoint<Publisher>();
             })
+            .WithEndpoint<Subscriber>()
+            .WithEndpoint<Publisher>(b => b
+                .When((session, _) => session.Publish(new MyEvent())))
             .Done(c => c.SubscriberGotEvent)
             .Run();
 

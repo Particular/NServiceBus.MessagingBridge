@@ -10,19 +10,19 @@ public class Request_reply : BridgeAcceptanceTest
     public async Task Should_get_the_reply()
     {
         var ctx = await Scenario.Define<Context>()
-                    .WithEndpoint<SendingEndpoint>(c => c
-                        .When(cc => cc.EndpointsStarted, (b, _) => b.Send(new MyMessage())))
-                    .WithEndpoint<ReplyingEndpoint>()
-                    .WithBridge(bridgeConfiguration =>
-                    {
-                        var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-                        bridgeTransport.AddTestEndpoint<SendingEndpoint>();
-                        bridgeConfiguration.AddTransport(bridgeTransport);
+            .WithBridge(bridgeConfiguration =>
+            {
+                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
+                bridgeTransport.AddTestEndpoint<SendingEndpoint>();
+                bridgeConfiguration.AddTransport(bridgeTransport);
 
-                        bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
-                    })
-                    .Done(c => c.SendingEndpointGotResponse)
-                    .Run();
+                bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
+            })
+            .WithEndpoint<SendingEndpoint>(c => c
+                .When(cc => cc.EndpointsStarted, (b, _) => b.Send(new MyMessage())))
+            .WithEndpoint<ReplyingEndpoint>()
+            .Done(c => c.SendingEndpointGotResponse)
+            .Run();
 
         Assert.That(ctx.SendingEndpointGotResponse, Is.True);
     }
