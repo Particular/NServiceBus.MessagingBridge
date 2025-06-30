@@ -11,9 +11,6 @@ public class Address_with_machinename : BridgeAcceptanceTest
     public async Task Should_get_the_message()
     {
         var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<SendingEndpoint>(c => c
-                .When(cc => cc.EndpointsStarted, (b, _) => b.Send(new MyMessage())))
-            .WithEndpoint<ReceivingEndpoint>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -30,6 +27,9 @@ public class Address_with_machinename : BridgeAcceptanceTest
 
                 bridgeConfiguration.AddTestTransportEndpoint<SendingEndpoint>();
             })
+            .WithEndpoint<SendingEndpoint>(c => c
+                .When(cc => cc.EndpointsStarted, (b, _) => b.Send(new MyMessage())))
+            .WithEndpoint<ReceivingEndpoint>()
             .Done(c => c.ReceivingEndpointGotMessage)
             .Run();
 

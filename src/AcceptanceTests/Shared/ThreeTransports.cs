@@ -16,11 +16,6 @@ public class ThreeTransports : BridgeAcceptanceTest
         options.SetDestination(Conventions.EndpointNamingConvention(typeof(ReceivingEndpoint)));
 
         var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<ReceivingEndpoint>()
-            .WithEndpoint<EndpointOnTestingTransport>(builder => builder
-                .When(c => c.EndpointsStarted, (session, _) => session.Send(new SomeMessage { From = endpointOnTestingTransportName }, options)))
-            .WithEndpoint<EndpointOnTransportUnderTest>(builder => builder
-                .When(c => c.EndpointsStarted, (session, _) => session.Send(new SomeMessage { From = endpointOnTransportUnderTestName }, options)))
             .WithBridge(bridgeConfiguration =>
             {
                 var receivingTransport = new TestableBridgeTransport(ReceivingTestServer.GetReceivingTransportDefinition())
@@ -44,6 +39,11 @@ public class ThreeTransports : BridgeAcceptanceTest
                 transportUnderTest.AddTestEndpoint<EndpointOnTransportUnderTest>();
                 bridgeConfiguration.AddTransport(transportUnderTest);
             })
+            .WithEndpoint<ReceivingEndpoint>()
+            .WithEndpoint<EndpointOnTestingTransport>(builder => builder
+                .When(c => c.EndpointsStarted, (session, _) => session.Send(new SomeMessage { From = endpointOnTestingTransportName }, options)))
+            .WithEndpoint<EndpointOnTransportUnderTest>(builder => builder
+                .When(c => c.EndpointsStarted, (session, _) => session.Send(new SomeMessage { From = endpointOnTransportUnderTestName }, options)))
             .Done(c => c.ReceivedMessageCount == 2)
             .Run();
 

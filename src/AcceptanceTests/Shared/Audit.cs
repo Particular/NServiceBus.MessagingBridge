@@ -13,10 +13,6 @@ public class Audit : BridgeAcceptanceTest
     public async Task Should_forward_audit_messages_by_not_modify_message()
     {
         var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
-            .WithEndpoint<ProcessingEndpoint>()
-            .WithEndpoint<AuditSpy>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
@@ -30,6 +26,10 @@ public class Audit : BridgeAcceptanceTest
                     Conventions.EndpointNamingConvention(typeof(PublishingEndpoint)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
+            .WithEndpoint<PublishingEndpoint>(b => b
+                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
+            .WithEndpoint<ProcessingEndpoint>()
+            .WithEndpoint<AuditSpy>()
             .Done(c => c.MessageAudited)
             .Run();
 

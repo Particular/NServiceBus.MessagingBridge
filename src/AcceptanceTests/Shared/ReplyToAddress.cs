@@ -12,19 +12,6 @@ public class ReplyToAddress : BridgeAcceptanceTest
     public async Task Should_translate_address_for_already_migrated_endpoint()
     {
         var ctx = await Scenario.Define<Context>()
-            .WithEndpoint<SendingEndpoint>(builder =>
-            {
-                builder.DoNotFailOnErrorMessages();
-                builder.When(c => c.EndpointsStarted, (session, _) =>
-                {
-                    var options = new SendOptions();
-                    options.SetDestination(Conventions.EndpointNamingConvention(typeof(SecondMigratedEndpoint)));
-
-                    return session.Send(new ADelayedMessage(), options);
-                });
-            })
-            .WithEndpoint<FirstMigratedEndpoint>()
-            .WithEndpoint<SecondMigratedEndpoint>()
             .WithBridge(bridgeConfiguration =>
             {
                 var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
@@ -39,6 +26,19 @@ public class ReplyToAddress : BridgeAcceptanceTest
                 theOtherTransport.AddTestEndpoint<SecondMigratedEndpoint>();
                 bridgeConfiguration.AddTransport(theOtherTransport);
             })
+            .WithEndpoint<SendingEndpoint>(builder =>
+            {
+                builder.DoNotFailOnErrorMessages();
+                builder.When(c => c.EndpointsStarted, (session, _) =>
+                {
+                    var options = new SendOptions();
+                    options.SetDestination(Conventions.EndpointNamingConvention(typeof(SecondMigratedEndpoint)));
+
+                    return session.Send(new ADelayedMessage(), options);
+                });
+            })
+            .WithEndpoint<FirstMigratedEndpoint>()
+            .WithEndpoint<SecondMigratedEndpoint>()
             .Done(c => c.ADelayedMessageReceived)
             .Run();
 
