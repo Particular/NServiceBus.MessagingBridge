@@ -1,4 +1,1 @@
-﻿public interface IConfigureTransportTestExecution : IConfigureEndpointTestExecution
-{
-    BridgeTransportDefinition GetBridgeTransport();
-}
+﻿public interface IConfigureTransportTestExecution : IConfigureEndpointTestExecution, IConfigureBridgeTestExecution;
