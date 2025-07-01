@@ -100,7 +100,7 @@ public class Retry : BridgeAcceptanceTest
         public FakeSCError() => EndpointSetup<DefaultTestServer>((c, runDescriptor) =>
                 c.Pipeline.Register(new ControlMessageBehavior(runDescriptor.ScenarioContext as Context), "Checks that the retry confirmation arrived"));
 
-        class FailedMessageHander(Context testContext) : IHandleMessages<FaultyMessage>
+        class FailedMessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {

@@ -81,7 +81,7 @@ public class Error : BridgeAcceptanceTest
     {
         public ErrorSpy() => EndpointSetup<DefaultServer>(c => c.AutoSubscribe().DisableFor<FaultyMessage>());
 
-        class FailedMessageHander(Context testContext) : IHandleMessages<FaultyMessage>
+        class FailedMessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
