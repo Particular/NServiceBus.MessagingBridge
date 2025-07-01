@@ -7,38 +7,40 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NServiceBus;
-using NServiceBus.AcceptanceTesting;
 using NServiceBus.AcceptanceTesting.Support;
 
-public class BridgeComponent<TContext> : IComponentBehavior where TContext : ScenarioContext
+public class BridgeComponent<TContext>(
+    Action<BridgeConfiguration, BridgeTransport> bridgeConfigurationAction,
+    Action<PublisherMetadata> publisherMetadataAction,
+    IConfigureBridgeTestExecution configureBridge) : IComponentBehavior
+    where TContext : BridgeScenarioContext
 {
-    public BridgeComponent(Action<BridgeConfiguration> bridgeConfigurationAction) => this.bridgeConfigurationAction = bridgeConfigurationAction;
+#pragma warning disable PS0018
+    public Task<ComponentRunner> CreateRunner(RunDescriptor run) => Task.FromResult<ComponentRunner>(new Runner(bridgeConfigurationAction, publisherMetadataAction, (TContext)run.ScenarioContext, configureBridge, new AcceptanceTestLoggerFactory(run.ScenarioContext)));
+#pragma warning restore PS0018
 
-#pragma warning disable PS0018 // A task-returning method should have a CancellationToken parameter unless it has a parameter implementing ICancellableContext
-    public Task<ComponentRunner> CreateRunner(RunDescriptor run)
-#pragma warning restore PS0018 // A task-returning method should have a CancellationToken parameter unless it has a parameter implementing ICancellableContext
+    class Runner(
+        Action<BridgeConfiguration, BridgeTransport> bridgeConfigurationAction,
+        Action<PublisherMetadata> publisherMetadataAction,
+        TContext scenarioContext,
+        IConfigureBridgeTestExecution configureBridge,
+        ILoggerFactory loggerFactory)
+        : ComponentRunner
     {
-        return Task.FromResult<ComponentRunner>(new Runner(bridgeConfigurationAction, new AcceptanceTestLoggerFactory(run.ScenarioContext)));
-    }
-
-    readonly Action<BridgeConfiguration> bridgeConfigurationAction;
-
-    class Runner : ComponentRunner
-    {
-        public Runner(Action<BridgeConfiguration> bridgeConfigurationAction, ILoggerFactory loggerFactory)
-        {
-            this.bridgeConfigurationAction = bridgeConfigurationAction;
-            this.loggerFactory = loggerFactory;
-        }
-
         public override string Name => "Bridge";
 
         public override async Task Start(CancellationToken cancellationToken = default)
         {
             var builder = Host.CreateApplicationBuilder();
 
+            var publisherMetadata = new PublisherMetadata();
+            publisherMetadataAction?.Invoke(publisherMetadata);
+
+            bridgeTransport = configureBridge.Configure(publisherMetadata);
+            scenarioContext.Initialize(bridgeTransport);
+
             var bridgeConfiguration = new BridgeConfiguration();
-            bridgeConfigurationAction(bridgeConfiguration);
+            bridgeConfigurationAction(bridgeConfiguration, bridgeTransport);
 
             builder.UseNServiceBusBridge(bridgeConfiguration);
 
@@ -67,12 +69,11 @@ public class BridgeComponent<TContext> : IComponentBehavior where TContext : Sce
             finally
             {
                 host.Dispose();
+                await configureBridge.Cleanup(bridgeTransport).ConfigureAwait(false);
             }
         }
 
         IHost host;
-
-        readonly Action<BridgeConfiguration> bridgeConfigurationAction;
-        readonly ILoggerFactory loggerFactory;
+        BridgeTransport bridgeTransport;
     }
 }

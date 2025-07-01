@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Customization;
@@ -26,9 +25,9 @@ public class DefaultServer : IEndpointSetupTemplate
 
         var transportConfig = TestSuiteConfiguration.Current.CreateTransportConfiguration();
 
-        var transportCleanup = transportConfig.ConfigureTransportForEndpoint(endpointConfiguration.EndpointName, configuration, endpointConfiguration.PublisherMetadata);
+        await transportConfig.Configure(endpointConfiguration.EndpointName, configuration, runDescriptor.Settings, endpointConfiguration.PublisherMetadata);
 
-        runDescriptor.OnTestCompleted(_ => transportCleanup(CancellationToken.None));
+        runDescriptor.OnTestCompleted(_ => transportConfig.Cleanup());
 
         await configurationBuilderCustomization(configuration);
 

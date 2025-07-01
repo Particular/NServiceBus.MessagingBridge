@@ -5,13 +5,9 @@ using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Transport;
 
-class TestableRabbitMQTransport : RabbitMQTransport
+class TestableRabbitMQTransport(RoutingTopology topology, string connectionString)
+    : RabbitMQTransport(topology, connectionString)
 {
-    public TestableRabbitMQTransport(RoutingTopology topology, string connectionString)
-        : base(topology, connectionString)
-    {
-    }
-
     public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers, string[] sendingAddresses, CancellationToken cancellationToken = default)
     {
         var infrastructure = await base.Initialize(hostSettings, receivers, sendingAddresses, cancellationToken).ConfigureAwait(false);

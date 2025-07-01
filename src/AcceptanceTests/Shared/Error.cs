@@ -13,34 +13,32 @@ public class Error : BridgeAcceptanceTest
     [Test]
     public async Task Should_forward_error_messages_and_not_modify_header_other_than_ReplyToAddress()
     {
-        var ctx = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
+        var context = await Scenario.Define<Context>()
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
-                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-                bridgeTransport.AddTestEndpoint<PublishingEndpoint>();
-                bridgeTransport.AddTestEndpoint<ErrorSpy>();
-                bridgeConfiguration.AddTransport(bridgeTransport);
+                transportBeingTested.AddTestEndpoint<PublishingEndpoint>();
+                transportBeingTested.AddTestEndpoint<ErrorSpy>();
+                bridgeConfiguration.AddTransport(transportBeingTested);
 
                 var subscriberEndpoint =
                     new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(ProcessingEndpoint)));
-                subscriberEndpoint.RegisterPublisher<FaultyMessage>(
-                    Conventions.EndpointNamingConvention(typeof(PublishingEndpoint)));
+                subscriberEndpoint.RegisterPublisher<FaultyMessage>(Conventions.EndpointNamingConvention(typeof(PublishingEndpoint)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
 
-            })
+            }, metadata => metadata.RegisterPublisherFor<FaultyMessage, PublishingEndpoint>())
             .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new FaultyMessage())))
+                .When(c => c.TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new FaultyMessage())))
             .WithEndpoint<ProcessingEndpoint>(builder => builder.DoNotFailOnErrorMessages())
             .WithEndpoint<ErrorSpy>()
             .Done(c => c.MessageFailed)
             .Run();
 
-        Assert.That(ctx.MessageFailed, Is.True);
-        foreach (var header in ctx.FailedMessageHeaders)
+        Assert.That(context.MessageFailed, Is.True);
+        foreach (var header in context.FailedMessageHeaders)
         {
             if (header.Key != Headers.ReplyToAddress)
             {
-                if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
+                if (context.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
                 {
                     Assert.That(receivedHeaderValue, Is.EqualTo(header.Value),
                         $"{header.Key} is not the same on processed message and error message.");
@@ -83,7 +81,7 @@ public class Error : BridgeAcceptanceTest
     {
         public ErrorSpy() => EndpointSetup<DefaultServer>(c => c.AutoSubscribe().DisableFor<FaultyMessage>());
 
-        class FailedMessageHander(Context testContext) : IHandleMessages<FaultyMessage>
+        class FailedMessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
@@ -97,7 +95,7 @@ public class Error : BridgeAcceptanceTest
         }
     }
 
-    public class Context : ScenarioContext
+    public class Context : BridgeScenarioContext
     {
         public bool SubscriberSubscribed { get; set; }
         public bool MessageFailed { get; set; }

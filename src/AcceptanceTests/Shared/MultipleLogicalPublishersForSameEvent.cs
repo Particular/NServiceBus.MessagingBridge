@@ -11,36 +11,34 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
     public async Task Subscriber_should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
                 bridgeConfiguration.DoNotEnforceBestPractices();
 
-                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-
-                bridgeTransport.AddTestEndpoint<PublisherOne>();
-                bridgeTransport.AddTestEndpoint<PublisherTwo>();
-                bridgeConfiguration.AddTransport(bridgeTransport);
+                transportBeingTested.AddTestEndpoint<PublisherOne>();
+                transportBeingTested.AddTestEndpoint<PublisherTwo>();
+                bridgeConfiguration.AddTransport(transportBeingTested);
 
                 var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
 
-                subscriberEndpoint.RegisterPublisher<MyEvent>(
-                    Conventions.EndpointNamingConvention(typeof(PublisherOne)));
-                subscriberEndpoint.RegisterPublisher<MyEvent>(
-                    Conventions.EndpointNamingConvention(typeof(PublisherTwo)));
+                subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(PublisherOne)));
+                subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(PublisherTwo)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
+            }, metadata =>
+            {
+                metadata.RegisterPublisherFor<MyEvent, PublisherOne>();
+                metadata.RegisterPublisherFor<MyEvent, PublisherTwo>();
             })
             .WithEndpoint<PublisherOne>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberPublisherOneSubscribed,
-                    (session, _) => session.Publish(new MyEvent())))
+                .When(c => c.TransportBeingTested.SupportsPublishSubscribe || c.SubscriberPublisherOneSubscribed, (session, _) => session.Publish(new MyEvent())))
             .WithEndpoint<PublisherTwo>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberPublisherTwoSubscribed,
-                    (session, c) => session.Publish(new MyEvent())))
+                .When(c => c.TransportBeingTested.SupportsPublishSubscribe || c.SubscriberPublisherTwoSubscribed, (session, c) => session.Publish(new MyEvent())))
             .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEventFromPublisherOne && c.SubscriberGotEventFromPublisherTwo)
             .Run();
     }
 
-    public class Context : ScenarioContext
+    public class Context : BridgeScenarioContext
     {
         public bool SubscriberPublisherOneSubscribed { get; set; }
         public bool SubscriberPublisherTwoSubscribed { get; set; }
@@ -50,8 +48,7 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
 
     class PublisherOne : EndpointConfigurationBuilder
     {
-        public PublisherOne()
-        {
+        public PublisherOne() =>
             EndpointSetup<DefaultPublisher>(c =>
             {
                 c.OnEndpointSubscribed<Context>((_, ctx) =>
@@ -59,7 +56,6 @@ class MultipleLogicalPublishersForSameEvent : BridgeAcceptanceTest
                     ctx.SubscriberPublisherOneSubscribed = true;
                 });
             }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
-        }
     }
 
     class PublisherTwo : EndpointConfigurationBuilder

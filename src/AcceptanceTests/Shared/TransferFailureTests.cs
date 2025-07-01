@@ -15,13 +15,12 @@ public class TransferFailureTests : BridgeAcceptanceTest
     [Test]
     public async Task Should_add_failedq_header_when_transfer_fails()
     {
-        var ctx = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
+        var context = await Scenario.Define<Context>()
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
-                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-                bridgeTransport.AddTestEndpoint<Sender>();
-                bridgeConfiguration.AddTransport(bridgeTransport);
-                bridgeTransport.ErrorQueue = ErrorQueue;
+                transportBeingTested.AddTestEndpoint<Sender>();
+                bridgeConfiguration.AddTransport(transportBeingTested);
+                transportBeingTested.ErrorQueue = ErrorQueue;
 
                 var subscriberEndpoint = new BridgeEndpoint(ReceiveDummyQueue);
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
@@ -39,8 +38,8 @@ public class TransferFailureTests : BridgeAcceptanceTest
 
         Assert.Multiple(() =>
         {
-            Assert.That(ctx.MessageFailed, Is.True, "Message did not fail");
-            Assert.That(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
+            Assert.That(context.MessageFailed, Is.True, "Message did not fail");
+            Assert.That(context.FailedMessageHeaders.ContainsKey(FailedQHeader),
                 Is.True,
                 $"Failed message headers does not contain {FailedQHeader}");
         });
@@ -59,12 +58,11 @@ public class TransferFailureTests : BridgeAcceptanceTest
                     opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
                     await session.Send(new FaultyMessage(), opts);
                 }))
-            .WithBridge(bridgeConfiguration =>
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
-                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-                bridgeTransport.AddTestEndpoint<Sender>();
-                bridgeConfiguration.AddTransport(bridgeTransport);
-                bridgeTransport.ErrorQueue = ErrorQueue;
+                transportBeingTested.AddTestEndpoint<Sender>();
+                bridgeConfiguration.AddTransport(transportBeingTested);
+                transportBeingTested.ErrorQueue = ErrorQueue;
 
                 var subscriberEndpoint = new BridgeEndpoint(ReceiveDummyQueue);
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
@@ -98,7 +96,7 @@ public class TransferFailureTests : BridgeAcceptanceTest
                 c.OverrideLocalAddress(ErrorQueue);
             });
 
-        class FailedMessageHander(Context testContext) : IHandleMessages<FaultyMessage>
+        class FailedMessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
             public Task Handle(FaultyMessage message, IMessageHandlerContext context)
             {
@@ -110,7 +108,7 @@ public class TransferFailureTests : BridgeAcceptanceTest
         }
     }
 
-    public class Context : ScenarioContext
+    public class Context : BridgeScenarioContext
     {
         public bool MessageFailed { get; set; }
         public IReadOnlyDictionary<string, string> FailedMessageHeaders { get; set; }

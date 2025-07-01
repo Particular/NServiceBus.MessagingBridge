@@ -1,36 +1,31 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
+using NUnit.Framework;
 
 public class ConfigureAzureStorageQueuesTransportTestExecution : IConfigureTransportTestExecution
 {
     readonly string connectionString = Environment.GetEnvironmentVariable("AzureStorageQueueTransport_ConnectionString");
-    public BridgeTransportDefinition GetBridgeTransport()
+
+    public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            throw new InvalidOperationException("No connectionstring for found in environment variable 'AzureStorageQueueTransport_ConnectionString'");
-        }
+        Assert.That(connectionString, Is.Not.Null, "AzureStorageQueueTransport_ConnectionString environment variable must be set for Azure Storage Queues acceptance tests.");
 
-        var transportDefinition = new TestableAzureStorageQueuesTransport(connectionString);
-
-        return new BridgeTransportDefinition()
-        {
-            TransportDefinition = transportDefinition,
-            Cleanup = (ct) => Cleanup(ct)
-        };
-    }
-
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
-    {
         var transportDefinition = new TestableAzureStorageQueuesTransport(connectionString);
 
         endpointConfiguration.UseTransport(transportDefinition);
-
-        return ct => Cleanup(ct);
+        return Task.CompletedTask;
     }
 
-    Task Cleanup(CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task Cleanup() => Task.CompletedTask;
+
+    public BridgeTransport Configure(PublisherMetadata publisherMetadata)
+    {
+        Assert.That(connectionString, Is.Not.Null, "AzureStorageQueueTransport_ConnectionString environment variable must be set for Azure Storage Queues acceptance tests.");
+
+        return new TestableAzureStorageQueuesTransport(connectionString).ToTestableBridge();
+    }
+
+    public Task Cleanup(BridgeTransport bridgeTransport) => Task.CompletedTask;
 }

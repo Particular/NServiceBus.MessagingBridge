@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Customization;
@@ -10,20 +9,11 @@ using Particular.Msmq;
 
 class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
 {
-    public BridgeTransportDefinition GetBridgeTransport()
-    {
-        var transportDefinition = new TestableMsmqTransport();
+    TestableMsmqTransport transportDefinition;
 
-        return new BridgeTransportDefinition
-        {
-            TransportDefinition = transportDefinition,
-            Cleanup = (ct) => Cleanup(transportDefinition, ct)
-        };
-    }
-
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
-        var transportDefinition = new TestableMsmqTransport();
+        transportDefinition = new TestableMsmqTransport();
         var routingConfig = endpointConfiguration.UseTransport(transportDefinition);
         endpointConfiguration.UsePersistence<AcceptanceTestingPersistence, StorageType.Subscriptions>();
 
@@ -36,11 +26,16 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
         }
 
         endpointConfiguration.EnforcePublisherMetadataRegistration(endpointName, publisherMetadata);
-
-        return (ct) => Cleanup(transportDefinition, ct);
+        return Task.CompletedTask;
     }
 
-    static Task Cleanup(TestableMsmqTransport msmqTransport, CancellationToken cancellationToken)
+    public Task Cleanup() => Cleanup(transportDefinition);
+
+    public BridgeTransport Configure(PublisherMetadata publisherMetadata) => new TestableMsmqTransport().ToTestableBridge();
+
+    public Task Cleanup(BridgeTransport bridgeTransport) => Cleanup(bridgeTransport.FromTestableBridge<TestableMsmqTransport>());
+
+    static Task Cleanup(TestableMsmqTransport msmqTransport)
     {
         var allQueues = MessageQueue.GetPrivateQueuesByMachine("localhost");
         var queuesToBeDeleted = new List<string>();
@@ -54,9 +49,9 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
                     var indexOfAt = ra.IndexOf("@", StringComparison.Ordinal);
                     if (indexOfAt >= 0)
                     {
-                        ra = ra.Substring(0, indexOfAt);
+                        ra = ra[..indexOfAt];
                     }
-                    return messageQueue.QueueName.StartsWith(@"private$\" + ra, StringComparison.OrdinalIgnoreCase);
+                    return messageQueue.QueueName.StartsWith($@"private$\{ra}", StringComparison.OrdinalIgnoreCase);
                 }))
                 {
                     queuesToBeDeleted.Add(messageQueue.Path);

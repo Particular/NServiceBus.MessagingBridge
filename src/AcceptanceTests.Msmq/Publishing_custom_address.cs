@@ -10,17 +10,15 @@ class Publishing_custom_address : BridgeAcceptanceTest
     public async Task Subscriber_should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
-                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-
-                bridgeTransport.AddTestEndpoint<Publisher>();
+                transportBeingTested.AddTestEndpoint<Publisher>();
 
                 // setup the logical publisher to have the address of the publisher to make sure
                 // that the bridge does proper address lookups when subscribing
-                bridgeTransport.HasEndpoint(Conventions.EndpointNamingConvention(typeof(LogicalPublisher)), Conventions.EndpointNamingConvention(typeof(Publisher)));
+                transportBeingTested.HasEndpoint(Conventions.EndpointNamingConvention(typeof(LogicalPublisher)), Conventions.EndpointNamingConvention(typeof(Publisher)));
 
-                bridgeConfiguration.AddTransport(bridgeTransport);
+                bridgeConfiguration.AddTransport(transportBeingTested);
 
                 var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
 
@@ -29,7 +27,7 @@ class Publishing_custom_address : BridgeAcceptanceTest
             })
             .WithEndpoint<LogicalPublisher>()
             .WithEndpoint<Publisher>(b => b
-                .When(c => c.SubscriberSubscribed, (session, c) => session.Publish(new MyEvent())))
+                .When(c => c.SubscriberSubscribed, (session, _) => session.Publish(new MyEvent())))
             .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEvent)
             .Run();
@@ -37,7 +35,7 @@ class Publishing_custom_address : BridgeAcceptanceTest
         Assert.That(context.SubscriberGotEvent, Is.True);
     }
 
-    public class Context : ScenarioContext
+    public class Context : BridgeScenarioContext
     {
         public bool SubscriberSubscribed { get; set; }
         public bool SubscriberGotEvent { get; set; }
@@ -46,9 +44,9 @@ class Publishing_custom_address : BridgeAcceptanceTest
     class Publisher : EndpointConfigurationBuilder
     {
         public Publisher() =>
-            EndpointSetup<DefaultPublisher>(c =>
+            EndpointSetup<DefaultPublisher>(b =>
             {
-                c.OnEndpointSubscribed<Context>((_, ctx) =>
+                b.OnEndpointSubscribed<Context>((_, ctx) =>
                 {
                     ctx.SubscriberSubscribed = true;
                 });

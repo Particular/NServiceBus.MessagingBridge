@@ -22,29 +22,15 @@ public class Separate_instances : BridgeAcceptanceTest
         connectionString2 = connectionString.Replace("nservicebus", "nservicebus2");
 
         var context = await Scenario.Define<Context>()
-            .WithEndpoint<Publisher>(b => b
-                .When(cc => cc.EndpointsStarted, (b, _) =>
-                {
-                    return b.Publish(new MyEvent());
-                }))
-            .WithEndpoint<Subscriber>()
-            .WithBridge(bridgeConfiguration =>
+            .WithBridge((bridgeConfiguration, _) =>
             {
                 // Publisher SQL Transport
-                var publisherSqlTransport = new TestableSqlServerTransport(connectionString);
-                var publisherBridgeTransport = new TestableBridgeTransport(publisherSqlTransport)
-                {
-                    Name = "publisherBridgeTransport"
-                };
+                var publisherBridgeTransport = new TestableSqlServerTransport(connectionString).ToTestableBridge("PublisherTransport");
                 // Add endpoints
                 publisherBridgeTransport.AddTestEndpoint<Publisher>();
 
                 // Subscriber Sql Transport
-                var subscriberSqlTransport = new TestableSqlServerTransport(connectionString2);
-                var subscriberBridgeTransport = new TestableBridgeTransport(subscriberSqlTransport)
-                {
-                    Name = "subscriberBridgeTransport"
-                };
+                var subscriberBridgeTransport = new TestableSqlServerTransport(connectionString2).ToTestableBridge("SubscriberTransport");
                 // Add endpoints
                 var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
                 subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
@@ -56,55 +42,47 @@ public class Separate_instances : BridgeAcceptanceTest
                 // DTC won't work
                 bridgeConfiguration.RunInReceiveOnlyTransactionMode();
             })
+            .WithEndpoint<Publisher>(b => b.When(c => c.EndpointsStarted, (session, _) => session.Publish(new MyEvent())))
+            .WithEndpoint<Subscriber>()
             .Done(c => c.SubscriberGotEvent)
             .Run();
 
         Assert.That(context.SubscriberGotEvent, Is.True);
     }
 
-    public class Context : ScenarioContext
+    public class Context : BridgeScenarioContext
     {
         public bool SubscriberGotEvent { get; set; }
     }
 
     class Publisher : EndpointConfigurationBuilder
     {
-        public Publisher()
-        {
-            EndpointSetup<DefaultPublisher>(c =>
+        public Publisher() =>
+            EndpointSetup<DefaultPublisher>(b =>
             {
                 var transport = new SqlServerTransport(connectionString);
-                c.UseTransport(transport);
+                b.UseTransport(transport);
             });
-        }
     }
 
     class Subscriber : EndpointConfigurationBuilder
     {
-        public Subscriber()
-        {
-            EndpointSetup<DefaultServer>(c =>
+        public Subscriber() =>
+            EndpointSetup<DefaultServer>(b =>
             {
                 var transport = new SqlServerTransport(connectionString2);
-                c.UseTransport(transport);
+                b.UseTransport(transport);
             });
-        }
 
-        public class MessageHandler : IHandleMessages<MyEvent>
+        public class MessageHandler(Context testContext) : IHandleMessages<MyEvent>
         {
-            Context context;
-
-            public MessageHandler(Context context) => this.context = context;
-
             public Task Handle(MyEvent message, IMessageHandlerContext handlerContext)
             {
-                context.SubscriberGotEvent = true;
+                testContext.SubscriberGotEvent = true;
                 return Task.CompletedTask;
             }
         }
     }
 
-    public class MyEvent : IEvent
-    {
-    }
+    public class MyEvent : IEvent;
 }

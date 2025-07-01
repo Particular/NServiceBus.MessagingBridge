@@ -11,24 +11,22 @@ public class Address_with_machinename : BridgeAcceptanceTest
     public async Task Should_get_the_message()
     {
         var ctx = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
-                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-
                 var receivingEndpointName =
                     Conventions.EndpointNamingConvention(typeof(ReceivingEndpoint));
 
                 var receivingEndpoint =
                     new BridgeEndpoint(receivingEndpointName, receivingEndpointName + "@localhost");
 
-                bridgeTransport.HasEndpoint(receivingEndpoint);
+                transportBeingTested.HasEndpoint(receivingEndpoint);
 
-                bridgeConfiguration.AddTransport(bridgeTransport);
+                bridgeConfiguration.AddTransport(transportBeingTested);
 
                 bridgeConfiguration.AddTestTransportEndpoint<SendingEndpoint>();
             })
-            .WithEndpoint<SendingEndpoint>(c => c
-                .When(cc => cc.EndpointsStarted, (b, _) => b.Send(new MyMessage())))
+            .WithEndpoint<SendingEndpoint>(b => b
+                .When(c => c.EndpointsStarted, (session, _) => session.Send(new MyMessage())))
             .WithEndpoint<ReceivingEndpoint>()
             .Done(c => c.ReceivingEndpointGotMessage)
             .Run();
@@ -36,7 +34,7 @@ public class Address_with_machinename : BridgeAcceptanceTest
         Assert.That(ctx.ReceivingEndpointGotMessage, Is.True);
     }
 
-    class Context : ScenarioContext
+    class Context : BridgeScenarioContext
     {
         public bool ReceivingEndpointGotMessage { get; set; }
     }
@@ -44,10 +42,7 @@ public class Address_with_machinename : BridgeAcceptanceTest
     class SendingEndpoint : EndpointConfigurationBuilder
     {
         public SendingEndpoint() =>
-            EndpointSetup<DefaultTestServer>(c =>
-            {
-                c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReceivingEndpoint));
-            });
+            EndpointSetup<DefaultTestServer>(b => b.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReceivingEndpoint)));
     }
 
     class ReceivingEndpoint : EndpointConfigurationBuilder

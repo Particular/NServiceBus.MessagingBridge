@@ -10,30 +10,27 @@ class Subscribing : BridgeAcceptanceTest
     public async Task Should_get_the_event()
     {
         var context = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
-                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-
                 var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
 
                 subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
 
-                bridgeTransport.HasEndpoint(subscriberEndpoint);
+                transportBeingTested.HasEndpoint(subscriberEndpoint);
 
-                bridgeConfiguration.AddTransport(bridgeTransport);
+                bridgeConfiguration.AddTransport(transportBeingTested);
 
                 bridgeConfiguration.AddTestTransportEndpoint<Publisher>();
-            })
+            }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>())
             .WithEndpoint<Subscriber>()
-            .WithEndpoint<Publisher>(b => b
-                .When((session, _) => session.Publish(new MyEvent())))
+            .WithEndpoint<Publisher>(b => b.When((session, _) => session.Publish(new MyEvent())))
             .Done(c => c.SubscriberGotEvent)
             .Run();
 
         Assert.That(context.SubscriberGotEvent, Is.True);
     }
 
-    public class Context : ScenarioContext
+    public class Context : BridgeScenarioContext
     {
         public bool SubscriberSubscribed { get; set; }
         public bool SubscriberGotEvent { get; set; }
