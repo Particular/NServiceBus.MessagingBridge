@@ -5,17 +5,13 @@ using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Transport;
 
-public class TestableAzureServiceBusTransport : AzureServiceBusTransport
+public class TestableAzureServiceBusTransport(string connectionString, TopicTopology topicTopology)
+    : AzureServiceBusTransport(connectionString, topicTopology)
 {
-    public TestableAzureServiceBusTransport(string connectionString) : base(connectionString)
-    {
-        SubscriptionRuleNamingConvention = (evt) => evt.FullName.Replace("+", "");
-    }
-
     public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings,
         ReceiveSettings[] receivers,
         string[] sendingAddresses,
-        CancellationToken cancellationToken = new CancellationToken())
+        CancellationToken cancellationToken = default)
     {
         var infrastructure = await base.Initialize(hostSettings, receivers, sendingAddresses, cancellationToken)
             .ConfigureAwait(false);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
@@ -12,7 +13,16 @@ public class ConfigureAzureServiceBusTransportTestExecution : IConfigureTranspor
 
     public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
-        transportDefinition = new TestableAzureServiceBusTransport(connectionString);
+        var topology = TopicTopology.Default;
+        topology.OverrideSubscriptionNameFor(endpointName, endpointName.Shorten());
+
+        foreach (var eventType in publisherMetadata.Publishers.SelectMany(p => p.Events))
+        {
+            topology.PublishTo(eventType, eventType.ToTopicName());
+            topology.SubscribeTo(eventType, eventType.ToTopicName());
+        }
+
+        transportDefinition = new TestableAzureServiceBusTransport(connectionString, topology);
         endpointConfiguration.UseTransport(transportDefinition);
 
         endpointConfiguration.EnforcePublisherMetadataRegistration(endpointName, publisherMetadata);
@@ -21,10 +31,26 @@ public class ConfigureAzureServiceBusTransportTestExecution : IConfigureTranspor
 
     public Task Cleanup() => Cleanup(transportDefinition, CancellationToken.None);
 
-    public BridgeTransport Configure(PublisherMetadata publisherMetadata) => new TestableAzureServiceBusTransport(connectionString)
+    public BridgeTransport Configure(PublisherMetadata publisherMetadata)
     {
-        TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive
-    }.ToTestableBridge();
+        var topology = TopicTopology.Default;
+
+        foreach (var publisher in publisherMetadata.Publishers.Select(p => p.PublisherName).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            topology.OverrideSubscriptionNameFor(publisher, publisher.Shorten());
+        }
+
+        foreach (var eventType in publisherMetadata.Publishers.SelectMany(p => p.Events))
+        {
+            topology.PublishTo(eventType, eventType.ToTopicName());
+            topology.SubscribeTo(eventType, eventType.ToTopicName());
+        }
+
+        return new TestableAzureServiceBusTransport(connectionString, topology)
+        {
+            TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive
+        }.ToTestableBridge();
+    }
 
     public Task Cleanup(BridgeTransport bridgeTransport) => Cleanup(bridgeTransport.FromTestableBridge<TestableAzureServiceBusTransport>(), CancellationToken.None);
 
