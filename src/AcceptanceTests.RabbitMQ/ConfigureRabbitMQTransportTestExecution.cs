@@ -9,32 +9,21 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
     readonly string connectionString = Environment.GetEnvironmentVariable("RabbitMQTransport_ConnectionString") ?? "host=localhost";
     TestableRabbitMQTransport transport;
 
-    public BridgeTransportDefinition GetBridgeTransport() =>
-        new()
-        {
-            TransportDefinition = new TestableRabbitMQTransport(
-                RoutingTopology.Conventional(QueueType.Quorum),
-                connectionString),
-            Cleanup = _ => Cleanup()
-        };
-
     public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
-        transport = new TestableRabbitMQTransport(
-            RoutingTopology.Conventional(QueueType.Quorum),
-            connectionString);
+        transport = new TestableRabbitMQTransport(RoutingTopology.Conventional(QueueType.Quorum), connectionString);
         endpointConfiguration.UseTransport(transport);
         return Task.CompletedTask;
     }
 
     public Task Cleanup()
     {
-        PurgeQueues();
+        PurgeQueues(transport);
 
         return Task.CompletedTask;
     }
 
-    void PurgeQueues()
+    static void PurgeQueues(TestableRabbitMQTransport transport)
     {
         if (transport == null)
         {
@@ -59,4 +48,11 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
         }
     }
 
+    public BridgeTransport Configure(PublisherMetadata publisherMetadata) => new TestableRabbitMQTransport(RoutingTopology.Conventional(QueueType.Quorum), connectionString).ToTestableBridge();
+
+    public Task Cleanup(BridgeTransport bridgeTransport)
+    {
+        PurgeQueues(bridgeTransport.FromTestableBridge<TestableRabbitMQTransport>());
+        return Task.CompletedTask;
+    }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Customization;
@@ -11,17 +10,6 @@ using Particular.Msmq;
 class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
 {
     TestableMsmqTransport transportDefinition;
-
-    public BridgeTransportDefinition GetBridgeTransport()
-    {
-        var transportDefinition = new TestableMsmqTransport();
-
-        return new BridgeTransportDefinition
-        {
-            TransportDefinition = transportDefinition,
-            Cleanup = ct => Cleanup(transportDefinition, ct)
-        };
-    }
 
     public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
@@ -41,9 +29,13 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
         return Task.CompletedTask;
     }
 
-    public Task Cleanup() => Cleanup(transportDefinition, CancellationToken.None);
+    public Task Cleanup() => Cleanup(transportDefinition);
 
-    static Task Cleanup(TestableMsmqTransport msmqTransport, CancellationToken cancellationToken)
+    public BridgeTransport Configure(PublisherMetadata publisherMetadata) => new TestableMsmqTransport().ToTestableBridge();
+
+    public Task Cleanup(BridgeTransport bridgeTransport) => Cleanup(bridgeTransport.FromTestableBridge<TestableMsmqTransport>());
+
+    static Task Cleanup(TestableMsmqTransport msmqTransport)
     {
         var allQueues = MessageQueue.GetPrivateQueuesByMachine("localhost");
         var queuesToBeDeleted = new List<string>();
@@ -57,9 +49,9 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
                     var indexOfAt = ra.IndexOf("@", StringComparison.Ordinal);
                     if (indexOfAt >= 0)
                     {
-                        ra = ra.Substring(0, indexOfAt);
+                        ra = ra[..indexOfAt];
                     }
-                    return messageQueue.QueueName.StartsWith(@"private$\" + ra, StringComparison.OrdinalIgnoreCase);
+                    return messageQueue.QueueName.StartsWith($@"private$\{ra}", StringComparison.OrdinalIgnoreCase);
                 }))
                 {
                     queuesToBeDeleted.Add(messageQueue.Path);

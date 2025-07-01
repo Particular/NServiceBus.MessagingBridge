@@ -1,6 +1,4 @@
 ﻿using System;
-//using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.SimpleNotificationService;
@@ -10,17 +8,6 @@ using NServiceBus.AcceptanceTesting.Support;
 
 public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecution
 {
-    public BridgeTransportDefinition GetBridgeTransport()
-    {
-        var transportDefinition = new TestableSQSTransport(NamePrefixGenerator.GetNamePrefix());
-
-        return new BridgeTransportDefinition()
-        {
-            TransportDefinition = transportDefinition,
-            Cleanup = _ => BridgeCleanup(),
-        };
-    }
-
     public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new TestableSQSTransport(NamePrefixGenerator.GetNamePrefix());
@@ -33,7 +20,9 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
     // delete the queues twice in rapid succession
     public Task Cleanup() => Task.CompletedTask;
 
-    async Task BridgeCleanup()
+    public BridgeTransport Configure(PublisherMetadata publisherMetadata) => new TestableSQSTransport(NamePrefixGenerator.GetNamePrefix()).ToTestableBridge();
+
+    public async Task Cleanup(BridgeTransport bridgeTransport)
     {
         var accessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
         var secretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");

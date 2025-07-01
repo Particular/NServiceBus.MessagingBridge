@@ -11,19 +11,6 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
     readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString");
     TestableSqlServerTransport transportDefinition;
 
-    public BridgeTransportDefinition GetBridgeTransport()
-    {
-        var transportDefinition = new TestableSqlServerTransport(connectionString)
-        {
-            TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive
-        };
-        return new BridgeTransportDefinition
-        {
-            TransportDefinition = transportDefinition,
-            Cleanup = (ct) => Cleanup(transportDefinition, ct)
-        };
-    }
-
     public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
         transportDefinition = new TestableSqlServerTransport(connectionString);
@@ -33,6 +20,15 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
     }
 
     public Task Cleanup() => Cleanup(transportDefinition, CancellationToken.None);
+
+
+    public BridgeTransport Configure(PublisherMetadata publisherMetadata) =>
+        new TestableSqlServerTransport(connectionString)
+        {
+            TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive
+        }.ToTestableBridge();
+
+    public Task Cleanup(BridgeTransport bridgeTransport) => Cleanup(bridgeTransport.FromTestableBridge<TestableSqlServerTransport>(), CancellationToken.None);
 
     async Task Cleanup(TestableSqlServerTransport transport, CancellationToken cancellationToken)
     {

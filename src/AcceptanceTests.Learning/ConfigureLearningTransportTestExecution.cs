@@ -6,25 +6,24 @@ using NUnit.Framework;
 
 class ConfigureLearningTransportTestExecution : IConfigureTransportTestExecution
 {
-    public BridgeTransportDefinition GetBridgeTransport()
-    {
-        return new BridgeTransportDefinition
-        {
-            TransportDefinition = new LearningTransport { StorageDirectory = GetStorageDir() },
-            Cleanup = _ => Cleanup()
-        };
-    }
+    LearningTransport transportDefinition;
 
     public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
-        var transportDefinition = new LearningTransport { StorageDirectory = GetStorageDir() };
+        transportDefinition = new LearningTransport { StorageDirectory = GetStorageDir() };
         endpointConfiguration.UseTransport(transportDefinition);
         return Task.CompletedTask;
     }
 
-    public Task Cleanup()
+    public Task Cleanup() => Cleanup(transportDefinition);
+
+    public BridgeTransport Configure(PublisherMetadata publisherMetadata) => new LearningTransport { StorageDirectory = GetStorageDir() }.ToTestableBridge();
+
+    public Task Cleanup(BridgeTransport bridgeTransport) => Cleanup(bridgeTransport.FromTestableBridge<LearningTransport>());
+
+    static Task Cleanup(LearningTransport transport)
     {
-        var storageDir = GetStorageDir();
+        var storageDir = transport.StorageDirectory;
 
         if (Directory.Exists(storageDir))
         {
@@ -34,7 +33,7 @@ class ConfigureLearningTransportTestExecution : IConfigureTransportTestExecution
         return Task.CompletedTask;
     }
 
-    string GetStorageDir()
+    static string GetStorageDir()
     {
         var testRunId = TestContext.CurrentContext.Test.ID;
         //make sure to run in a non-default directory to not clash with learning transport and other acceptance tests

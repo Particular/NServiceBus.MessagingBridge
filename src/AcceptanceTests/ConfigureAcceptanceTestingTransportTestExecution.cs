@@ -6,25 +6,24 @@ using NUnit.Framework;
 
 class ConfigureAcceptanceTestingTransportTestExecution : IConfigureTransportTestExecution
 {
-    public BridgeTransportDefinition GetBridgeTransport()
-    {
-        return new BridgeTransportDefinition
-        {
-            TransportDefinition = new AcceptanceTestingTransport { StorageLocation = GetStorageDir() },
-            Cleanup = (ct) => Cleanup(),
-        };
-    }
+    AcceptanceTestingTransport transportDefinition;
 
     public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
-        var transportDefinition = new AcceptanceTestingTransport { StorageLocation = GetStorageDir() };
+        transportDefinition = new AcceptanceTestingTransport { StorageLocation = GetStorageDir() };
         endpointConfiguration.UseTransport(transportDefinition);
         return Task.CompletedTask;
     }
 
-    public Task Cleanup()
+    public Task Cleanup() => Cleanup(transportDefinition);
+
+    public BridgeTransport Configure(PublisherMetadata publisherMetadata) => new AcceptanceTestingTransport { StorageLocation = GetStorageDir() }.ToTestableBridge();
+
+    public Task Cleanup(BridgeTransport bridgeTransport) => Cleanup(bridgeTransport.FromTestableBridge<AcceptanceTestingTransport>());
+
+    static Task Cleanup(AcceptanceTestingTransport transport)
     {
-        var storageDir = GetStorageDir();
+        var storageDir = transport.StorageLocation;
 
         if (Directory.Exists(storageDir))
         {
@@ -34,7 +33,7 @@ class ConfigureAcceptanceTestingTransportTestExecution : IConfigureTransportTest
         return Task.CompletedTask;
     }
 
-    string GetStorageDir()
+    static string GetStorageDir()
     {
         var testRunId = TestContext.CurrentContext.Test.ID;
         //make sure to run in a non-default directory to not clash with learning transport and other acceptance tests
