@@ -12,31 +12,30 @@ public class Audit : BridgeAcceptanceTest
     [Test]
     public async Task Should_forward_audit_messages_by_not_modify_message()
     {
-        var ctx = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
+        var context = await Scenario.Define<Context>()
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
-                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-                bridgeTransport.AddTestEndpoint<PublishingEndpoint>();
-                bridgeTransport.AddTestEndpoint<AuditSpy>();
-                bridgeConfiguration.AddTransport(bridgeTransport);
+                transportBeingTested.AddTestEndpoint<PublishingEndpoint>();
+                transportBeingTested.AddTestEndpoint<AuditSpy>();
+                bridgeConfiguration.AddTransport(transportBeingTested);
 
                 var subscriberEndpoint =
                     new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(ProcessingEndpoint)));
                 subscriberEndpoint.RegisterPublisher<MessageToBeAudited>(
                     Conventions.EndpointNamingConvention(typeof(PublishingEndpoint)));
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
-            })
+            }, metadata => metadata.RegisterPublisherFor<MessageToBeAudited, PublishingEndpoint>())
             .WithEndpoint<PublishingEndpoint>(b => b
-                .When(c => TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
+                .When(c => c.TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
             .WithEndpoint<ProcessingEndpoint>()
             .WithEndpoint<AuditSpy>()
             .Done(c => c.MessageAudited)
             .Run();
 
-        Assert.That(ctx.MessageAudited, Is.True);
-        foreach (var header in ctx.AuditMessageHeaders)
+        Assert.That(context.MessageAudited, Is.True);
+        foreach (var header in context.AuditMessageHeaders)
         {
-            if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
+            if (context.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
             {
                 Assert.That(receivedHeaderValue, Is.EqualTo(header.Value),
                     $"{header.Key} is not the same on processed message and audit message.");
@@ -47,20 +46,20 @@ public class Audit : BridgeAcceptanceTest
     public class PublishingEndpoint : EndpointConfigurationBuilder
     {
         public PublishingEndpoint() =>
-            EndpointSetup<DefaultServer>(c =>
+            EndpointSetup<DefaultServer>(b =>
             {
-                c.OnEndpointSubscribed<Context>((_, ctx) =>
+                b.OnEndpointSubscribed<Context>((_, ctx) =>
                 {
                     ctx.SubscriberSubscribed = true;
                 });
-                c.ConfigureRouting().RouteToEndpoint(typeof(MessageToBeAudited), typeof(ProcessingEndpoint));
+                b.ConfigureRouting().RouteToEndpoint(typeof(MessageToBeAudited), typeof(ProcessingEndpoint));
             }, metadata => metadata.RegisterSelfAsPublisherFor<MessageToBeAudited>(this));
     }
 
     public class ProcessingEndpoint : EndpointConfigurationBuilder
     {
         public ProcessingEndpoint() => EndpointSetup<DefaultTestServer>(
-            c => c.AuditProcessedMessagesTo("Audit.AuditSpy"), metadata => metadata.RegisterPublisherFor<MessageToBeAudited, PublishingEndpoint>());
+            b => b.AuditProcessedMessagesTo("Audit.AuditSpy"), metadata => metadata.RegisterPublisherFor<MessageToBeAudited, PublishingEndpoint>());
 
         public class MessageHandler(Context testContext) : IHandleMessages<MessageToBeAudited>
         {
@@ -90,7 +89,7 @@ public class Audit : BridgeAcceptanceTest
         }
     }
 
-    public class Context : ScenarioContext
+    public class Context : BridgeScenarioContext
     {
         public bool SubscriberSubscribed { get; set; }
         public bool MessageAudited { get; set; }

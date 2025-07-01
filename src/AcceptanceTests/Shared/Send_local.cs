@@ -15,11 +15,10 @@ public class Send_local : BridgeAcceptanceTest
     public async Task Should_transfer_send_local_message()
     {
         var ctx = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
-                var bridgeTransport = new TestableBridgeTransport(TransportBeingTested);
-                bridgeTransport.HasEndpoint("_");
-                bridgeConfiguration.AddTransport(bridgeTransport);
+                transportBeingTested.HasEndpoint("_");
+                bridgeConfiguration.AddTransport(transportBeingTested);
 
                 bridgeConfiguration.AddTestTransportEndpoint(new BridgeEndpoint(OriginalEndpointName));
             })
@@ -31,7 +30,7 @@ public class Send_local : BridgeAcceptanceTest
         Assert.That(ctx.MessageReceived, Is.True);
     }
 
-    public class Context : ScenarioContext
+    public class Context : BridgeScenarioContext
     {
         public bool MessageReceived { get; set; }
     }

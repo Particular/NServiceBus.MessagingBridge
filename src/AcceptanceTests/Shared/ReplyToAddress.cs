@@ -11,20 +11,17 @@ public class ReplyToAddress : BridgeAcceptanceTest
     [Test]
     public async Task Should_translate_address_for_already_migrated_endpoint()
     {
-        var ctx = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
+        var context = await Scenario.Define<Context>()
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
-                var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
-                {
-                    Name = "DefaultTestingTransport"
-                };
+                var bridgeTransport = DefaultTestServer.GetTestTransportDefinition()
+                    .ToTestableBridge("DefaultTestingTransport");
                 bridgeTransport.AddTestEndpoint<SendingEndpoint>();
                 bridgeConfiguration.AddTransport(bridgeTransport);
 
-                var theOtherTransport = new TestableBridgeTransport(TransportBeingTested);
-                theOtherTransport.AddTestEndpoint<FirstMigratedEndpoint>();
-                theOtherTransport.AddTestEndpoint<SecondMigratedEndpoint>();
-                bridgeConfiguration.AddTransport(theOtherTransport);
+                transportBeingTested.AddTestEndpoint<FirstMigratedEndpoint>();
+                transportBeingTested.AddTestEndpoint<SecondMigratedEndpoint>();
+                bridgeConfiguration.AddTransport(transportBeingTested);
             })
             .WithEndpoint<SendingEndpoint>(builder =>
             {
@@ -41,7 +38,6 @@ public class ReplyToAddress : BridgeAcceptanceTest
             .WithEndpoint<SecondMigratedEndpoint>()
             .Done(c => c.ADelayedMessageReceived)
             .Run();
-
     }
 
     public class SendingEndpoint : EndpointConfigurationBuilder
@@ -79,7 +75,7 @@ public class ReplyToAddress : BridgeAcceptanceTest
         }
     }
 
-    public class Context : ScenarioContext
+    public class Context : BridgeScenarioContext
     {
         public bool ADelayedMessageReceived { get; set; }
     }

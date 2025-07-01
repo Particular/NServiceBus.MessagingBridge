@@ -15,48 +15,42 @@ public class Retry : BridgeAcceptanceTest
     [TestCase(false)]
     public async Task Should_work(bool doNotTranslateReplyToAdressForFailedMessages)
     {
-        var ctx = await Scenario.Define<Context>()
-            .WithBridge(bridgeConfiguration =>
+        var context = await Scenario.Define<Context>()
+            .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
                 if (doNotTranslateReplyToAdressForFailedMessages)
                 {
                     bridgeConfiguration.DoNotTranslateReplyToAddressForFailedMessages();
                 }
-                var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
-                {
-                    Name = "DefaultTestingTransport"
-                };
+
+                var bridgeTransport = DefaultTestServer.GetTestTransportDefinition().ToTestableBridge("DefaultTestingTransport");
                 bridgeTransport.AddTestEndpoint<FakeSCError>();
                 bridgeConfiguration.AddTransport(bridgeTransport);
 
-                var theOtherTransport = new TestableBridgeTransport(TransportBeingTested);
-                theOtherTransport.AddTestEndpoint<ProcessingEndpoint>();
-                bridgeConfiguration.AddTransport(theOtherTransport);
+                transportBeingTested.AddTestEndpoint<ProcessingEndpoint>();
+                bridgeConfiguration.AddTransport(transportBeingTested);
             })
-            .WithEndpoint<ProcessingEndpoint>(builder =>
-            {
-                builder.DoNotFailOnErrorMessages();
-                builder.When(c => c.EndpointsStarted, (session, _) => session.SendLocal(new FaultyMessage()));
-            })
+            .WithEndpoint<ProcessingEndpoint>(b => b.When(c => c.EndpointsStarted, (session, _) => session.SendLocal(new FaultyMessage()))
+                .DoNotFailOnErrorMessages())
             .WithEndpoint<FakeSCError>()
             .Done(c => c.GotRetrySuccessfullAck)
             .Run();
 
         Assert.Multiple(() =>
         {
-            Assert.That(ctx.MessageFailed, Is.True);
-            Assert.That(ctx.RetryDelivered, Is.True);
-            Assert.That(ctx.GotRetrySuccessfullAck, Is.True);
+            Assert.That(context.MessageFailed, Is.True);
+            Assert.That(context.RetryDelivered, Is.True);
+            Assert.That(context.GotRetrySuccessfullAck, Is.True);
         });
 
-        foreach (var header in ctx.FailedMessageHeaders)
+        foreach (var header in context.FailedMessageHeaders)
         {
-            if (ctx.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
+            if (context.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
             {
                 if (!doNotTranslateReplyToAdressForFailedMessages && header.Key == Headers.ReplyToAddress)
                 {
                     Assert.That(receivedHeaderValue.Contains(nameof(ProcessingEndpoint), StringComparison.InvariantCultureIgnoreCase), Is.True,
-                        $"The ReplyToAddress received by ServiceControl ({TransportBeingTested} physical address) should contain the logical name of the endpoint.");
+                        $"The ReplyToAddress received by ServiceControl ({context.TransportBeingTested} physical address) should contain the logical name of the endpoint.");
                 }
                 else
                 {
@@ -143,7 +137,7 @@ public class Retry : BridgeAcceptanceTest
         }
     }
 
-    public class Context : ScenarioContext
+    public class Context : BridgeScenarioContext
     {
         public bool MessageFailed { get; set; }
         public IReadOnlyDictionary<string, string> ReceivedMessageHeaders { get; set; }
