@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading;
+﻿using System.IO;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
@@ -13,19 +11,18 @@ class ConfigureLearningTransportTestExecution : IConfigureTransportTestExecution
         return new BridgeTransportDefinition
         {
             TransportDefinition = new LearningTransport { StorageDirectory = GetStorageDir() },
-            Cleanup = (ct) => Cleanup(ct)
+            Cleanup = _ => Cleanup()
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new LearningTransport { StorageDirectory = GetStorageDir() };
         endpointConfiguration.UseTransport(transportDefinition);
-
-        return Cleanup;
+        return Task.CompletedTask;
     }
 
-    Task Cleanup(CancellationToken cancellationToken)
+    public Task Cleanup()
     {
         var storageDir = GetStorageDir();
 

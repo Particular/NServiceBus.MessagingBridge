@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -10,6 +9,7 @@ using AcceptanceTests.SqlServer;
 class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecution
 {
     readonly string connectionString = Environment.GetEnvironmentVariable("SqlServerTransportConnectionString");
+    TestableSqlServerTransport transportDefinition;
 
     public BridgeTransportDefinition GetBridgeTransport()
     {
@@ -24,61 +24,55 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
-        var transportDefinition = new TestableSqlServerTransport(connectionString);
+        transportDefinition = new TestableSqlServerTransport(connectionString);
         endpointConfiguration.UseTransport(transportDefinition);
-
-        return ct => Cleanup(transportDefinition, ct);
-    }
-
-    Task Cleanup(TestableSqlServerTransport transport, CancellationToken cancellationToken)
-    {
-        Func<SqlConnection> factory = () =>
-        {
-            if (transport.ConnectionString != null)
-            {
-                transport.TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive;
-                var connection = new SqlConnection(transport.ConnectionString);
-                connection.Open();
-                return connection;
-            }
-
-            return transport.ConnectionFactory(cancellationToken).Result;
-        };
-
-        using (var conn = factory())
-        {
-            using (var command = conn.CreateCommand())
-            {
-                var commandTextBuilder = new StringBuilder();
-                var schema = "";
-                var catalog = "";
-                foreach (var queue in transport.QueuesToCleanup)
-                {
-                    var queueAddress = QueueAddress.Parse(queue);
-                    schema = queueAddress.Schema;
-                    catalog = queueAddress.Catalog;
-                    TryDeleteTable(conn, queueAddress);
-                    TryDeleteTable(conn, new QueueAddress(queueAddress.Table + ".Delayed", schema, catalog));
-                }
-                TryDeleteTable(conn, new QueueAddress("SubscriptionRouting", schema, catalog));
-                TryDeleteTable(conn, new QueueAddress("bridge.error", schema, catalog));
-            }
-        }
 
         return Task.CompletedTask;
     }
 
-    static void TryDeleteTable(SqlConnection conn, QueueAddress address)
+    public Task Cleanup() => Cleanup(transportDefinition, CancellationToken.None);
+
+    async Task Cleanup(TestableSqlServerTransport transport, CancellationToken cancellationToken)
+    {
+        await using var conn = await ConnectionFactory(transport, cancellationToken);
+        await using var command = conn.CreateCommand();
+        var schema = "";
+        var catalog = "";
+        foreach (var queue in transport.QueuesToCleanup)
+        {
+            var queueAddress = QueueAddress.Parse(queue);
+            schema = queueAddress.Schema;
+            catalog = queueAddress.Catalog;
+            await TryDeleteTable(conn, queueAddress);
+            await TryDeleteTable(conn, new QueueAddress(queueAddress.Table + ".Delayed", schema, catalog));
+        }
+        await TryDeleteTable(conn, new QueueAddress("SubscriptionRouting", schema, catalog));
+        await TryDeleteTable(conn, new QueueAddress("bridge.error", schema, catalog));
+        return;
+
+        static async Task<SqlConnection> ConnectionFactory(TestableSqlServerTransport transport, CancellationToken cancellationToken)
+        {
+            if (transport.ConnectionString == null)
+            {
+                return await transport.ConnectionFactory(cancellationToken);
+            }
+
+            transport.TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive;
+            var connection = new SqlConnection(transport.ConnectionString);
+            await connection.OpenAsync(cancellationToken);
+            return connection;
+        }
+    }
+
+    static async Task TryDeleteTable(SqlConnection conn, QueueAddress address)
     {
         try
         {
-            using (var comm = conn.CreateCommand())
-            {
-                comm.CommandText = $"IF OBJECT_ID('{address.QualifiedTableName}', 'U') IS NOT NULL DROP TABLE {address.QualifiedTableName}";
-                comm.ExecuteNonQuery();
-            }
+            await using var comm = conn.CreateCommand();
+            comm.CommandText = $"IF OBJECT_ID('{address.QualifiedTableName}', 'U') IS NOT NULL DROP TABLE {address.QualifiedTableName}";
+            await comm.ExecuteNonQueryAsync();
         }
         catch (Exception e)
         {

@@ -10,6 +10,8 @@ using Particular.Msmq;
 
 class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
 {
+    TestableMsmqTransport transportDefinition;
+
     public BridgeTransportDefinition GetBridgeTransport()
     {
         var transportDefinition = new TestableMsmqTransport();
@@ -17,13 +19,13 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
         return new BridgeTransportDefinition
         {
             TransportDefinition = transportDefinition,
-            Cleanup = (ct) => Cleanup(transportDefinition, ct)
+            Cleanup = ct => Cleanup(transportDefinition, ct)
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
-        var transportDefinition = new TestableMsmqTransport();
+        transportDefinition = new TestableMsmqTransport();
         var routingConfig = endpointConfiguration.UseTransport(transportDefinition);
         endpointConfiguration.UsePersistence<AcceptanceTestingPersistence, StorageType.Subscriptions>();
 
@@ -36,9 +38,10 @@ class ConfigureMsmqTransportTestExecution : IConfigureTransportTestExecution
         }
 
         endpointConfiguration.EnforcePublisherMetadataRegistration(endpointName, publisherMetadata);
-
-        return (ct) => Cleanup(transportDefinition, ct);
+        return Task.CompletedTask;
     }
+
+    public Task Cleanup() => Cleanup(transportDefinition, CancellationToken.None);
 
     static Task Cleanup(TestableMsmqTransport msmqTransport, CancellationToken cancellationToken)
     {

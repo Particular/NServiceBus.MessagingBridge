@@ -17,30 +17,29 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
         return new BridgeTransportDefinition()
         {
             TransportDefinition = transportDefinition,
-            Cleanup = (ct) => Cleanup(ct),
+            Cleanup = _ => BridgeCleanup(),
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new TestableSQSTransport(NamePrefixGenerator.GetNamePrefix());
         endpointConfiguration.UseTransport(transportDefinition);
-
-        // Don't need to return the cleanup function here; all the queues will be cleaned up in the
-        // bridge transport cleanup call and doubling it up here leads to delays as SQS tries to
-        // delete the queues twice in rapid succession
-        return _ => { return Task.CompletedTask; };
+        return Task.CompletedTask;
     }
 
-    async Task Cleanup(CancellationToken cancellationToken)
+    // Don't need to return the cleanup function here; all the queues will be cleaned up in the
+    // bridge transport cleanup call and doubling it up here leads to delays as SQS tries to
+    // delete the queues twice in rapid succession
+    public Task Cleanup() => Task.CompletedTask;
+
+    async Task BridgeCleanup()
     {
         var accessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
         var secretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
-        using (var sqsClient = new AmazonSQSClient(accessKeyId, secretAccessKey))
-        using (var snsClient = new AmazonSimpleNotificationServiceClient(accessKeyId, secretAccessKey))
-        using (var s3Client = new AmazonS3Client(accessKeyId, secretAccessKey))
-        {
-            await SQSCleanup.DeleteAllResourcesWithPrefix(sqsClient, snsClient, s3Client, NamePrefixGenerator.GetNamePrefix()).ConfigureAwait(false);
-        }
+        using var sqsClient = new AmazonSQSClient(accessKeyId, secretAccessKey);
+        using var snsClient = new AmazonSimpleNotificationServiceClient(accessKeyId, secretAccessKey);
+        using var s3Client = new AmazonS3Client(accessKeyId, secretAccessKey);
+        await SQSCleanup.DeleteAllResourcesWithPrefix(sqsClient, snsClient, s3Client, NamePrefixGenerator.GetNamePrefix()).ConfigureAwait(false);
     }
 }

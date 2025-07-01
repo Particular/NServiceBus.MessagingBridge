@@ -8,6 +8,8 @@ using NServiceBus.AcceptanceTesting.Support;
 public class ConfigureAzureServiceBusTransportTestExecution : IConfigureTransportTestExecution
 {
     readonly string connectionString = Environment.GetEnvironmentVariable("AzureServiceBus_ConnectionString");
+    TestableAzureServiceBusTransport transportDefinition;
+
     public BridgeTransportDefinition GetBridgeTransport()
     {
         if (string.IsNullOrEmpty(connectionString))
@@ -23,21 +25,22 @@ public class ConfigureAzureServiceBusTransportTestExecution : IConfigureTranspor
         return new BridgeTransportDefinition()
         {
             TransportDefinition = transportDefinition,
-            Cleanup = (ct) => Cleanup(transportDefinition, ct)
+            Cleanup = ct => Cleanup(transportDefinition, ct)
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
-        var transportDefinition = new TestableAzureServiceBusTransport(connectionString);
+        transportDefinition = new TestableAzureServiceBusTransport(connectionString);
         endpointConfiguration.UseTransport(transportDefinition);
 
         endpointConfiguration.EnforcePublisherMetadataRegistration(endpointName, publisherMetadata);
-
-        return ct => Cleanup(transportDefinition, ct);
+        return Task.CompletedTask;
     }
 
-    Task Cleanup(TestableAzureServiceBusTransport transport, CancellationToken cancellationToken)
+    public Task Cleanup() => Cleanup(transportDefinition, CancellationToken.None);
+
+    static Task Cleanup(TestableAzureServiceBusTransport transport, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
         {

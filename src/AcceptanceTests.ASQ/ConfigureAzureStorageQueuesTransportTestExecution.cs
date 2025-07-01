@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting.Support;
@@ -19,18 +18,17 @@ public class ConfigureAzureStorageQueuesTransportTestExecution : IConfigureTrans
         return new BridgeTransportDefinition()
         {
             TransportDefinition = transportDefinition,
-            Cleanup = (ct) => Cleanup(ct)
+            Cleanup = ct => Task.CompletedTask
         };
     }
 
-    public Func<CancellationToken, Task> ConfigureTransportForEndpoint(string endpointName, EndpointConfiguration endpointConfiguration, PublisherMetadata publisherMetadata)
+    public Task Configure(string endpointName, EndpointConfiguration endpointConfiguration, RunSettings runSettings, PublisherMetadata publisherMetadata)
     {
         var transportDefinition = new TestableAzureStorageQueuesTransport(connectionString);
 
         endpointConfiguration.UseTransport(transportDefinition);
-
-        return ct => Cleanup(ct);
+        return Task.CompletedTask;
     }
 
-    Task Cleanup(CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task Cleanup() => Task.CompletedTask;
 }
