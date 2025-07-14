@@ -9,16 +9,13 @@ namespace NServiceBus
         public void DoNotEnforceBestPractices() { }
         public void DoNotTranslateReplyToAddressForFailedMessages() { }
         public void RunInReceiveOnlyTransactionMode() { }
-        [System.Obsolete("The bridge now translates ReplyTo addresses for failed messages by default so thi" +
-            "s method call is no longer necessary. Will be removed in version 5.0.0.", true)]
-        public void TranslateReplyToAddressForFailedMessages() { }
     }
     public class BridgeEndpoint
     {
         public BridgeEndpoint(string name) { }
         public BridgeEndpoint(string name, string queueAddress) { }
-        public void RegisterPublisher(string eventTypeAssemblyQualifiedName, string publisher) { }
         public void RegisterPublisher(System.Type eventType, string publisher) { }
+        public void RegisterPublisher(string eventTypeAssemblyQualifiedName, string publisher) { }
         public void RegisterPublisher<T>(string publisher) { }
     }
     public class BridgeTransport

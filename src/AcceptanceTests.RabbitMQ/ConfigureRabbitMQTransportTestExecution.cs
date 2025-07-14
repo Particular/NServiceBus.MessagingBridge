@@ -18,12 +18,12 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
 
     public Task Cleanup()
     {
-        PurgeQueues(transport);
+        _ = PurgeQueues(transport);
 
         return Task.CompletedTask;
     }
 
-    static void PurgeQueues(TestableRabbitMQTransport transport)
+    static async Task PurgeQueues(TestableRabbitMQTransport transport)
     {
         if (transport == null)
         {
@@ -32,14 +32,14 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
 
         var queues = transport.QueuesToCleanup.Distinct().ToArray();
 
-        using var connection = ConnectionHelper.ConnectionFactory.CreateConnection("Test Queue Purger");
-        using var channel = connection.CreateModel();
+        await using var connection = await ConnectionHelper.ConnectionFactory.CreateConnectionAsync("Test Queue Purger");
+        await using var channel = await connection.CreateChannelAsync();
         foreach (var queue in queues)
         {
             try
             {
-                channel.QueuePurge(queue);
-                channel.QueueDelete(queue, false, false);
+                _ = channel.QueuePurgeAsync(queue);
+                _ = channel.QueueDeleteAsync(queue, false, false);
             }
             catch (Exception ex)
             {
@@ -52,7 +52,7 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
 
     public Task Cleanup(BridgeTransport bridgeTransport)
     {
-        PurgeQueues(bridgeTransport.FromTestableBridge<TestableRabbitMQTransport>());
+        _ = PurgeQueues(bridgeTransport.FromTestableBridge<TestableRabbitMQTransport>());
         return Task.CompletedTask;
     }
 }
