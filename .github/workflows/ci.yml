@@ -20,12 +20,12 @@ jobs:
         os: [ windows-2022, ubuntu-22.04 ]
         transport: [ Learning, RabbitMQ, AzureServiceBus, AzureStorageQueue, SqlServer, AmazonSQS, MSMQ ]
         include:
-          - os: windows-2022
+          - os: windows-latest
             os-name: Windows
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             os-name: Linux
         exclude:
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             transport: MSMQ
       fail-fast: false
     steps:
