@@ -78,7 +78,7 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
             var startableEndpointProxy = await endpointProxyFactory.CreateProxy(targetEndpoint, proxyTransport, cancellationToken)
                 .ConfigureAwait(false);
 
-            logger.LogInformation("Proxy for endpoint {endpoint} created on {transport}", targetTransport.Name, proxyTransport.Name);
+            logger.LogInformation("Proxy for endpoint {endpoint} created on {transport}", targetEndpoint.Name, proxyTransport.Name);
 
             proxyRegistrations.Add(new ProxyRegistration
             {
