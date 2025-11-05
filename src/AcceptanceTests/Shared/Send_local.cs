@@ -55,12 +55,10 @@ public class Send_local : BridgeAcceptanceTest
 
     public class OriginalEndpoint : EndpointConfigurationBuilder
     {
-        public OriginalEndpoint() => EndpointSetup<DefaultServer>();
+        public OriginalEndpoint() => EndpointSetup<DefaultServer>(cfg => cfg.EnableFeature<SendLocalFeature>());
 
         public class SendLocalFeature : Feature
         {
-            public SendLocalFeature() => EnableByDefault();
-
             protected override void Setup(FeatureConfigurationContext context) => context.RegisterStartupTask(() => new SendLocalStartupTask());
 
             class SendLocalStartupTask : FeatureStartupTask
