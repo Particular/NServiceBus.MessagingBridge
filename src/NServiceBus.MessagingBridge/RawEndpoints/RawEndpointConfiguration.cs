@@ -97,7 +97,7 @@ namespace NServiceBus.Raw
             PushRuntimeSettings = new PushRuntimeSettings(maxConcurrency);
         }
 
-        internal InitializableRawEndpoint Build() => new InitializableRawEndpoint(this);
+        internal InitializableRawEndpoint Build() => new(this);
 
         static void ValidateEndpointName(string endpointName)
         {

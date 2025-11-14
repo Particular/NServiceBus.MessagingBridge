@@ -12,7 +12,7 @@ public class DefaultServer : IEndpointSetupTemplate
     {
         var configuration = new EndpointConfiguration(endpointConfiguration.EndpointName);
 
-        configuration.TypesToIncludeInScan(endpointConfiguration.GetTypesScopedByTestClass());
+        configuration.ScanTypesForTest(endpointConfiguration);
         configuration.EnableInstallers();
         configuration.UseSerialization<SystemJsonSerializer>();
 
