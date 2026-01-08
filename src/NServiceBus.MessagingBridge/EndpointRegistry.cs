@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -29,10 +29,11 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
             AddressMap.Add(transport, endpoint);
 
             var dispatcher = dispatchers[transport.Name];
-            var queueAddress = new QueueAddress(endpoint.Name);
-            var targetTransportAddress = dispatcher.ToTransportAddress(queueAddress);
-            endpointAddressMappings[endpoint.Name] = endpoint.QueueAddress ?? targetTransportAddress;
-            targetEndpointDispatchers[endpoint.Name] = new TargetEndpointDispatcher(transport.Name, dispatcher, targetTransportAddress);
+            var targetAddress = endpoint.QueueAddress
+                ?? dispatcher.ToTransportAddress(new QueueAddress(endpoint.Name));
+
+            endpointAddressMappings[endpoint.Name] = targetAddress;
+            targetEndpointDispatchers[endpoint.Name] = new TargetEndpointDispatcher(transport.Name, dispatcher, targetAddress);
 
             await CreateAndRegisterProxies(transport, endpoint, transportConfigurations, proxyRegistrations, cancellationToken)
                 .ConfigureAwait(false);
