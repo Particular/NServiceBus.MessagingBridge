@@ -8,9 +8,8 @@ using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 public class Address_with_machinename : BridgeAcceptanceTest
 {
     [Test]
-    public async Task Should_get_the_message()
-    {
-        var ctx = await Scenario.Define<Context>()
+    public async Task Should_get_the_message() =>
+        await Scenario.Define<Context>()
             .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
                 var receivingEndpointName =
@@ -26,18 +25,11 @@ public class Address_with_machinename : BridgeAcceptanceTest
                 bridgeConfiguration.AddTestTransportEndpoint<SendingEndpoint>();
             })
             .WithEndpoint<SendingEndpoint>(b => b
-                .When(c => c.EndpointsStarted, (session, _) => session.Send(new MyMessage())))
+                .When(session => session.Send(new MyMessage())))
             .WithEndpoint<ReceivingEndpoint>()
-            .Done(c => c.ReceivingEndpointGotMessage)
             .Run();
 
-        Assert.That(ctx.ReceivingEndpointGotMessage, Is.True);
-    }
-
-    class Context : BridgeScenarioContext
-    {
-        public bool ReceivingEndpointGotMessage { get; set; }
-    }
+    class Context : BridgeScenarioContext;
 
     class SendingEndpoint : EndpointConfigurationBuilder
     {
@@ -53,7 +45,7 @@ public class Address_with_machinename : BridgeAcceptanceTest
         {
             public Task Handle(MyMessage message, IMessageHandlerContext context)
             {
-                testContext.ReceivingEndpointGotMessage = true;
+                testContext.MarkAsCompleted();
                 return Task.CompletedTask;
             }
         }

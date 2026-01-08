@@ -27,18 +27,16 @@ public class TransferFailureTests : BridgeAcceptanceTest
             })
             .WithEndpoint<ErrorSpy>()
             .WithEndpoint<Sender>(b => b
-                .When(c => c.EndpointsStarted, async (session, c) =>
+                .When(session =>
                 {
                     var opts = new SendOptions();
                     opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
-                    await session.Send(new FaultyMessage(), opts);
+                    return session.Send(new FaultyMessage(), opts);
                 }))
-            .Done(c => c.MessageFailed)
             .Run();
 
         Assert.Multiple(() =>
         {
-            Assert.That(context.MessageFailed, Is.True, "Message did not fail");
             Assert.That(context.FailedMessageHeaders.ContainsKey(FailedQHeader),
                 Is.True,
                 $"Failed message headers does not contain {FailedQHeader}");
@@ -51,12 +49,12 @@ public class TransferFailureTests : BridgeAcceptanceTest
         var ctx = await Scenario.Define<Context>()
             .WithEndpoint<ErrorSpy>()
             .WithEndpoint<Sender>(b => b
-                .When(c => c.EndpointsStarted, async (session, c) =>
+                .When(session =>
                 {
                     var opts = new SendOptions();
                     opts.SetHeader(FailedQHeader, ReceiveDummyQueue);
                     opts.SetHeader(FakeShovelHeader.FailureHeader, string.Empty);
-                    await session.Send(new FaultyMessage(), opts);
+                    return session.Send(new FaultyMessage(), opts);
                 }))
             .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
@@ -67,12 +65,10 @@ public class TransferFailureTests : BridgeAcceptanceTest
                 var subscriberEndpoint = new BridgeEndpoint(ReceiveDummyQueue);
                 bridgeConfiguration.AddTestTransportEndpoint(subscriberEndpoint);
             })
-            .Done(c => c.MessageFailed)
             .Run();
 
         Assert.Multiple(() =>
         {
-            Assert.That(ctx.MessageFailed, Is.True, "Message did not fail");
             Assert.That(ctx.FailedMessageHeaders.ContainsKey(FailedQHeader),
                 Is.True,
                 $"Failed message headers does not contain {FailedQHeader}");
@@ -82,19 +78,13 @@ public class TransferFailureTests : BridgeAcceptanceTest
     public class Sender : EndpointConfigurationBuilder
     {
         public Sender() =>
-            EndpointSetup<DefaultServer>(c =>
-            {
-                c.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), ReceiveDummyQueue);
-            });
+            EndpointSetup<DefaultServer>(c => c.ConfigureRouting().RouteToEndpoint(typeof(FaultyMessage), ReceiveDummyQueue));
     }
 
     public class ErrorSpy : EndpointConfigurationBuilder
     {
         public ErrorSpy() =>
-            EndpointSetup<DefaultServer>(c =>
-            {
-                c.OverrideLocalAddress(ErrorQueue);
-            });
+            EndpointSetup<DefaultServer>(c => c.OverrideLocalAddress(ErrorQueue));
 
         class FailedMessageHandler(Context testContext) : IHandleMessages<FaultyMessage>
         {
@@ -102,7 +92,7 @@ public class TransferFailureTests : BridgeAcceptanceTest
             {
                 testContext.FailedMessageHeaders =
                     new ReadOnlyDictionary<string, string>((IDictionary<string, string>)context.MessageHeaders);
-                testContext.MessageFailed = true;
+                testContext.MarkAsCompleted();
                 return Task.CompletedTask;
             }
         }
@@ -110,7 +100,6 @@ public class TransferFailureTests : BridgeAcceptanceTest
 
     public class Context : BridgeScenarioContext
     {
-        public bool MessageFailed { get; set; }
         public IReadOnlyDictionary<string, string> FailedMessageHeaders { get; set; }
     }
 

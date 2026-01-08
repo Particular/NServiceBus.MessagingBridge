@@ -9,9 +9,8 @@ using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 public class ReplyToAddress : BridgeAcceptanceTest
 {
     [Test]
-    public async Task Should_translate_address_for_already_migrated_endpoint()
-    {
-        var context = await Scenario.Define<Context>()
+    public async Task Should_translate_address_for_already_migrated_endpoint() =>
+        await Scenario.Define<Context>()
             .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
                 var bridgeTransport = DefaultTestServer.GetTestTransportDefinition()
@@ -26,7 +25,7 @@ public class ReplyToAddress : BridgeAcceptanceTest
             .WithEndpoint<SendingEndpoint>(builder =>
             {
                 builder.DoNotFailOnErrorMessages();
-                builder.When(c => c.EndpointsStarted, (session, _) =>
+                builder.When(session =>
                 {
                     var options = new SendOptions();
                     options.SetDestination(Conventions.EndpointNamingConvention(typeof(SecondMigratedEndpoint)));
@@ -36,9 +35,7 @@ public class ReplyToAddress : BridgeAcceptanceTest
             })
             .WithEndpoint<FirstMigratedEndpoint>()
             .WithEndpoint<SecondMigratedEndpoint>()
-            .Done(c => c.ADelayedMessageReceived)
             .Run();
-    }
 
     public class SendingEndpoint : EndpointConfigurationBuilder
     {
@@ -69,16 +66,13 @@ public class ReplyToAddress : BridgeAcceptanceTest
         {
             public Task Handle(ADelayedMessage message, IMessageHandlerContext context)
             {
-                testContext.ADelayedMessageReceived = true;
+                testContext.MarkAsCompleted();
                 return Task.CompletedTask;
             }
         }
     }
 
-    public class Context : BridgeScenarioContext
-    {
-        public bool ADelayedMessageReceived { get; set; }
-    }
+    public class Context : BridgeScenarioContext;
 
     public class ADelayedMessage : IMessage;
 }

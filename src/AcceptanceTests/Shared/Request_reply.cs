@@ -7,9 +7,8 @@ using NUnit.Framework;
 public class Request_reply : BridgeAcceptanceTest
 {
     [Test]
-    public async Task Should_get_the_reply()
-    {
-        var context = await Scenario.Define<Context>()
+    public async Task Should_get_the_reply() =>
+        await Scenario.Define<Context>()
             .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
                 transportBeingTested.AddTestEndpoint<SendingEndpoint>();
@@ -17,32 +16,22 @@ public class Request_reply : BridgeAcceptanceTest
 
                 bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
             })
-            .WithEndpoint<SendingEndpoint>(b => b.When(c => c.EndpointsStarted, (session, _) => session.Send(new MyMessage())))
+            .WithEndpoint<SendingEndpoint>(b => b.When(session => session.Send(new MyMessage())))
             .WithEndpoint<ReplyingEndpoint>()
-            .Done(c => c.SendingEndpointGotResponse)
             .Run();
 
-        Assert.That(context.SendingEndpointGotResponse, Is.True);
-    }
-
-    public class Context : BridgeScenarioContext
-    {
-        public bool SendingEndpointGotResponse { get; set; }
-    }
+    public class Context : BridgeScenarioContext;
 
     public class SendingEndpoint : EndpointConfigurationBuilder
     {
         public SendingEndpoint() =>
-            EndpointSetup<DefaultServer>(c =>
-            {
-                c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReplyingEndpoint));
-            });
+            EndpointSetup<DefaultServer>(c => c.ConfigureRouting().RouteToEndpoint(typeof(MyMessage), typeof(ReplyingEndpoint)));
 
         public class ResponseHandler(Context testContext) : IHandleMessages<MyReply>
         {
             public Task Handle(MyReply messageThatIsEnlisted, IMessageHandlerContext context)
             {
-                testContext.SendingEndpointGotResponse = true;
+                testContext.MarkAsCompleted();
                 return Task.CompletedTask;
             }
         }

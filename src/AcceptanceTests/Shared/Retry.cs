@@ -30,17 +30,15 @@ public class Retry : BridgeAcceptanceTest
                 transportBeingTested.AddTestEndpoint<ProcessingEndpoint>();
                 bridgeConfiguration.AddTransport(transportBeingTested);
             })
-            .WithEndpoint<ProcessingEndpoint>(b => b.When(c => c.EndpointsStarted, (session, _) => session.SendLocal(new FaultyMessage()))
+            .WithEndpoint<ProcessingEndpoint>(b => b.When(session => session.SendLocal(new FaultyMessage()))
                 .DoNotFailOnErrorMessages())
             .WithEndpoint<FakeSCError>()
-            .Done(c => c.GotRetrySuccessfullAck)
             .Run();
 
         Assert.Multiple(() =>
         {
             Assert.That(context.MessageFailed, Is.True);
             Assert.That(context.RetryDelivered, Is.True);
-            Assert.That(context.GotRetrySuccessfullAck, Is.True);
         });
 
         foreach (var header in context.FailedMessageHeaders)
@@ -128,7 +126,7 @@ public class Retry : BridgeAcceptanceTest
             {
                 if (context.MessageHeaders.ContainsKey("ServiceControl.Retry.Successful"))
                 {
-                    testContext.GotRetrySuccessfullAck = true;
+                    testContext.MarkAsCompleted();
                     return;
                 }
                 await next();
@@ -143,7 +141,6 @@ public class Retry : BridgeAcceptanceTest
         public IReadOnlyDictionary<string, string> ReceivedMessageHeaders { get; set; }
         public IReadOnlyDictionary<string, string> FailedMessageHeaders { get; set; }
         public bool RetryDelivered { get; set; }
-        public bool GotRetrySuccessfullAck { get; set; }
     }
 
     public class FaultyMessage : IMessage;
