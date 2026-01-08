@@ -29,10 +29,8 @@ public class Audit : BridgeAcceptanceTest
                 .When(c => c.TransportBeingTested.SupportsPublishSubscribe || c.SubscriberSubscribed, (session, _) => session.Publish(new MessageToBeAudited())))
             .WithEndpoint<ProcessingEndpoint>()
             .WithEndpoint<AuditSpy>()
-            .Done(c => c.MessageAudited)
             .Run();
 
-        Assert.That(context.MessageAudited, Is.True);
         foreach (var header in context.AuditMessageHeaders)
         {
             if (context.ReceivedMessageHeaders.TryGetValue(header.Key, out var receivedHeaderValue))
@@ -80,9 +78,8 @@ public class Audit : BridgeAcceptanceTest
         {
             public Task Handle(MessageToBeAudited message, IMessageHandlerContext context)
             {
-                testContext.MessageAudited = true;
-                testContext.AuditMessageHeaders =
-                    new ReadOnlyDictionary<string, string>((IDictionary<string, string>)context.MessageHeaders);
+                testContext.AuditMessageHeaders = new ReadOnlyDictionary<string, string>((IDictionary<string, string>)context.MessageHeaders);
+                testContext.MarkAsCompleted();
 
                 return Task.CompletedTask;
             }
@@ -92,7 +89,6 @@ public class Audit : BridgeAcceptanceTest
     public class Context : BridgeScenarioContext
     {
         public bool SubscriberSubscribed { get; set; }
-        public bool MessageAudited { get; set; }
         public IReadOnlyDictionary<string, string> ReceivedMessageHeaders { get; set; }
         public IReadOnlyDictionary<string, string> AuditMessageHeaders { get; set; }
     }

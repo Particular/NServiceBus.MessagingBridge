@@ -20,7 +20,11 @@ public class Request_reply_custom_address : BridgeAcceptanceTest
 
                 bridgeConfiguration.AddTestTransportEndpoint<ReplyingEndpoint>();
             })
-            .WithEndpoint<SendingEndpoint>(b => b.When(b => b.EndpointsStarted, (session, _) => session.SendLocal(new StartMessage())))
+            .WithEndpoint<SendingEndpoint>(b => b.When(async c =>
+            {
+                await c.EndpointsStarted.Task;
+                return true;
+            }, (session, _) => session.SendLocal(new StartMessage())))
             .WithEndpoint<ReplyingEndpoint>()
             .WithEndpoint<ReplyReceivingEndpoint>()
             .Done(c => c.SendingEndpointGotResponse)

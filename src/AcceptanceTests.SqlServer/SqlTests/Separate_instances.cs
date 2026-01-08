@@ -21,7 +21,7 @@ public class Separate_instances : BridgeAcceptanceTest
 
         connectionString2 = connectionString.Replace("nservicebus", "nservicebus2");
 
-        var context = await Scenario.Define<Context>()
+        await Scenario.Define<Context>()
             .WithBridge((bridgeConfiguration, _) =>
             {
                 // Publisher SQL Transport
@@ -42,18 +42,12 @@ public class Separate_instances : BridgeAcceptanceTest
                 // DTC won't work
                 bridgeConfiguration.RunInReceiveOnlyTransactionMode();
             })
-            .WithEndpoint<Publisher>(b => b.When(c => c.EndpointsStarted, (session, _) => session.Publish(new MyEvent())))
+            .WithEndpoint<Publisher>(b => b.When(session => session.Publish(new MyEvent())))
             .WithEndpoint<Subscriber>()
-            .Done(c => c.SubscriberGotEvent)
             .Run();
-
-        Assert.That(context.SubscriberGotEvent, Is.True);
     }
 
-    public class Context : BridgeScenarioContext
-    {
-        public bool SubscriberGotEvent { get; set; }
-    }
+    public class Context : BridgeScenarioContext;
 
     class Publisher : EndpointConfigurationBuilder
     {
@@ -78,7 +72,7 @@ public class Separate_instances : BridgeAcceptanceTest
         {
             public Task Handle(MyEvent message, IMessageHandlerContext handlerContext)
             {
-                testContext.SubscriberGotEvent = true;
+                testContext.MarkAsCompleted();
                 return Task.CompletedTask;
             }
         }

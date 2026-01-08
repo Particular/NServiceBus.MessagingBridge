@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.AcceptanceTesting;
 using NUnit.Framework;
@@ -15,7 +16,7 @@ public class ThreeTransports : BridgeAcceptanceTest
         var options = new SendOptions();
         options.SetDestination(Conventions.EndpointNamingConvention(typeof(ReceivingEndpoint)));
 
-        var context = await Scenario.Define<Context>()
+        await Scenario.Define<Context>()
             .WithBridge((bridgeConfiguration, transportBeingTested) =>
             {
                 var receivingTransport = ReceivingTestServer.GetReceivingTransportDefinition().ToTestableBridge("ReceivingTransport");
@@ -31,10 +32,9 @@ public class ThreeTransports : BridgeAcceptanceTest
             })
             .WithEndpoint<ReceivingEndpoint>()
             .WithEndpoint<EndpointOnTestingTransport>(b => b
-                .When(c => c.EndpointsStarted, (session, _) => session.Send(new SomeMessage { From = endpointOnTestingTransportName }, options)))
+                .When(session => session.Send(new SomeMessage { From = endpointOnTestingTransportName }, options)))
             .WithEndpoint<EndpointOnTransportUnderTest>(b => b
-                .When(c => c.EndpointsStarted, (session, _) => session.Send(new SomeMessage { From = endpointOnTransportUnderTestName }, options)))
-            .Done(c => c.ReceivedMessageCount == 2)
+                .When(session => session.Send(new SomeMessage { From = endpointOnTransportUnderTestName }, options)))
             .Run();
 
     }
@@ -53,7 +53,7 @@ public class ThreeTransports : BridgeAcceptanceTest
                     Assert.That(headerValue, Is.EqualTo(message.From));
                 });
 
-                testContext.ReceivedMessageCount++;
+                testContext.MaybeCompleted();
 
                 return Task.CompletedTask;
             }
@@ -72,7 +72,8 @@ public class ThreeTransports : BridgeAcceptanceTest
 
     public class Context : BridgeScenarioContext
     {
-        public int ReceivedMessageCount { get; set; }
+        public void MaybeCompleted() => MarkAsCompleted(Interlocked.Increment(ref ReceivedMessageCount) == 2);
+        int ReceivedMessageCount;
     }
 
     public class SomeMessage : IMessage
