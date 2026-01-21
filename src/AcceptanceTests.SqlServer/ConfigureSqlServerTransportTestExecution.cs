@@ -65,7 +65,7 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
                 TryDeleteTable(conn, new QueueAddress("SubscriptionRouting", schema, catalog));
                 TryDeleteTable(conn, new QueueAddress("bridge.error", schema, catalog));
             }
-        };
+        }
 
         return Task.CompletedTask;
     }
