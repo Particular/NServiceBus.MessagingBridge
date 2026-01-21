@@ -83,11 +83,23 @@
             }
         }
 
+        /// <summary>
+        /// Configure this endpoint to use a message format adapter for transforming between foreign formats and NServiceBus
+        /// </summary>
+        public BridgeEndpoint UseMessageFormat(IMessageFormatAdapter adapter)
+        {
+            ArgumentNullException.ThrowIfNull(adapter);
+            MessageFormatAdapter = adapter;
+            return this;
+        }
+
         internal string Name { get; private set; }
 
         internal string QueueAddress { get; private set; }
 
         internal IList<Subscription> Subscriptions { get; } = [];
+
+        internal IMessageFormatAdapter MessageFormatAdapter { get; private set; }
 
         internal class Subscription
         {

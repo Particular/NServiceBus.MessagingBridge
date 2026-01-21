@@ -21,6 +21,16 @@ sealed class MessageShovel(
             var messageContext = transferContext.MessageToTransfer;
             var targetTransport = targetEndpointDispatcher.TransportName;
 
+            // Get source endpoint to check for format adapter
+            // Note: The target endpoint has the same name as the source (messages are bridged to the same logical endpoint on different transport)
+            var sourceEndpoint = targetEndpointRegistry.GetEndpoint(transferContext.SourceEndpointName);
+
+            // Transform from foreign format to NServiceBus format
+            if (sourceEndpoint?.MessageFormatAdapter != null)
+            {
+                await sourceEndpoint.MessageFormatAdapter.TransformIncoming(messageContext, cancellationToken).ConfigureAwait(false);
+            }
+
             var messageToSend = new OutgoingMessage(messageContext.NativeMessageId, messageContext.Headers, messageContext.Body);
             messageToSend.Headers.Remove(BridgeHeaders.FailedQ);
 
@@ -72,6 +82,21 @@ sealed class MessageShovel(
                 // The ReplyToAddress is transformed to allow for replies to be delivered
                 messageToSend.Headers[BridgeHeaders.Transfer] = transferDetails;
                 TransformAddressHeader(messageToSend, targetTransport, Headers.ReplyToAddress);
+            }
+
+            // Transform from NServiceBus format to foreign format
+            if (sourceEndpoint?.MessageFormatAdapter != null)
+            {
+                // Create a temporary MessageContext for outgoing transformation
+                var outgoingContext = new MessageContext(
+                    messageToSend.MessageId,
+                    messageToSend.Headers,
+                    messageToSend.Body,
+                    messageContext.TransportTransaction,
+                    messageContext.ReceiveAddress,
+                    messageContext.Extensions);
+
+                await sourceEndpoint.MessageFormatAdapter.TransformOutgoing(outgoingContext, targetTransport, cancellationToken).ConfigureAwait(false);
             }
 
             await targetEndpointDispatcher.Dispatch(
