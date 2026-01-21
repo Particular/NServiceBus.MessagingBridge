@@ -33,6 +33,7 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
             var targetTransportAddress = dispatcher.ToTransportAddress(queueAddress);
             endpointAddressMappings[endpoint.Name] = endpoint.QueueAddress ?? targetTransportAddress;
             targetEndpointDispatchers[endpoint.Name] = new TargetEndpointDispatcher(transport.Name, dispatcher, targetTransportAddress);
+            endpointsByName[endpoint.Name] = endpoint;
 
             await CreateAndRegisterProxies(transport, endpoint, transportConfigurations, proxyRegistrations, cancellationToken)
                 .ConfigureAwait(false);
@@ -114,9 +115,15 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
         throw new Exception($"No address mapping could be found for endpoint: {endpointName}. Ensure names have correct casing as mappings are case-sensitive. Nearest configured match: {nearestMatch}");
     }
 
+    public BridgeEndpoint GetEndpoint(string endpointName)
+    {
+        return endpointsByName.TryGetValue(endpointName, out var endpoint) ? endpoint : null;
+    }
+
     readonly Dictionary<string, IStartableRawEndpoint> dispatchers = [];
     readonly Dictionary<string, TargetEndpointDispatcher> targetEndpointDispatchers = [];
     readonly Dictionary<string, string> endpointAddressMappings = [];
+    readonly Dictionary<string, BridgeEndpoint> endpointsByName = [];
 
     public class ProxyRegistration
     {
