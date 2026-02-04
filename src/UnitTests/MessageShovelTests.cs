@@ -250,6 +250,8 @@ public class MessageShovelTests
 
         public string GetEndpointAddress(string endpointName) => throw new NotImplementedException();
 
+        public BridgeEndpoint GetEndpoint(string endpointName) => targetEndpoint;
+
         readonly string targetTransport;
         readonly BridgeEndpoint targetEndpoint;
         readonly FakeRawEndpoint rawEndpoint;

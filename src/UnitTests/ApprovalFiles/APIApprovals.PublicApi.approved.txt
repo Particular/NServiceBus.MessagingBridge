@@ -17,6 +17,7 @@ namespace NServiceBus
         public void RegisterPublisher(System.Type eventType, string publisher) { }
         public void RegisterPublisher(string eventTypeAssemblyQualifiedName, string publisher) { }
         public void RegisterPublisher<T>(string publisher) { }
+        public NServiceBus.BridgeEndpoint UseMessageFormat(NServiceBus.IMessageFormatAdapter adapter) { }
     }
     public class BridgeTransport
     {
@@ -48,6 +49,11 @@ namespace NServiceBus
         public System.TimeSpan? Interval { get; }
         public abstract System.Threading.Tasks.Task<NServiceBus.CheckResult> PerformCheck(System.Threading.CancellationToken cancellationToken = default);
     }
+    public sealed class FileBasedQueueDiscovery : NServiceBus.IQueueDiscovery
+    {
+        public FileBasedQueueDiscovery(string filePath) { }
+        public System.Collections.Generic.IAsyncEnumerable<string> GetQueues(System.Threading.CancellationToken cancellationToken = default) { }
+    }
     public static class HostApplicationBuilderExtensions
     {
         public static Microsoft.Extensions.Hosting.IHostApplicationBuilder UseNServiceBusBridge(this Microsoft.Extensions.Hosting.IHostApplicationBuilder builder, NServiceBus.BridgeConfiguration bridgeConfiguration) { }
@@ -63,5 +69,29 @@ namespace NServiceBus
         string Id { get; }
         System.TimeSpan? Interval { get; }
         System.Threading.Tasks.Task<NServiceBus.CheckResult> PerformCheck(System.Threading.CancellationToken cancellationToken = default);
+    }
+    public interface IMessageFormatAdapter
+    {
+        string Name { get; }
+        System.Threading.Tasks.Task TransformIncoming(NServiceBus.Transport.MessageContext messageContext, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task TransformOutgoing(NServiceBus.Transport.MessageContext messageContext, string targetTransportName, System.Threading.CancellationToken cancellationToken = default);
+    }
+    public interface IQueueDiscovery
+    {
+        System.Collections.Generic.IAsyncEnumerable<string> GetQueues(System.Threading.CancellationToken cancellationToken = default);
+    }
+    public class MassTransitBridgeTransport : NServiceBus.BridgeTransport
+    {
+        public MassTransitBridgeTransport(NServiceBus.Transport.TransportDefinition transportDefinition) { }
+        public System.Threading.Tasks.Task DiscoverQueues(NServiceBus.IQueueDiscovery queueDiscovery, System.Threading.CancellationToken cancellationToken = default) { }
+        public new NServiceBus.MassTransitBridgeTransport HasEndpoint(string endpointName) { }
+        public new NServiceBus.MassTransitBridgeTransport HasEndpoint(string endpointName, string endpointAddress) { }
+    }
+    public sealed class MassTransitFormatAdapter : NServiceBus.IMessageFormatAdapter
+    {
+        public MassTransitFormatAdapter() { }
+        public string Name { get; }
+        public System.Threading.Tasks.Task TransformIncoming(NServiceBus.Transport.MessageContext messageContext, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task TransformOutgoing(NServiceBus.Transport.MessageContext messageContext, string targetTransportName, System.Threading.CancellationToken cancellationToken = default) { }
     }
 }
