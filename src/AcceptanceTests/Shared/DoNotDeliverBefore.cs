@@ -15,12 +15,18 @@ public class DoNotDeliverBefore : BridgeAcceptanceTest
     public async Task Should_set_TTBR_correctly()
     {
         var ctx = await Scenario.Define<Context>()
-            .WithBridge((bridgeConfiguration, transportBeingTested) =>
+            .WithBridge(bridgeConfiguration =>
             {
-                transportBeingTested.HasEndpoint("_");
-                bridgeConfiguration.AddTransport(transportBeingTested);
+                var bridgeTransport = new TestableBridgeTransport(DefaultTestServer.GetTestTransportDefinition())
+                {
+                    Name = "DefaultTestingTransport"
+                };
+                bridgeTransport.AddTestEndpoint<OriginalEndpoint>();
+                bridgeConfiguration.AddTransport(bridgeTransport);
 
-                bridgeConfiguration.AddTestTransportEndpoint(new BridgeEndpoint(OriginalEndpointName));
+                var theOtherTransport = new TestableBridgeTransport(TransportBeingTested);
+                theOtherTransport.AddTestEndpoint<MigratedEndpoint>();
+                bridgeConfiguration.AddTransport(theOtherTransport);
             })
             .WithEndpoint<MigratedEndpoint>()
             .WithEndpoint<OriginalEndpoint>(endpoint => endpoint.When((session, context) =>
@@ -34,7 +40,7 @@ public class DoNotDeliverBefore : BridgeAcceptanceTest
         Assert.That(ctx.NumberOfMessagesReceived, Is.EqualTo(1));
     }
 
-    public class Context : BridgeScenarioContext
+    public class Context : ScenarioContext
     {
         public int NumberOfMessagesReceived { get; set; }
         public DateTimeOffset SendStartTime { get; set; }
