@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="6.1.0" />
-    <PackageReference Include="System.IO.Hashing" Version="10.0.2" />
+    <PackageReference Include="System.IO.Hashing" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup>
