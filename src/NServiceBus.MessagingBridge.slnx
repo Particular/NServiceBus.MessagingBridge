@@ -8,6 +8,7 @@
   <Folder Name="/Tests/">
     <Project Path="AcceptanceTests.ASB/AcceptanceTests.ASB.csproj" />
     <Project Path="AcceptanceTests.ASQ/AcceptanceTests.ASQ.csproj" />
+    <Project Path="AcceptanceTests.IBMMQ/AcceptanceTests.IBMMQ.csproj" />
     <Project Path="AcceptanceTests.Learning/AcceptanceTests.Learning.csproj" />
     <Project Path="AcceptanceTests.Msmq/AcceptanceTests.Msmq.csproj" />
     <Project Path="AcceptanceTests.RabbitMQ/AcceptanceTests.RabbitMQ.csproj" />
