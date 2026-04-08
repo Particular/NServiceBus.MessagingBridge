@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-latest, ubuntu-latest ]
-        transport: [ Learning, RabbitMQ, AzureServiceBus, AzureStorageQueue, SqlServer, AmazonSQS, MSMQ ]
+        transport: [ Learning, RabbitMQ, AzureServiceBus, AzureStorageQueue, SqlServer, AmazonSQS, IBMMQ, MSMQ ]
         include:
           - os: windows-latest
             os-name: Windows
@@ -27,6 +27,8 @@ jobs:
         exclude:
           - os: ubuntu-latest
             transport: MSMQ
+          - os: windows-latest
+            transport: IBMMQ
       fail-fast: false
     steps:
       - name: Check for secrets
@@ -87,6 +89,28 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
           echo "AWS_REGION=${{ secrets.AWS_REGION }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+      - name: Setup IBM MQ
+        if: matrix.transport == 'IBMMQ'
+        shell: bash
+        run: |
+          docker run -d --name ibm-mq \
+            -p 1414:1414 -p 9443:9443 \
+            -e LICENSE=accept \
+            -e MQ_QMGR_NAME=QM1 \
+            -e MQ_ADMIN_PASSWORD=${{ secrets.MQ_ADMIN_PASSWORD }} \
+            -e MQ_APP_PASSWORD=${{ secrets.MQ_APP_PASSWORD }} \
+            icr.io/ibm-messaging/mq:latest
+
+          echo "Waiting for IBM MQ to be ready..."
+          for i in $(seq 1 30); do
+            if docker exec ibm-mq dspmq 2>/dev/null | grep -q "Running"; then
+              echo "IBM MQ is ready"
+              break
+            fi
+            sleep 2
+          done
+
+          echo "IBMMQ_CONNECTIONSTRING=${{ secrets.IBMMQ_CONNECTIONSTRING }}" >> $GITHUB_ENV
       - name: Setup RabbitMQ
         if: matrix.transport == 'RabbitMQ'
         uses: Particular/setup-rabbitmq-action@v1.7.1
