@@ -31,7 +31,9 @@ public static class HostBuilderExtensions
         ArgumentNullException.ThrowIfNull(bridgeConfigurationAction);
 
         var deferredLoggerFactory = new DeferredLoggerFactory();
+#pragma warning disable CS0618 // Type or member is obsolete
         LogManager.UseFactory(deferredLoggerFactory);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         hostBuilder.ConfigureServices((hostBuilderContext, serviceCollection) =>
         {

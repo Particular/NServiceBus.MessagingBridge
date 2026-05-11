@@ -20,7 +20,9 @@ public static class HostApplicationBuilderExtensions
         ArgumentNullException.ThrowIfNull(bridgeConfiguration);
 
         var deferredLoggerFactory = new DeferredLoggerFactory();
+#pragma warning disable CS0618 // Type or member is obsolete
         LogManager.UseFactory(deferredLoggerFactory);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         _ = builder.Services.AddSingleton(sp => bridgeConfiguration.FinalizeConfiguration(sp.GetRequiredService<ILogger<BridgeConfiguration>>()))
             .AddSingleton(deferredLoggerFactory)
