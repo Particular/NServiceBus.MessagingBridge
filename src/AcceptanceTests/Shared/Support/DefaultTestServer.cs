@@ -25,8 +25,6 @@ public class DefaultTestServer : IEndpointSetupTemplate
         recoverability.Immediate(immediate => immediate.NumberOfRetries(0));
         configuration.SendFailedMessagesTo("error");
 
-        configuration.RegisterComponentsAndInheritanceHierarchy(runDescriptor);
-
         var transportDefinition = GetTransportDefinition();
         configuration.UseTransport(transportDefinition);
 

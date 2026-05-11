@@ -21,8 +21,6 @@ public class DefaultServer : IEndpointSetupTemplate
         recoverability.Immediate(immediate => immediate.NumberOfRetries(0));
         configuration.SendFailedMessagesTo("error");
 
-        configuration.RegisterComponentsAndInheritanceHierarchy(runDescriptor);
-
         var transportConfig = TestSuiteConfiguration.Current.CreateTransportConfiguration();
 
         await transportConfig.Configure(endpointConfiguration.EndpointName, configuration, runDescriptor.Settings, endpointConfiguration.PublisherMetadata);
