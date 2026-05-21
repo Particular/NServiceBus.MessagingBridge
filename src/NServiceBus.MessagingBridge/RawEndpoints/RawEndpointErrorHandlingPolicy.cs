@@ -21,9 +21,7 @@ namespace NServiceBus.Raw
 
         async Task<ErrorHandleResult> MoveToErrorQueue(ErrorContext errorContext, string errorQueue, CancellationToken cancellationToken)
         {
-            var message = errorContext.Message;
-
-            var outgoingMessage = new OutgoingMessage(message.MessageId, new Dictionary<string, string>(message.Headers), message.Body);
+            var outgoingMessage = new OutgoingMessage(errorContext.MessageId, new Dictionary<string, string>(errorContext.Headers), errorContext.Body);
 
             var headers = outgoingMessage.Headers;
             headers.Remove(Headers.DelayedRetries);

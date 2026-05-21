@@ -11,7 +11,9 @@ class BridgeHostedService(
 {
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         LogManager.UseFactory(new LoggerFactory(loggerFactory));
+#pragma warning restore CS0618 // Type or member is obsolete
         deferredLoggerFactory.FlushAll(loggerFactory);
 
         runningBridge = await startableBridge.Start(cancellationToken)
