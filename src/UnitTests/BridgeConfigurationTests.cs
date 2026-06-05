@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NServiceBus;
 using NUnit.Framework;
 using UnitTests;
@@ -74,6 +76,36 @@ public class BridgeConfigurationTests
         var transport = new BridgeTransport(new SomeTransport());
 
         Assert.That(transport.Concurrency, Is.EqualTo(Math.Max(2, Environment.ProcessorCount)));
+    }
+
+    [Test]
+    public void Should_not_allow_null_critical_error_action()
+    {
+        var configuration = new BridgeConfiguration();
+
+        Assert.Throws<ArgumentNullException>(() => configuration.DefineCriticalErrorAction(null));
+    }
+
+    [Test]
+    public void Should_store_critical_error_action()
+    {
+        var configuration = new BridgeConfiguration();
+
+        var someTransport = new BridgeTransport(new SomeTransport());
+        someTransport.HasEndpoint("Sales");
+        configuration.AddTransport(someTransport);
+
+        var someOtherTransport = new BridgeTransport(new SomeOtherTransport());
+        someOtherTransport.HasEndpoint("Billing");
+        configuration.AddTransport(someOtherTransport);
+
+        Func<ICriticalErrorContext, CancellationToken, Task> onCriticalError = (_, __) => Task.CompletedTask;
+
+        configuration.DefineCriticalErrorAction(onCriticalError);
+
+        var finalizedConfiguration = FinalizeConfiguration(configuration);
+
+        Assert.That(finalizedConfiguration.CriticalErrorAction, Is.EqualTo(onCriticalError));
     }
 
     [Test]

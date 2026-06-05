@@ -4,6 +4,8 @@ namespace NServiceBus
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
     /// <summary>
@@ -30,6 +32,17 @@ namespace NServiceBus
         /// Runs the bridge in receive-only transaction mode regardless of whether the bridged transports support distributed transactions
         /// </summary>
         public void RunInReceiveOnlyTransactionMode() => runInReceiveOnlyTransactionMode = true;
+
+        /// <summary>
+        /// Defines the action that the bridge performs if a critical error occurs.
+        /// </summary>
+        /// <param name="onCriticalError">The action to perform.</param>
+        public void DefineCriticalErrorAction(Func<ICriticalErrorContext, CancellationToken, Task> onCriticalError)
+        {
+            ArgumentNullException.ThrowIfNull(onCriticalError);
+
+            criticalErrorAction = onCriticalError;
+        }
 
         /// <summary>
         /// Disables the enforcement of messaging best practices (e.g. validating that an event has only one logical publisher).
@@ -165,12 +178,13 @@ namespace NServiceBus
                 transportConfiguration.TransportDefinition.TransportTransactionMode = transportTransactionMode;
             }
 
-            return new FinalizedBridgeConfiguration(transportConfigurations, translateReplyToAddressForFailedMessages);
+            return new FinalizedBridgeConfiguration(transportConfigurations, translateReplyToAddressForFailedMessages, criticalErrorAction);
         }
 
         bool runInReceiveOnlyTransactionMode;
         bool allowMultiplePublishersSameEvent;
         bool translateReplyToAddressForFailedMessages = true;
+        Func<ICriticalErrorContext, CancellationToken, Task> criticalErrorAction;
 
         readonly List<BridgeTransport> transportConfigurations = [];
     }

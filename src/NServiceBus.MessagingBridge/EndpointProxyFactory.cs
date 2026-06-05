@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Raw;
 
-class EndpointProxyFactory(IServiceProvider serviceProvider)
+class EndpointProxyFactory(IServiceProvider serviceProvider, FinalizedBridgeConfiguration bridgeConfiguration)
 {
     public Task<IStartableRawEndpoint> CreateProxy(
         BridgeEndpoint endpointToProxy,
@@ -45,6 +45,11 @@ class EndpointProxyFactory(IServiceProvider serviceProvider)
             transportEndpointConfiguration.AutoCreateQueues();
         }
 
+        if (bridgeConfiguration.CriticalErrorAction != null)
+        {
+            transportEndpointConfiguration.CriticalErrorAction(bridgeConfiguration.CriticalErrorAction);
+        }
+
         transportEndpointConfiguration.LimitMessageProcessingConcurrencyTo(transportConfiguration.Concurrency);
         transportEndpointConfiguration.CustomErrorHandlingPolicy(new MessageShovelErrorHandlingPolicy(
             serviceProvider.GetRequiredService<ILogger<MessageShovelErrorHandlingPolicy>>()));
@@ -52,9 +57,14 @@ class EndpointProxyFactory(IServiceProvider serviceProvider)
         return RawEndpoint.Create(transportEndpointConfiguration, cancellationToken);
     }
 
-    public static Task<IStartableRawEndpoint> CreateDispatcher(BridgeTransport transportConfiguration, CancellationToken cancellationToken = default)
+    public Task<IStartableRawEndpoint> CreateDispatcher(BridgeTransport transportConfiguration, CancellationToken cancellationToken = default)
     {
         var endpointConfiguration = RawEndpointConfiguration.CreateSendOnly($"bridge-dispatcher-{transportConfiguration.Name}", transportConfiguration.TransportDefinition);
+
+        if (bridgeConfiguration.CriticalErrorAction != null)
+        {
+            endpointConfiguration.CriticalErrorAction(bridgeConfiguration.CriticalErrorAction);
+        }
 
         return RawEndpoint.Create(endpointConfiguration, cancellationToken);
     }
