@@ -6,6 +6,7 @@ namespace NServiceBus
     {
         public BridgeConfiguration() { }
         public void AddTransport(NServiceBus.BridgeTransport transportConfiguration) { }
+        public void DefineCriticalErrorAction(System.Func<NServiceBus.ICriticalErrorContext, System.Threading.CancellationToken, System.Threading.Tasks.Task> onCriticalError) { }
         public void DoNotEnforceBestPractices() { }
         public void DoNotTranslateReplyToAddressForFailedMessages() { }
         public void RunInReceiveOnlyTransactionMode() { }

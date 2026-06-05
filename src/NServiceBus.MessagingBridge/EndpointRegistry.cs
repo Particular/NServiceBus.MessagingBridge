@@ -48,7 +48,7 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
     {
         foreach (var transport in transportConfigurations)
         {
-            var dispatcher = await EndpointProxyFactory.CreateDispatcher(transport, cancellationToken).ConfigureAwait(false);
+            var dispatcher = await endpointProxyFactory.CreateDispatcher(transport, cancellationToken).ConfigureAwait(false);
             dispatchers.Add(transport.Name, dispatcher);
             proxyRegistrations.Add(new ProxyRegistration
             {
