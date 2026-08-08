@@ -39,6 +39,8 @@ jobs:
         uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
+      - name: Setup WSL
+        uses: Particular/setup-wsl-action@v1.1.0
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v6.0.0
         with:
@@ -59,7 +61,7 @@ jobs:
           enable-AzPSSession: true
       - name: Install SQL Server
         if: matrix.transport == 'SqlServer'
-        uses: Particular/install-sql-server-action@v2.0.0
+        uses: Particular/install-sql-server-action@v3.0.0
         with:
           connection-string-env-var: SqlServerTransportConnectionString
           catalog: nservicebus
@@ -113,10 +115,9 @@ jobs:
           echo "IBMMQ_CONNECTIONSTRING=${{ secrets.IBMMQ_CONNECTIONSTRING }}" >> $GITHUB_ENV
       - name: Setup RabbitMQ
         if: matrix.transport == 'RabbitMQ'
-        uses: Particular/setup-rabbitmq-action@v1.7.1
+        uses: Particular/setup-rabbitmq-action@v2.0.0
         with:
           connection-string-name: RabbitMQTransport_ConnectionString
-          tag: RabbitMQTransportBridge
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Setup Azure Storage Account
