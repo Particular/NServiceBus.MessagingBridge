@@ -27,8 +27,6 @@ jobs:
         exclude:
           - os: ubuntu-latest
             transport: MSMQ
-          - os: windows-latest
-            transport: IBMMQ
       fail-fast: false
     steps:
       - name: Check for secrets
