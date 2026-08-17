@@ -1,4 +1,7 @@
-﻿[assembly: LearningTransportTest]
+﻿using NUnit.Framework;
+
+[assembly: LearningTransportTest]
+[assembly: Parallelizable(ParallelScope.Fixtures)]
 
 public partial class TestSuiteConfiguration
 {
