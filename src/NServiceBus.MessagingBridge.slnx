@@ -11,6 +11,7 @@
     <Project Path="AcceptanceTests.IBMMQ/AcceptanceTests.IBMMQ.csproj" />
     <Project Path="AcceptanceTests.Learning/AcceptanceTests.Learning.csproj" />
     <Project Path="AcceptanceTests.Msmq/AcceptanceTests.Msmq.csproj" />
+    <Project Path="AcceptanceTests.NonDurable/AcceptanceTests.NonDurable.csproj" />
     <Project Path="AcceptanceTests.RabbitMQ/AcceptanceTests.RabbitMQ.csproj" />
     <Project Path="AcceptanceTests.SqlServer/AcceptanceTests.SqlServer.csproj" />
     <Project Path="AcceptanceTests.SQS/AcceptanceTests.SQS.csproj" />
