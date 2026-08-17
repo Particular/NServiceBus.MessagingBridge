@@ -38,6 +38,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup WSL
+        if: contains(fromJson('["RabbitMQ", "SqlServer", "IBMMQ"]'), matrix.transport)
         uses: Particular/setup-wsl-action@v1.2.0
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v6.0.0
@@ -53,6 +54,7 @@ jobs:
           path: nugets/
           retention-days: 7
       - name: Azure login
+        if: contains(fromJson('["AzureServiceBus", "AzureStorageQueue"]'), matrix.transport)
         uses: azure/login@v3.0.1
         with:
           creds: ${{ secrets.AZURE_ACI_CREDENTIALS }}
