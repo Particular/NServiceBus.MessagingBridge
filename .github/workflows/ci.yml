@@ -111,4 +111,4 @@ jobs:
           azure-credentials: ${{ secrets.AZURE_ACI_CREDENTIALS }}
           tag: ASQTransport
       - name: Run tests
-        uses: Particular/run-tests-action@v1.7.0
+        uses: Particular/run-tests-action@v1.9.0
