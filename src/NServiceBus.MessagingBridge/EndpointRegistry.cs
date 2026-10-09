@@ -30,8 +30,8 @@ class EndpointRegistry(EndpointProxyFactory endpointProxyFactory, ILogger<Starta
 
             var dispatcher = dispatchers[transport.Name];
             var queueAddress = new QueueAddress(endpoint.Name);
-            var targetTransportAddress = dispatcher.ToTransportAddress(queueAddress);
-            endpointAddressMappings[endpoint.Name] = endpoint.QueueAddress ?? targetTransportAddress;
+            var targetTransportAddress = endpoint.QueueAddress ?? dispatcher.ToTransportAddress(queueAddress);
+            endpointAddressMappings[endpoint.Name] = targetTransportAddress;
             targetEndpointDispatchers[endpoint.Name] = new TargetEndpointDispatcher(transport.Name, dispatcher, targetTransportAddress);
 
             await CreateAndRegisterProxies(transport, endpoint, transportConfigurations, proxyRegistrations, cancellationToken)
