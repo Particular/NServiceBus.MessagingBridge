@@ -7,10 +7,10 @@ on:
         type: string
 jobs:
   check-authorized-user:
-    uses: Particular/deployment-workflows/.github/workflows/verify-authorized-user.yml@main
+    uses: Particular/deployment-workflows/.github/workflows/verify-authorized-user.yml@1.0.0
   publish-release-notes:
     needs: check-authorized-user
-    uses: Particular/deployment-workflows/.github/workflows/publish-release-notes.yml@main
+    uses: Particular/deployment-workflows/.github/workflows/publish-release-notes.yml@1.0.0
     with:
       version: ${{ inputs.version }}
     secrets: inherit
@@ -37,7 +37,7 @@ jobs:
     needs: publish-release-notes
     steps:
         - name: Push NuGet packages
-          uses: particular/deployment-workflows/.github/actions/push-nuget-packages@main
+          uses: particular/deployment-workflows/.github/actions/push-nuget-packages@1.0.0
           with:
             version: ${{ inputs.version }}
             deploy-environment: production
