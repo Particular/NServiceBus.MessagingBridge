@@ -7,7 +7,7 @@ on:
         type: string
 jobs:
   check-authorized-user:
-    uses: Particular/deployment-workflows/.github/workflows/verify-authorized-user.yml@main
+    uses: Particular/deployment-workflows/.github/workflows/verify-authorized-user.yml@1.0.0
   push-nuget-packages-staging:
     needs: check-authorized-user
     runs-on: ubuntu-latest
@@ -16,15 +16,14 @@ jobs:
       contents: write
     steps:
       - name: Push NuGet packages
-        uses: Particular/deployment-workflows/.github/actions/push-nuget-packages@main
+        uses: Particular/deployment-workflows/.github/actions/push-nuget-packages@1.0.0
         with:
           version: ${{ inputs.version }}
           deploy-environment: staging
-          exclude-package-pattern: "TotallyLegit.ServiceControl.Management.*.nupkg"
           api-key: ${{ secrets.FEEDZIO_PUBLISH_API_KEY }}
   generate-release-notes:
     needs: check-authorized-user
-    uses: Particular/deployment-workflows/.github/workflows/generate-release-notes.yml@main
+    uses: Particular/deployment-workflows/.github/workflows/generate-release-notes.yml@1.0.0
     with:
       version: ${{ inputs.version }}
     secrets: inherit
