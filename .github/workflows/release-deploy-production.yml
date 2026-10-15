@@ -41,4 +41,4 @@ jobs:
           with:
             version: ${{ inputs.version }}
             deploy-environment: production
-            api-key: not-needed-we-use-trusted-publishing
+            api-key: required-but-real-value-not-needed-we-use-trusted-publishing-for-production

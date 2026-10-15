@@ -38,4 +38,4 @@ jobs:
       - name: Create draft release and attach assets
         uses: particular/deployment-workflows/.github/actions/create-draft-release-with-assets@1.0.0
         with:
-          asset-paths: "nugets/, powershellModules/, assets/"
+          asset-paths: "nugets/"
