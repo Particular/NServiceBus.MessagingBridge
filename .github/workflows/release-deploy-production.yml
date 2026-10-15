@@ -41,29 +41,4 @@ jobs:
           with:
             version: ${{ inputs.version }}
             deploy-environment: production
-            exclude-package-pattern: "TotallyLegit.ServiceControl.Management.*.nupkg"
             api-key: not-needed-we-use-trusted-publishing
-            dry-run: true
-  push-docker-images:
-    needs: publish-release-notes
-    uses: Particular/deployment-workflows/.github/workflows/push-docker-images.yml@main
-    with:
-      version: ${{ inputs.version }}
-      dry-run: true
-    secrets: inherit
-  push-powershell-packages:
-    needs: publish-release-notes
-    uses: Particular/deployment-workflows/.github/workflows/push-powershell-packages.yml@main
-    with:
-      version: ${{ inputs.version }}
-      package-pattern: "TotallyLegit.ServiceControl.Management.*.nupkg"
-      deploy-environment: production
-    secrets: inherit
-  push-release-info-to-aws-s3:
-    needs: publish-release-notes
-    uses: Particular/deployment-workflows/.github/workflows/push-release-info-to-aws-s3.yml@main
-    with:
-      version: ${{ inputs.version }}
-      product: "TotallyLegit.App"
-      bucket: "testing.platformupdate.particular.net"
-    secrets: inherit
