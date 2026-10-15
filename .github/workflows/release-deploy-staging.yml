@@ -1,0 +1,30 @@
+name: Deploy Staging
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        type: string
+jobs:
+  check-authorized-user:
+    uses: Particular/deployment-workflows/.github/workflows/verify-authorized-user.yml@main
+  push-nuget-packages-staging:
+    needs: check-authorized-user
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Push NuGet packages
+        uses: Particular/deployment-workflows/.github/actions/push-nuget-packages@main
+        with:
+          version: ${{ inputs.version }}
+          deploy-environment: staging
+          exclude-package-pattern: "TotallyLegit.ServiceControl.Management.*.nupkg"
+          api-key: ${{ secrets.FEEDZIO_PUBLISH_API_KEY }}
+  generate-release-notes:
+    needs: check-authorized-user
+    uses: Particular/deployment-workflows/.github/workflows/generate-release-notes.yml@main
+    with:
+      version: ${{ inputs.version }}
+    secrets: inherit
