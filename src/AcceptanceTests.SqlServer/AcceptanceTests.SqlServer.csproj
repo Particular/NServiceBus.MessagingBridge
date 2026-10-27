@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Pinned Transitive Dependencies for CVEs">
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" AutomaticVersionRange="false" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" AutomaticVersionRange="false" />
   </ItemGroup>
 
   <ItemGroup>
