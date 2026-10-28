@@ -38,6 +38,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup WSL
+        if: contains(fromJson('["RabbitMQ", "SqlServer", "IBMMQ"]'), matrix.transport)
         uses: Particular/setup-wsl-action@v1.2.0
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v6.0.0
@@ -47,13 +48,14 @@ jobs:
         run: dotnet build src --configuration Release
       - name: Upload packages
         if: matrix.os-name == 'Windows' && matrix.transport == 'Learning'
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: NuGet packages
           path: nugets/
           retention-days: 7
       - name: Azure login
-        uses: azure/login@v3.0.1
+        if: contains(fromJson('["AzureServiceBus", "AzureStorageQueue"]'), matrix.transport)
+        uses: azure/login@v3.1.0
         with:
           creds: ${{ secrets.AZURE_ACI_CREDENTIALS }}
           enable-AzPSSession: true
@@ -109,4 +111,4 @@ jobs:
           azure-credentials: ${{ secrets.AZURE_ACI_CREDENTIALS }}
           tag: ASQTransport
       - name: Run tests
-        uses: Particular/run-tests-action@v1.7.0
+        uses: Particular/run-tests-action@v1.9.0
