@@ -17,11 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus.Transport.SqlServer" Version="9.1.0" />
-  </ItemGroup>
-
-  <ItemGroup Label="Pinned Transitive Dependencies for CVEs">
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" AutomaticVersionRange="false" />
+    <PackageReference Include="NServiceBus.Transport.SqlServer" Version="9.1.1" />
   </ItemGroup>
 
   <ItemGroup>
