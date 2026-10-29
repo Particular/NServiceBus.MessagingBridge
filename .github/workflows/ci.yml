@@ -53,6 +53,17 @@ jobs:
           name: NuGet packages
           path: nugets/
           retention-days: 7
+      - name: Downgrade Azure CLI to 2.90.0
+        # Azure CLI 2.91.0 (Python 3.14) intermittently deadlocks on module import during
+        # long-running operations such as creating a Service Bus namespace (Azure/azure-cli#33996).
+        # Remove once a release containing Azure/azure-cli#34201 is available.
+        if: runner.os == 'Linux' && contains(fromJson('["AzureServiceBus", "AzureStorageQueue"]'), matrix.transport)
+        shell: bash
+        run: |
+          deb="azure-cli_2.90.0-1~$(lsb_release -cs)_amd64.deb"
+          curl -fsSL -o "$RUNNER_TEMP/$deb" "https://packages.microsoft.com/repos/azure-cli/pool/main/a/azure-cli/$deb"
+          sudo apt-get install -y --allow-downgrades "$RUNNER_TEMP/$deb"
+          az version
       - name: Azure login
         if: contains(fromJson('["AzureServiceBus", "AzureStorageQueue"]'), matrix.transport)
         uses: azure/login@v3.1.0
