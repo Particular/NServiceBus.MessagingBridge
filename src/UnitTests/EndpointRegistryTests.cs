@@ -35,7 +35,7 @@ public class EndpointRegistryTests
         target.HasEndpoint(endpoint);
         var source = new BridgeTransport(new DispatchCapturingTransport()) { Name = "Source" };
 
-        var serviceProvider = new ServiceCollection()
+        await using var serviceProvider = new ServiceCollection()
             .AddSingleton<ILogger<MessageShovelErrorHandlingPolicy>>(new FakeLogger<MessageShovelErrorHandlingPolicy>())
             .BuildServiceProvider();
         var endpointProxyFactory = new EndpointProxyFactory(serviceProvider);
