@@ -26,7 +26,7 @@ public class EndpointProxyFactoryTests
         }
 
         var bridgeConfiguration = new FinalizedBridgeConfiguration([], false, OnCriticalError);
-        var serviceProvider = new ServiceCollection()
+        await using var serviceProvider = new ServiceCollection()
             .AddSingleton<IMessageShovel>(new TestMessageShovel())
             .AddSingleton<ILogger<MessageShovelErrorHandlingPolicy>>(new FakeLogger<MessageShovelErrorHandlingPolicy>())
             .BuildServiceProvider();
