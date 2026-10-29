@@ -38,7 +38,7 @@ public class EndpointRegistryTests
         var serviceProvider = new ServiceCollection()
             .AddSingleton<ILogger<MessageShovelErrorHandlingPolicy>>(new FakeLogger<MessageShovelErrorHandlingPolicy>())
             .BuildServiceProvider();
-        var endpointProxyFactory = new EndpointProxyFactory(serviceProvider, new FinalizedBridgeConfiguration([], false));
+        var endpointProxyFactory = new EndpointProxyFactory(serviceProvider);
         var registry = new EndpointRegistry(endpointProxyFactory, new FakeLogger<StartableBridge>());
 
         await registry.Initialize([source, target], CancellationToken.None);
