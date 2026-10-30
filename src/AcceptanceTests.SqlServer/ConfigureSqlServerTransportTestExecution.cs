@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -37,8 +36,7 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
         await using var command = conn.CreateCommand();
         var schema = "";
         var catalog = "";
-        // The error queues are shared by all tests running in parallel and are never dropped.
-        foreach (var queue in transport.QueuesToCleanup.Where(queue => !queue.StartsWith("error", StringComparison.OrdinalIgnoreCase)))
+        foreach (var queue in transport.QueuesToCleanup)
         {
             var queueAddress = QueueAddress.Parse(queue);
             schema = queueAddress.Schema;
@@ -47,6 +45,7 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
             await TryDeleteTable(conn, new QueueAddress(queueAddress.Table + ".Delayed", schema, catalog));
         }
         await TryDeleteTable(conn, new QueueAddress(TestableSqlServerTransport.SubscriptionTable, schema, catalog));
+        await TryDeleteTable(conn, new QueueAddress("bridge.error", schema, catalog));
         return;
 
         static async Task<SqlConnection> ConnectionFactory(TestableSqlServerTransport transport, CancellationToken cancellationToken)
