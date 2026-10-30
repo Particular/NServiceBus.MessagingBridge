@@ -54,7 +54,7 @@ public class Separate_instances : BridgeAcceptanceTest
         public Publisher() =>
             EndpointSetup<DefaultPublisher>(b =>
             {
-                var transport = new SqlServerTransport(connectionString);
+                var transport = new TestableSqlServerTransport(connectionString);
                 b.UseTransport(transport);
             });
     }
@@ -64,7 +64,7 @@ public class Separate_instances : BridgeAcceptanceTest
         public Subscriber() =>
             EndpointSetup<DefaultServer>(b =>
             {
-                var transport = new SqlServerTransport(connectionString2);
+                var transport = new TestableSqlServerTransport(connectionString2);
                 b.UseTransport(transport);
             });
 

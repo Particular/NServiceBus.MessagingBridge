@@ -4,13 +4,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Transport;
+using NServiceBus.Transport.SqlServer;
+using NUnit.Framework;
 
 class TestableSqlServerTransport : SqlServerTransport
 {
     public TestableSqlServerTransport(string connectionString)
         : base(connectionString)
     {
+        Subscriptions.DisableCaching = true;
+        Subscriptions.SubscriptionTableName = new SubscriptionTableName(SubscriptionTable, "dbo");
     }
+
+    // Each test drops its subscription table on cleanup, so tests running in parallel cannot share one.
+    public static string SubscriptionTable => $"SubscriptionRouting_{TestContext.CurrentContext.Test.ID.Replace('-', '_')}";
 
     public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers, string[] sendingAddresses, CancellationToken cancellationToken = default)
     {

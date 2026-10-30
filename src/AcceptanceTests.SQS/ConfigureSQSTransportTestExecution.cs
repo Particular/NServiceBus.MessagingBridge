@@ -26,8 +26,8 @@ public class ConfigureSQSTransportTestExecution : IConfigureTransportTestExecuti
     {
         var accessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
         var secretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
-        using var sqsClient = new AmazonSQSClient(accessKeyId, secretAccessKey);
-        using var snsClient = new AmazonSimpleNotificationServiceClient(accessKeyId, secretAccessKey);
+        using var sqsClient = new AmazonSQSClient(accessKeyId, secretAccessKey, new AmazonSQSConfig { MaxErrorRetry = 10 });
+        using var snsClient = new AmazonSimpleNotificationServiceClient(accessKeyId, secretAccessKey, new AmazonSimpleNotificationServiceConfig { MaxErrorRetry = 10 });
         using var s3Client = new AmazonS3Client(accessKeyId, secretAccessKey);
         await SQSCleanup.DeleteAllResourcesWithPrefix(sqsClient, snsClient, s3Client, NamePrefixGenerator.GetNamePrefix()).ConfigureAwait(false);
     }

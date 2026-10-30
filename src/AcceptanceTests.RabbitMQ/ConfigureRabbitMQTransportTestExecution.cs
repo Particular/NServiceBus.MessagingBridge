@@ -16,12 +16,7 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
         return Task.CompletedTask;
     }
 
-    public Task Cleanup()
-    {
-        _ = PurgeQueues(transport);
-
-        return Task.CompletedTask;
-    }
+    public Task Cleanup() => PurgeQueues(transport);
 
     static async Task PurgeQueues(TestableRabbitMQTransport transport)
     {
@@ -30,7 +25,8 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
             return;
         }
 
-        var queues = transport.QueuesToCleanup.Distinct().ToArray();
+        // The shared error queue is used by all tests running in parallel
+        var queues = transport.QueuesToCleanup.Distinct().Where(queue => queue != "error").ToArray();
 
         await using var connection = await ConnectionHelper.ConnectionFactory.CreateConnectionAsync("Test Queue Purger");
         await using var channel = await connection.CreateChannelAsync();
@@ -38,8 +34,8 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
         {
             try
             {
-                _ = channel.QueuePurgeAsync(queue);
-                _ = channel.QueueDeleteAsync(queue, false, false);
+                await channel.QueuePurgeAsync(queue);
+                await channel.QueueDeleteAsync(queue, false, false);
             }
             catch (Exception ex)
             {
@@ -50,9 +46,5 @@ class ConfigureRabbitMQTransportTestExecution : IConfigureTransportTestExecution
 
     public BridgeTransport Configure(PublisherMetadata publisherMetadata) => new TestableRabbitMQTransport(RoutingTopology.Conventional(QueueType.Quorum), connectionString).ToTestableBridge();
 
-    public Task Cleanup(BridgeTransport bridgeTransport)
-    {
-        _ = PurgeQueues(bridgeTransport.FromTestableBridge<TestableRabbitMQTransport>());
-        return Task.CompletedTask;
-    }
+    public Task Cleanup(BridgeTransport bridgeTransport) => PurgeQueues(bridgeTransport.FromTestableBridge<TestableRabbitMQTransport>());
 }

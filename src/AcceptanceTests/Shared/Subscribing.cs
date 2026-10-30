@@ -14,16 +14,16 @@ class Subscribing : BridgeAcceptanceTest
             {
                 var subscriberEndpoint = new BridgeEndpoint(Conventions.EndpointNamingConvention(typeof(Subscriber)));
 
-                subscriberEndpoint.RegisterPublisher<MyEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
+                subscriberEndpoint.RegisterPublisher<SubscribedEvent>(Conventions.EndpointNamingConvention(typeof(Publisher)));
 
                 transportBeingTested.HasEndpoint(subscriberEndpoint);
 
                 bridgeConfiguration.AddTransport(transportBeingTested);
 
                 bridgeConfiguration.AddTestTransportEndpoint<Publisher>();
-            }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>())
+            }, metadata => metadata.RegisterPublisherFor<SubscribedEvent, Publisher>())
             .WithEndpoint<Subscriber>()
-            .WithEndpoint<Publisher>(b => b.When((session, _) => session.Publish(new MyEvent())))
+            .WithEndpoint<Publisher>(b => b.When((session, _) => session.Publish(new SubscribedEvent())))
             .Done(c => c.SubscriberGotEvent)
             .Run();
 
@@ -38,16 +38,16 @@ class Subscribing : BridgeAcceptanceTest
 
     class Publisher : EndpointConfigurationBuilder
     {
-        public Publisher() => EndpointSetup<DefaultTestPublisher>(_ => { }, metadata => metadata.RegisterSelfAsPublisherFor<MyEvent>(this));
+        public Publisher() => EndpointSetup<DefaultTestPublisher>(_ => { }, metadata => metadata.RegisterSelfAsPublisherFor<SubscribedEvent>(this));
     }
 
     class Subscriber : EndpointConfigurationBuilder
     {
-        public Subscriber() => EndpointSetup<DefaultServer>(_ => { }, metadata => metadata.RegisterPublisherFor<MyEvent, Publisher>());
+        public Subscriber() => EndpointSetup<DefaultServer>(_ => { }, metadata => metadata.RegisterPublisherFor<SubscribedEvent, Publisher>());
 
-        public class MessageHandler(Context context) : IHandleMessages<MyEvent>
+        public class MessageHandler(Context context) : IHandleMessages<SubscribedEvent>
         {
-            public Task Handle(MyEvent message, IMessageHandlerContext handlerContext)
+            public Task Handle(SubscribedEvent message, IMessageHandlerContext handlerContext)
             {
                 context.SubscriberGotEvent = true;
                 return Task.CompletedTask;
@@ -55,5 +55,6 @@ class Subscribing : BridgeAcceptanceTest
         }
     }
 
-    public class MyEvent : IEvent;
+    // Event names must be unique across fixtures: the RabbitMQ conventional topology derives exchange names from the type name only.
+    public class SubscribedEvent : IEvent;
 }

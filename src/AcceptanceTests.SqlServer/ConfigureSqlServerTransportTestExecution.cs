@@ -44,7 +44,7 @@ class ConfigureSqlServerTransportTestExecution : IConfigureTransportTestExecutio
             await TryDeleteTable(conn, queueAddress);
             await TryDeleteTable(conn, new QueueAddress(queueAddress.Table + ".Delayed", schema, catalog));
         }
-        await TryDeleteTable(conn, new QueueAddress("SubscriptionRouting", schema, catalog));
+        await TryDeleteTable(conn, new QueueAddress(TestableSqlServerTransport.SubscriptionTable, schema, catalog));
         await TryDeleteTable(conn, new QueueAddress("bridge.error", schema, catalog));
         return;
 

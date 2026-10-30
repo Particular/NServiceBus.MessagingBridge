@@ -22,14 +22,17 @@ public class TestableSQSTransport : SqsTransport
         }
     }
 
+    // Fixtures run in parallel against one account and hit control-plane throttling with the default retries.
+    const int MaxErrorRetry = 10;
+
     public static IAmazonSQS CreateSqsClient()
     {
-        return new AmazonSQSClient();
+        return new AmazonSQSClient(new AmazonSQSConfig { MaxErrorRetry = MaxErrorRetry });
     }
 
     public static IAmazonSimpleNotificationService CreateSnsClient()
     {
-        return new AmazonSimpleNotificationServiceClient();
+        return new AmazonSimpleNotificationServiceClient(new AmazonSimpleNotificationServiceConfig { MaxErrorRetry = MaxErrorRetry });
     }
 
     public static IAmazonS3 CreateS3Client()

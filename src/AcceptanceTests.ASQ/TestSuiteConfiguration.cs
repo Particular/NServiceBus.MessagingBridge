@@ -1,4 +1,7 @@
-﻿[assembly: AzureStorageQueueTest]
+﻿using NUnit.Framework;
+
+[assembly: AzureStorageQueueTest]
+[assembly: Parallelizable(ParallelScope.Fixtures)]
 
 public partial class TestSuiteConfiguration
 {
