@@ -41,7 +41,7 @@ jobs:
         if: contains(fromJson('["RabbitMQ", "SqlServer", "IBMMQ"]'), matrix.transport)
         uses: Particular/setup-wsl-action@v1.2.0
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
       - name: Build
